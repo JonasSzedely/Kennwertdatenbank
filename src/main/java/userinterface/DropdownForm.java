@@ -52,11 +52,8 @@ public class DropdownForm implements Form{
         return invalid;
     }
 
-    public ComboBox getComboBox() {
-        return comboBox;
-    }
-
-    public String getValue() {
+    @Override
+    public String getInput() {
         return comboBox.getSelectionModel().getSelectedItem();
     }
 

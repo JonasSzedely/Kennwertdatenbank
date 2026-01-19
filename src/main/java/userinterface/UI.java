@@ -1,19 +1,21 @@
 package userinterface;
 
 
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.beans.property.IntegerProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.control.*;
+import javafx.util.Duration;
 import kennwertdatenbank.Controller;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListView;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -29,13 +31,15 @@ public class UI extends Application {
     private Controller controller;
     private HBox projects;
     private ObservableList<Project> projectList;
+    private Alert alert;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
 
         controller = new Controller();
         projectList = FXCollections.observableArrayList();
-        projectList.addAll(controller.getProjects());
+        refreshProjectList();
+
 
         VBox outerPane = new VBox(10);
         outerPane.setPadding(new Insets(10));
@@ -58,7 +62,7 @@ public class UI extends Application {
         HBox topMiddle = new HBox();
         topMiddle.setAlignment(Pos.CENTER);
         topMiddle.setPadding(new Insets(20,0,20,0));
-        /*
+
         //Label filters = new Label("Filters");
         int min = controller.getMin();
         int max = controller.getMax();
@@ -71,7 +75,7 @@ public class UI extends Application {
         minMaxValueSlider.setMinWidth(500);
 
         topMiddle.getChildren().addAll(minMaxValueSlider);
-         */
+
 
         HBox.setHgrow(topMiddle, Priority.ALWAYS);
 
@@ -122,11 +126,17 @@ public class UI extends Application {
         middleRightPane.setContent(projects);
 
 
+        /*
         projectList.addListener((javafx.collections.ListChangeListener<Project>) change -> {
             displayProjects();
         });
+         */
 
+
+        //JavaFX Properties?
         displayProjects();
+
+        //IntegerProperty
 
 
 
@@ -160,6 +170,8 @@ public class UI extends Application {
             }
         });
 
+
+
         //Width bind to scene width
         //middleLeftPane.prefWidthProperty().bind(scene.widthProperty().multiply(0.1));
 
@@ -171,6 +183,8 @@ public class UI extends Application {
         projectList.clear();
         projectList.addAll(controller.getProjects());
     }
+
+
 
     private void displayProjects() {
         projects.getChildren().clear();
@@ -195,5 +209,44 @@ public class UI extends Application {
         }
     }
 
+    private void displayTable() {
+        TableView table = new TableView<>();
+        //table.
+    }
+
+
+
 
 }
+
+/*
+public class FxChoiceBox extends Application {
+
+    @Override
+    public void start(Stage hauptStage) {
+        ObservableList<MeineKlasse> meineDaten = FXCollections.observableArrayList();
+        meineDaten.add(new MeineKlasse(10, "Aktiv"));
+        meineDaten.add(new MeineKlasse(20, "Faul"));
+        meineDaten.add(new MeineKlasse(30, "Tot"));
+        ChoiceBox<MeineKlasse> choiceBox = new ChoiceBox<MeineKlasse>(meineDaten);
+        choiceBox.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                ChoiceBox<MeineKlasse> cb = (ChoiceBox<MeineKlasse>) event.getSource();
+                MeineKlasse mk = cb.getValue();
+                int index = cb.getSelectionModel().getSelectedIndex();
+                System.out.println("index: "+index+" Wert: "+mk);
+            }
+        });
+        VBox pane = new VBox();
+        pane.getChildren().add(choiceBox);
+        Scene scene = new Scene(pane, 250, 80);
+        hauptStage.setScene(scene);
+        hauptStage.show();
+    }
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+
+ */

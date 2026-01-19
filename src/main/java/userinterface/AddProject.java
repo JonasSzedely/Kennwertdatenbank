@@ -4,16 +4,24 @@ import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import kennwertdatenbank.Controller;
-
+import java.util.ArrayList;
 import java.util.HashMap;
+
 
 public class AddProject extends Application {
 
     Controller controller;
+
+    /**
+     * Creates a new Window that allows to add Projects to the Database.
+     * It validates the input before it can be added, and flags wrong inputs in the UI.
+     * It needs a Controller Class object.
+     */
     public AddProject(Controller controller) {
         this.controller = controller;
     }
@@ -21,177 +29,111 @@ public class AddProject extends Application {
     @Override
     public void start(Stage addProjectStage) throws Exception {
 
-
-
         var outerPane = new VBox();
         outerPane.setAlignment(Pos.CENTER);
 
+        var gridPane = new GridPane(10,10);
+        gridPane.setPadding(new Insets(20,20,20,20));
+        gridPane.setAlignment(Pos.CENTER);
+        gridPane.getColumnConstraints().addAll(new ColumnConstraints(100), new ColumnConstraints(300));
 
-        var grid = new GridPane(10,10);
-        grid.setPadding(new Insets(20,20,20,20));
-        grid.setAlignment(Pos.CENTER);
-        grid.getColumnConstraints().addAll(new ColumnConstraints(100), new ColumnConstraints(300));
-
-        String [] formsArray = {
-                "projectNrForm;Projekt Nummer;10000;Keine gültige Zahl!",
-                "addressForm;Adresse;Musterstrasse 5;Ungültige Adresse!",
-                "plzForm;Postleitzahl;8001;Keine gültige Zahl!",
-                "locationForm;Ort;Zürich;Keine gültige Zahl!",
-                "ownerForm;Bauherr;Marcel Muster;Ungültiger Name!",
-                "typeForm;Objekttyp;Miete/Verkauf;Bitte Typ auswählen!",
-                "squareMeterFrom;HNF in m²;3456;Keine gültige Zahl!",
-                "dataPathForm;BKP Dateipfad;C:\\Benutzer\\Name\\Downloads\\kv1.csv;Kein gültiger Pfad!"};
+        /**
+         * Each element in the array represents an input field with a description.
+         * There are 3 types: number, text, dropdown
+         * Each element requires the following values (only type number requires the validation parameters)
+         * LABEL ; NAME ; EXAMPLE TEXT ; WARNING ; TYPE ; VALIDATION-PARAMETER MIN ; VALIDATION-PARAMETER MAX
+         */
+        String[] formsArray = {
+                "projectNr;Projekt Nummer;10000;Keine gültige Zahl!;number;10000;99999",
+                "address;Adresse;Musterstrasse 5;Bitte Adresse eingeben!;text",
+                "plz;Postleitzahl;8001;Keine gültige Zahl!;number;1000;9999",
+                "location;Ort;Zürich;Bitte Ortschaft eingeben!;text",
+                "owner;Bauherr;Marcel Muster;Ungültiger Name!;text",
+                "type;Objekttyp;Miete/Verkauf;Bitte Typ auswählen!;dropdown",
+                "squareMeter;HNF in m²;3456;Keine gültige Zahl!;number;1;2147483647",
+                "dataPath;BKP Dateipfad;C:\\Benutzer\\Name\\Downloads\\kv1.csv;Kein gültiger Pfad!;text"};
 
         HashMap<String, Form> forms = new HashMap<>();
+        ArrayList<FormListener> formListeners = new ArrayList<>();
 
+        //Converts formsArray into elements, creates listeners, and adds them to the map/array.
         for (int i = 0; i < formsArray.length; i++){
             String[] parts = formsArray[i].split(";");
             String name = parts[0];
-            if(name.equals("typeForm")){
-                var dropdown = new DropdownForm(parts[1], parts[2], parts[3]);
-                forms.put(name, dropdown);
-                grid.add(dropdown.getLabel(), 0, i);
-                grid.add(dropdown.getInputField(), 1, i);
-                grid.add(dropdown.getInvalidLabel(), 2, i);
-
-            } else {
+            if(parts[4].equals("dropdown")){
+                var form = new DropdownForm(parts[1], parts[2], parts[3]);
+                forms.put(name, form);
+                formListeners.add(new FormListener(form, name));
+                gridPane.add(form.getLabel(), 0, i);
+                gridPane.add(form.getInputField(), 1, i);
+                gridPane.add(form.getInvalidLabel(), 2, i);
+            } else if (parts[4].equals("number")){
                 var form = new InputForm(parts[1], parts[2], parts[3]);
                 forms.put(name, form);
-                grid.add(form.getLabel(), 0, i);
-                grid.add(form.getInputField(), 1, i);
-                grid.add(form.getInvalidLabel(), 2, i);
+                formListeners.add(new FormListener(form, name, Integer.parseInt(parts[5]), Integer.parseInt(parts[6])));
+                gridPane.add(form.getLabel(), 0, i);
+                gridPane.add(form.getInputField(), 1, i);
+                gridPane.add(form.getInvalidLabel(), 2, i);
+            } else if (parts[4].equals("text")){
+                var form = new InputForm(parts[1], parts[2], parts[3]);
+                forms.put(name, form);
+                formListeners.add(new FormListener(form, name));
+                gridPane.add(form.getLabel(), 0, i);
+                gridPane.add(form.getInputField(), 1, i);
+                gridPane.add(form.getInvalidLabel(), 2, i);
             }
         }
 
-        var projectNrForm = (InputForm) forms.get("projectNrForm");
-        var addressForm = (InputForm) forms.get("addressForm");
-        var plzForm = (InputForm) forms.get("plzForm");
-        var locationForm = (InputForm) forms.get("locationForm");
-        var ownerForm = (InputForm) forms.get("ownerForm");
-        var typeForm = (DropdownForm) forms.get("typeForm");
-        var squareMeterFrom = (InputForm) forms.get("squareMeterFrom");
-        var dataPathForm = (InputForm) forms.get("dataPathForm");
 
-        //patern from claude.ai
-        projectNrForm.getInputField().focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
-            if (wasFocused && !isNowFocused){
-                var checker = new NumberValidator(projectNrForm, 10000, 99999);
-                projectNrForm.getInvalidLabel().setVisible(!checker.isValid());
-            }
-        });
+        //Creates a button to add the new project to the DB.
+        //The button checks whether the input in the form is valid and passes the data to the controller.
+        var addButton = new Button("Projekt hinzufügen");
 
-        addressForm.getInputField().focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
-            if (wasFocused && !isNowFocused){
-                addressForm.getInvalidLabel().setVisible(addressForm.getTextField().getText().isEmpty());
-            }
-        });
-
-        plzForm.getInputField().focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
-            if (wasFocused && !isNowFocused){
-                var checker = new NumberValidator(plzForm, 1000, 9999);
-                plzForm.getInvalidLabel().setVisible(!checker.isValid());
-            }
-        });
-
-        locationForm.getInputField().focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
-            if (wasFocused && !isNowFocused){
-                locationForm.getInvalidLabel().setVisible(locationForm.getTextField().getText().isEmpty());
-            }
-        });
-
-        ownerForm.getInputField().focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
-            if (wasFocused && !isNowFocused){
-                ownerForm.getInvalidLabel().setVisible(ownerForm.getTextField().getText().isEmpty());
-            }
-        });
-
-        typeForm.getComboBox().focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
-            if (wasFocused && !isNowFocused){
-                typeForm.getInvalidLabel().setVisible(typeForm.getComboBox().getValue() == null);
-            }
-        });
-
-        squareMeterFrom.getInputField().focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
-            if (wasFocused && !isNowFocused){
-                var checker = new NumberValidator(squareMeterFrom, 1, Integer.MAX_VALUE);
-                squareMeterFrom.getInvalidLabel().setVisible(!checker.isValid());
-            }
-        });
-
-        dataPathForm.getInputField().focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
-            if (wasFocused && !isNowFocused){
-                dataPathForm.getInvalidLabel().setVisible(dataPathForm.getTextField().getText().isEmpty());
-            }
-        });
-
-
-        final var addButton = new Button("Projekt hinzufügen");
         addButton.setOnAction(event -> {
+            boolean inputIsValid = false;
 
-            int projectNr = 0;
-            String address = "";
-            int plz = 0;
-            String location;
-            String owner;
-            String type;
-            int squareMeter = 0;
-            String dataPath;
-
-            var checkerProjectNr = new NumberValidator(projectNrForm, 10000, 99999);
-            boolean projctNrValid = checkerProjectNr.isValid();
-            projectNrForm.getInvalidLabel().setVisible(!projctNrValid);
-
-            boolean addressValid = !addressForm.getTextField().getText().isEmpty();
-            addressForm.getInvalidLabel().setVisible(!addressValid);
-
-            var checkerPLZ = new NumberValidator(plzForm, 1000, 9999);
-            boolean plzValid = checkerPLZ.isValid();
-            plzForm.getInvalidLabel().setVisible(!plzValid);
-
-            boolean locationValid = !locationForm.getTextField().getText().isEmpty();
-            locationForm.getInvalidLabel().setVisible(!locationValid);
-
-            boolean ownerValid = !ownerForm.getTextField().getText().isEmpty();
-            ownerForm.getInvalidLabel().setVisible(!ownerValid);
-
-            boolean typeValid = true;
-            if (typeForm.getComboBox().getValue() == null){
-                typeForm.getInvalidLabel().setVisible(true);
-                typeValid = false;
+            for (FormListener formListener : formListeners){
+                inputIsValid = formListener.isValid();
+                formListener.setInvalidLabel(inputIsValid);
             }
 
-            var checkerSquareMeter = new NumberValidator(squareMeterFrom, 1, Integer.MAX_VALUE);
-            boolean squareMeterValid = checkerSquareMeter.isValid();
-            squareMeterFrom.getInvalidLabel().setVisible(!squareMeterValid);
+            if (inputIsValid){
+                controller.addProject(
+                        Integer.parseInt(forms.get("projectNr").getInput()),
+                        forms.get("address").getInput(),
+                        Integer.parseInt(forms.get("plz").getInput()),
+                        forms.get("location").getInput(),
+                        forms.get("owner").getInput(),
+                        forms.get("type").getInput(),
+                        Integer.parseInt(forms.get("squareMeter").getInput()),
+                        forms.get("dataPath").getInput()
+                );
 
-            boolean dataPathValid = !dataPathForm.getTextField().getText().isEmpty();
-            dataPathForm.getInvalidLabel().setVisible(!dataPathValid);
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                alert.setTitle("Projekt hinzugefügt");
+                alert.setHeaderText("Bestätigung");
+                alert.setContentText(
+                        "Das Projekt Nr. " + Integer.parseInt(forms.get("projectNr").getInput()) +
+                        " wurde erfolgreich hinzugefügt.\nDrücken Sie OK um den Vorgang zu beenden."
+                );
+                alert.showAndWait();
 
-            if (projctNrValid & addressValid & plzValid & locationValid & ownerValid & typeValid & squareMeterValid & dataPathValid){
-                projectNr = Integer.valueOf(projectNrForm.getTextField().getText());
-                address = addressForm.getTextField().getText();
-                plz = Integer.valueOf(plzForm.getTextField().getText());
-                location = locationForm.getTextField().getText();
-                owner = ownerForm.getTextField().getText();
-                type = typeForm.getValue();
-                squareMeter = Integer.valueOf(squareMeterFrom.getTextField().getText());
-                dataPath = dataPathForm.getTextField().getText();
-                controller.addProject(projectNr, address, plz, location, owner, type, squareMeter, dataPath);
-                controller.getProjects();
                 addProjectStage.close();
             }
         });
 
 
-        addButton.prefWidthProperty().bind(grid.widthProperty());
-        grid.add(addButton,0,8);
+        addButton.prefWidthProperty().bind(gridPane.widthProperty());
+        gridPane.add(addButton,0,8);
         GridPane.setColumnSpan(addButton,2);
 
-        Scene scene = new Scene(grid, 800,400);
+        outerPane.getChildren().addAll(gridPane);
+
+        Scene scene = new Scene(outerPane);
 
         addProjectStage.setScene(scene);
+        addProjectStage.setMinWidth(650);
+        addProjectStage.setMinHeight(400);
         addProjectStage.show();
-
-
     }
 }

@@ -16,7 +16,7 @@ public class NumberValidator {
     public boolean isValid(){
         int num = 0;
         try {
-            num = Integer.valueOf(form.getTextField().getText());
+            num = Integer.valueOf(form.getInput());
         } catch (NumberFormatException e){
             return false;
         }

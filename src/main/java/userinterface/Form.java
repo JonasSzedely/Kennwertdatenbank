@@ -7,4 +7,5 @@ public interface Form {
     Label getLabel();
     Control getInputField();
     Label getInvalidLabel();
+    String getInput();
 }

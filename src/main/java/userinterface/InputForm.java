@@ -42,8 +42,9 @@ public class InputForm implements Form{
         return invalid;
     }
 
-    public TextField getTextField(){
-        return input;
+    @Override
+    public String getInput(){
+        return input.getText();
     }
 
 }
