@@ -8,9 +8,10 @@ public class FormListener {
     public FormListener(InputForm form, String name, int min, int max){
         this.name = name;
         this.form = form;
+        //listener patern from claude.ai
         this.form.getInputField().focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
             if (wasFocused && !isNowFocused){
-                var checker = new NumberValidator(form, min, max);
+                var checker = new NumberValidator(form, min, max, form.getInput());
                 isValid = checker.isValid();
                 form.getInvalidLabel().setVisible(!isValid);
             }
@@ -20,6 +21,7 @@ public class FormListener {
     public FormListener(DropdownForm dropdown, String name){
         this.name = name;
         this.form = dropdown;
+        //listener patern from claude.ai
         this.form.getInputField().focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
             if (wasFocused && !isNowFocused){
                 isValid = !(form.getInput() == null);
@@ -28,9 +30,46 @@ public class FormListener {
         });
     }
 
+    public FormListener(DropdownForm dropdown, String name, String textFieldActivator, double min, double max){
+        this.name = name;
+        this.form = dropdown;
+        //listener patern from claude.ai
+        this.form.getInputField().focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
+            if (wasFocused && !isNowFocused){
+                isValid = !(form.getInput() == null);
+                form.getInvalidLabel().setText(form.getValidateText());
+                form.getInvalidLabel().setVisible(!isValid);
+            }
+        });
+
+        this.form.getInputField().focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
+            if (wasFocused && !isNowFocused && form.getInput().equals(textFieldActivator)){
+                form.getInvalidLabel().setText("BKP Nummer eingeben");
+                form.getInvalidLabel().setVisible(true);
+                form.getAdditionalTextField().setVisible(true);
+                form.getAdditionalTextField().setDisable(false);
+            } else if (wasFocused && !isNowFocused && !(form.getInput().equals(textFieldActivator))) {
+                form.getInvalidLabel().setVisible(false);
+                form.getAdditionalTextField().setVisible(false);
+                form.getAdditionalTextField().setDisable(true);
+            }
+        });
+
+        this.form.getAdditionalTextField().focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
+            if (wasFocused && !isNowFocused){
+                var checker = new NumberValidator(form, min, max, form.getAdditionalInput());
+                isValid = checker.isValid();
+                System.out.println("BKP Nr. is valid: " + isValid);
+                form.getInvalidLabel().setText("BKP Nummer eingeben");
+                form.getInvalidLabel().setVisible(!isValid);
+            }
+        });
+    }
+
     public FormListener(InputForm form, String name){
         this.name = name;
         this.form = form;
+        //listener patern from claude.ai
         this.form.getInputField().focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
             if (wasFocused && !isNowFocused){
                 isValid = !(form.getInput().isEmpty());

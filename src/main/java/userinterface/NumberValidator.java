@@ -2,30 +2,33 @@ package userinterface;
 
 public class NumberValidator {
 
-    InputForm form;
-    int minValue;
-    int maxValue;
+    Form form;
+    double minValue;
+    double maxValue;
+    String input;
 
 
-    public NumberValidator(InputForm form, int minValue, int maxValue){
+    public NumberValidator(Form form, double minValue, double maxValue, String input){
         this.form = form;
         this. minValue = minValue;
         this. maxValue = maxValue;
+        this.input = input;
     }
 
     public boolean isValid(){
-        int num = 0;
+        double num = 0;
         try {
-            num = Integer.valueOf(form.getInput());
+            num = Double.valueOf(input);
         } catch (NumberFormatException e){
+            System.out.println(e);
             return false;
         }
         if (num < minValue){
             return false;
-        }
-        if (num > maxValue) {
+        }else if (num > maxValue) {
             return false;
+        } else {
+            return true;
         }
-        return true;
     }
 }

@@ -6,9 +6,6 @@ import database.DB;
 
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
-
 
 
 public class Projects {
@@ -35,8 +32,8 @@ public class Projects {
             pstmt.setInt(3, project.getPlz());
             pstmt.setString(4, project.getLocation());
             pstmt.setString(5, project.getOwner());
-            pstmt.setString(6, project.getType().toString());
-            pstmt.setInt(7, project.getSquareMeter());
+            pstmt.setString(6, project.getPropertyType().toString());
+            pstmt.setInt(7, project.getBathroomNr());
 
             //turns the TreeMap data into a Jsonb format (this part was written by claude.ai)
             ObjectMapper objectMapper = new ObjectMapper();
@@ -59,12 +56,14 @@ public class Projects {
         return -1;
     }
 
+
     //code from https://neon.com/postgresql/postgresql-jdbc/query
     /**
      * This method gets all projects from the PostgreSQL Database.
      * It returns them as a ArrayList of Projects.
      * code from https://neon.com/postgresql/postgresql-jdbc/insert
      */
+    /*
     public static ArrayList<Project> getAll() {
         var projects = new ArrayList<Project>();
 
@@ -94,6 +93,8 @@ public class Projects {
         }
         return projects;
     }
+
+     */
 
 
 }

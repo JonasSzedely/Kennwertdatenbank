@@ -47,4 +47,19 @@ public class InputForm implements Form{
         return input.getText();
     }
 
+    @Override
+    public Control getAdditionalTextField() {
+        return input;
+    }
+
+    @Override
+    public String getAdditionalInput() {
+        return input.getText();
+    }
+
+    @Override
+    public String getValidateText() {
+        return validateText;
+    }
+
 }

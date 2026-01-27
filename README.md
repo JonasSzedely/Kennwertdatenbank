@@ -38,7 +38,7 @@ Proprietary
 
 <ins>Sources</ins>  
 These are the sources used for this project. You can find more information in each class, where sources were used.
-- PostgreSQL JDBC Tutorial by neon.com
-  https://neon.com/postgresql/tutorial
+- PostgreSQL JDBC tutorial by neon.com https://neon.com/postgresql/tutorial
 - Claude AI for code snippets or as a search instrument for information on functionalities, technologies and procedures. https://www.claude.ai
-- w3schools https://www.w3schools.com/
+- JavaFX Alert tutorial by FALCONBYTE.NET https://falconbyte.net/javafx-alert-und-dialog-boxen
+- 

@@ -8,4 +8,7 @@ public interface Form {
     Control getInputField();
     Label getInvalidLabel();
     String getInput();
+    Control getAdditionalTextField();
+    String getAdditionalInput();
+    String getValidateText();
 }
