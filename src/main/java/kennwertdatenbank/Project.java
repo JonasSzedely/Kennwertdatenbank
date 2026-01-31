@@ -2,6 +2,7 @@ package kennwertdatenbank;
 
 import javafx.scene.control.Label;
 
+import java.util.Locale;
 import java.util.TreeMap;
 
 public class Project {
@@ -34,12 +35,14 @@ public class Project {
     private final String special;
     private final ProjectData data;
     private final TreeMap<Integer, Calculation> calculations;
+    private final Locale swissLocale;
 
     public Project(int projectNr, int version, String address, int plz, String location, String owner, String propertyType,
                    String constructionType, int document_phase, int calculationPhase, int apartmentsNr, int bathroomNr,
                    int hnf, int gf, int volumeUnderground, int volumeAboveGround, int facadeArea, int windowArea,
                    String facadeType, String windowType, String roofType, String heatingType, String coolingType,
-                   String ventilationTypeApartments, String ventilationTypeUg, String coNo, String special, ProjectData projectData)
+                   String ventilationTypeApartments, String ventilationTypeUg, String coNo, String special,
+                   ProjectData projectData, Locale swissLocale)
     {
         this.projectNr = projectNr;
         this.version = version;
@@ -69,6 +72,7 @@ public class Project {
         this.coNo = coNo;
         this.special = special;
         this.data = projectData;
+        this.swissLocale = swissLocale;
         this.calculations = calculations();
     }
 
@@ -86,23 +90,25 @@ public class Project {
                 "Ausbau 1",
                 "Ausbau 2 (o. Res.)",
                 "",
-                "HNF/WHG"
+                "HNF/WHG",
+                "Verhältnis UG/OG"
         };
 
         //ToDo Kalkluation muss erkennen wenn eine BKP nicht vorhanden ist.
 
-        Integer[] numbers = {
-                getData().getTotalCost(),
-                data.getBKP(2),
-                data.getBKP(211) + data.getBKP(212),
-                data.getBKP(23) - data.getBKP(2331) - data.getBKP(2332),
-                data.getBKP(241) + data.getBKP(242),
-                data.getBKP(244),
-                data.getBKP(25) - data.getBKP(258) - data.getBKP(259),
-                data.getBKP(27),
-                data.getBKP(28)-data.getBKP(289),
-                0,
-                hnf / apartmentsNr
+        String[] numbers = {
+                String.format(swissLocale, "%,d", getData().getTotalCost()),
+                String.format(swissLocale, "%,d", data.getBKP(2)),
+                String.format(swissLocale, "%,d", data.getBKP(211) + data.getBKP(212)),
+                String.valueOf(data.getBKP(23) - data.getBKP(2331) - data.getBKP(2332)),
+                String.valueOf(data.getBKP(241) + data.getBKP(242)),
+                String.valueOf(data.getBKP(244)),
+                String.valueOf(data.getBKP(25) - data.getBKP(258) - data.getBKP(259)),
+                String.valueOf(data.getBKP(27)),
+                String.valueOf(data.getBKP(28)-data.getBKP(289)),
+                "",
+                String.valueOf(hnf / apartmentsNr),
+                String.format("%.2f", (double) volumeUnderground / (double) volumeAboveGround)
         };
 
         if (strings.length == numbers.length){
@@ -112,8 +118,6 @@ public class Project {
         } else {
             System.err.println("Error in calculations. Arrays do not have the same length!");
         }
-
-
         return map;
     }
 

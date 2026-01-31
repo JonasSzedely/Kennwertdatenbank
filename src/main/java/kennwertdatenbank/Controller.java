@@ -15,6 +15,7 @@ public class Controller {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private TreeMap<Integer, Project> PROJECTS;
     private StringBuilder STRING_BUILDER = new StringBuilder();
+    private final Locale swissLocale = new Locale("de", "CH");
     private final String[] SQL_PROJECT_DATA = {
             "project_nr,int",
             "version,int",
@@ -45,7 +46,11 @@ public class Controller {
             "special,string",
             "data,json"
     };
-
+    private int minTotalCost;
+    private int maxTotalCost;
+    private int minApartments;
+    private int maxApartments;
+    private double avarageRatioUG;
 
 
     public Controller(){
@@ -92,85 +97,14 @@ public class Controller {
         try (var conn =  DB.connect();
              var stmt = conn.createStatement()) {
             stmt.executeUpdate(sql);
-            System.out.println("Tabelle erfolgreich erstellt!");
+            System.out.println("Tabelle erfolgreich erstellt oder schon vorhanden.");
         } catch (SQLException e) {
             System.err.println(e.getMessage());
             e.printStackTrace();
         }
 
-        /*
         //for testing only, do not load more than 1000 projects at once, or it may take long.
-        var rand = new Random(123);
-        int j = 0;
-        for (int i = 0; i<100; i++){
-            int num = 10001 + i;
-
-
-
-            var pt = "Miete";
-            if(i%2==0){
-                pt = "Stockwerkeigentum";
-            }
-
-            var fassade = "AWD";
-            if(i%2==0){
-                fassade = "Hinterlüftet";
-            }
-
-            var window = "Kunststoff";
-            if(i%2==0){
-                window = "Holz";
-            }
-
-            var dach = "Flachdach";
-            if(i%2==0){
-                dach = "Steildach";
-            }
-
-            var heizung = "Erdsonde";
-            if(i%2==0){
-                heizung = "Pellet";
-            }
-
-            var kühlung = "FreeCooling";
-            if(i%2==0){
-                kühlung = "keine";
-            }
-
-            var lüftung = "KWL";
-            if(i%2==0){
-                lüftung = "keine";
-            }
-
-            var lüftungUG = "mechanisch";
-            if(i%2==0){
-                lüftungUG = "natürlich";
-            }
-
-            var cono = "Ja";
-            if(i%2==0){
-                cono = "Nein";
-            }
-
-            int s = rand.nextInt(9999)+1001;
-            int w = rand.nextInt(50)+1;
-
-            if (j == 9){
-                j = 0;
-            } else {
-                j++;
-            }
-
-            System.out.println(addProject(num,"Projektstrasse " + num, 80001 + i, "Zürich", "Besitzer"+i,
-                    pt, "Neubau",31, 41, w, (int)(w*1.8), s, (int)(s*1.2), (int)((s*2.8)*0.4),
-                    (int)((s*2.8)*0.6), (int) (s*0.8), (int)(s*0.3),fassade, window, dach,
-                    heizung, kühlung, lüftung,lüftungUG, cono,
-                    "nichts spezielles","C:\\Users\\Jonas\\Nextcloud\\Jonas\\07_Programmieren\\Java\\Kennwertdatenbank\\src\\main\\resources\\kv" + j + ".csv"));
-        }
-
-         */
-
-
+        //addRandomProjects(100);
 
         PROJECTS = getProjects();
     }
@@ -230,23 +164,7 @@ public class Controller {
 
         var sql = STRING_BUILDER.toString();
         STRING_BUILDER = new StringBuilder();
-                /*
-        "INSERT INTO projects(" +
-                SQL_PROJECT_DATA +
-                ") " +
-                "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
-
-        /*
-        PropertyType thisType = OWN;
-        if (type.equals("Miete")){
-            thisType = RENT;
-        } else if(type.equals("Stockwerkeigentum")){
-            thisType = OWN;
-        } else {
-            return "Falscher Projekttyp!";
-        }
-         */
         //Versionsabfrage von der DB
         var version = 1;
         try (var conn = DB.connect();
@@ -308,7 +226,7 @@ public class Controller {
             if (insertedRow > 0) {
                 var rs = pstmt.getGeneratedKeys();
                 if (rs.next()) {
-                    return "Projekt Nr. " + rs.getInt(1) + " wurde hinzugefügt";
+                    return "Projekt Nr. " + rs.getInt(1) + " wurde hinzugefügt.";
                 }
             }
         } catch (SQLException e) {
@@ -368,7 +286,7 @@ public class Controller {
      * code from https://neon.com/postgresql/postgresql-jdbc/insert
      */
     public TreeMap<Integer, Project> getProjects(){
-        var projects = new TreeMap<Integer, Project>();
+        PROJECTS = new TreeMap<Integer, Project>();
 
         STRING_BUILDER.append("SELECT ");
         for(int i = 0; i < SQL_PROJECT_DATA.length-1; i++){
@@ -423,11 +341,10 @@ public class Controller {
                         rs.getString("ventilation_type_ug"),
                         rs.getString("co_no"),
                         rs.getString("special"),
-                        projectData
+                        projectData,
+                        swissLocale
                 );
-                projects.put((project.getProjectNr()*100)+project.getVersion(), project);
-
-                System.out.println("Projekt aus DB abgerufen: " + project.getProjectNr());
+                PROJECTS.put((project.getProjectNr()*100)+project.getVersion(), project);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -436,29 +353,113 @@ public class Controller {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
-        return projects;
+        return PROJECTS;
     }
 
-
-    public int getMax(){
-        int max = 0;
+    public void calculate(){
+        minTotalCost = Integer.MAX_VALUE;
+        maxTotalCost = 0;
+        minApartments = Integer.MAX_VALUE;
+        maxApartments = 0;
+        avarageRatioUG = 0;
+        double totalRatioUG = 0;
         for (Project project : PROJECTS.values()){
-            int c = project.getData().getTotalCost();
-            if (c > max){
-                max = c;
-            }
+            int cost = project.getData().getTotalCost();
+            int apartments = project.getApartmentsNr();
+            totalRatioUG += ((double) project.getVolumeUnderground() / (double) project.getVolumeAboveGround());
+            minTotalCost = Math.min(cost, minTotalCost);
+            maxTotalCost = Math.max(cost, maxTotalCost);
+            minApartments = Math.min(apartments,minApartments);
+            maxApartments = Math.max(apartments, maxApartments);
         }
-        return max;
+        avarageRatioUG = totalRatioUG / PROJECTS.size();
     }
 
-    public int getMin(){
-        int min = Integer.MAX_VALUE;
-        for (Project project : PROJECTS.values()){
-            int c = project.getData().getTotalCost();
-            if (c < min){
-                min = c;
+    public int getMinTotalCost(){
+        return minTotalCost;
+    }
+
+    public int getMaxTotalCost(){
+        return maxTotalCost;
+    }
+
+    public int getMinApartments(){
+        return minApartments;
+    }
+
+    public int getMaxApartments(){
+        return maxApartments;
+    }
+
+    public double getAvarageRatioUG(){
+        return avarageRatioUG;
+    }
+
+    private void addRandomProjects(int howMany) {
+        var rand = new Random(123);
+        int j = 0;
+        for (int i = 0; i<howMany; i++){
+            int num = 10001 + i;
+
+            var pt = "Miete";
+            if(i%2==0){
+                pt = "Stockwerkeigentum";
             }
+
+            var fassade = "AWD";
+            if(i%2==0){
+                fassade = "Hinterlüftet";
+            }
+
+            var window = "Kunststoff";
+            if(i%2==0){
+                window = "Holz";
+            }
+
+            var dach = "Flachdach";
+            if(i%2==0){
+                dach = "Steildach";
+            }
+
+            var heizung = "Erdsonde";
+            if(i%2==0){
+                heizung = "Pellet";
+            }
+
+            var kühlung = "FreeCooling";
+            if(i%2==0){
+                kühlung = "keine";
+            }
+
+            var lüftung = "KWL";
+            if(i%2==0){
+                lüftung = "keine";
+            }
+
+            var lüftungUG = "mechanisch";
+            if(i%2==0){
+                lüftungUG = "natürlich";
+            }
+
+            var cono = "Ja";
+            if(i%2==0){
+                cono = "Nein";
+            }
+
+            int s = rand.nextInt(9999)+1001;
+            int w = rand.nextInt(50)+1;
+
+            if (j == 9){
+                j = 0;
+            } else {
+                j++;
+            }
+
+            System.out.println(addProject(num,"Projektstrasse " + num, 8001 + i, "Zürich", "Besitzer"+i,
+                    pt, "Neubau",31, 41, w, (int)(w*1.8), s, (int)(s*1.2), (int)((s*2.8)*0.4),
+                    (int)((s*2.8)*0.6), (int) (s*0.8), (int)(s*0.3),fassade, window, dach,
+                    heizung, kühlung, lüftung,lüftungUG, cono,
+                    "nichts spezielles","C:\\Users\\Jonas\\Nextcloud\\Jonas\\07_Programmieren\\Java\\Kennwertdatenbank\\src\\main\\resources\\kv" + j + ".csv"));
         }
-        return min;
     }
 }

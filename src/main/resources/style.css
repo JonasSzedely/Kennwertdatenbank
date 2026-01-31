@@ -1,0 +1,52 @@
+.scroll-pane .scroll-bar {
+    -fx-pref-height: 15px;  /* Höhe der Scrollbar */
+}
+
+.scroll-pane .scroll-bar .thumb {
+    -fx-background-color: #888888;
+    -fx-background-radius: 5;
+}
+
+.scroll-pane .scroll-bar .track {
+    -fx-background-color: #cccccc;
+}
+
+.scroll-pane .scroll-bar .increment-button,
+.scroll-pane .scroll-bar .decrement-button {
+    -fx-pref-height: 15px;
+    -fx-pref-width: 15px
+}
+
+
+/* RangeSlider Styling */
+.range-slider {
+-fx-pref-height: 20px;
+}
+
+/* Track (Hintergrund) */
+.range-slider .track {
+    -fx-background-color: #cccccc;
+    -fx-background-radius: 5;
+    -fx-pref-height: 8px;
+}
+
+/* Range Track (der Bereich zwischen den beiden Thumbs) */
+.range-slider .range-bar {
+    -fx-background-color: #888888;
+    -fx-background-radius: 5;
+    -fx-pref-height: 8px;
+}
+/* Thumbs (die beiden Schieberegler) */
+.range-slider .low-thumb,
+.range-slider .high-thumb {
+    -fx-background-color: #555555;
+    -fx-background-radius: 10;
+    -fx-pref-width: 15px;
+    -fx-pref-height: 15px;
+}
+
+/* Hover-Effekt für Thumbs */
+.range-slider .low-thumb:hover,
+.range-slider .high-thumb:hover {
+    -fx-background-color: #333333;
+}

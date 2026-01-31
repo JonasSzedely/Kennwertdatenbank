@@ -173,11 +173,9 @@ public class AddProject extends Application {
 
         });
 
-
         addButton.prefWidthProperty().bind(gridPane.widthProperty());
         gridPane.add(addButton,0,(formsArray.length/2)+1);
         GridPane.setColumnSpan(addButton,5);
-
 
         outerPane.getChildren().addAll(gridPane);
 

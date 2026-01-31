@@ -23,7 +23,13 @@ Use examples liberally, and show the expected output if you can. It's helpful to
 jszedely@gmail.com 
 
 <ins>Roadmap</ins>  
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+Several Features could be implemented in the Future, some of them are listed bellow:
+- Option to export all projects to an Excel.
+- Option du export the projects visible on screen or by format (A4/A3) to a PDF file.
+- Option to edit existing projects.
+- Option to search Projects by number and address.
+- Option to create new calculations.
+- Backend with API and frontend as a website.
 
 <ins>Contributing</ins>  
 State if you are open to contributions and what your requirements are for accepting them.
@@ -40,5 +46,7 @@ Proprietary
 These are the sources used for this project. You can find more information in each class, where sources were used.
 - PostgreSQL JDBC tutorial by neon.com https://neon.com/postgresql/tutorial
 - Claude AI for code snippets or as a search instrument for information on functionalities, technologies and procedures. https://www.claude.ai
+- stackoverflow for patterns and tipps https://stackoverflow.com
 - JavaFX Alert tutorial by FALCONBYTE.NET https://falconbyte.net/javafx-alert-und-dialog-boxen
 - 
+

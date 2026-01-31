@@ -2,8 +2,8 @@ package kennwertdatenbank;
 
 public class Calculation {
     String name;
-    int calculation;
-    public Calculation(String name, int calculation) {
+    String calculation;
+    public Calculation(String name, String calculation) {
         this.name = name;
         this.calculation = calculation;
     }
@@ -12,7 +12,7 @@ public class Calculation {
         return name;
     }
 
-    public int getCalculation() {
+    public String getCalculation() {
         return calculation;
     }
 }
