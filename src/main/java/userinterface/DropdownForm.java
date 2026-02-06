@@ -40,7 +40,16 @@ public class DropdownForm implements Form{
 
         input.setDisable(true);
         input.setVisible(false);
+    }
 
+    @Override
+    public void setInputFieldText(String text) {
+        comboBox.setValue(text);
+    }
+
+    @Override
+    public String getvalidateText() {
+        return validateText;
     }
 
     @Override
@@ -62,22 +71,6 @@ public class DropdownForm implements Form{
     public String getInput() {
         return comboBox.getSelectionModel().getSelectedItem();
     }
-
-    @Override
-    public Control getAdditionalTextField() {
-        return input;
-    }
-
-    @Override
-    public String getAdditionalInput() {
-        return input.getText();
-    }
-
-    @Override
-    public String getValidateText() {
-        return validateText;
-    }
-
 
 }
 

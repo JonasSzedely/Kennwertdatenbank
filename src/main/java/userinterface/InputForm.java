@@ -26,6 +26,16 @@ public class InputForm implements Form{
         invalid.setTextFill(Color.RED);
     }
 
+    @Override
+    public void setInputFieldText(String text) {
+        input.setText(text);
+    }
+
+    @Override
+    public String getvalidateText() {
+        return validateText;
+    }
+
 
     @Override
     public Label getLabel(){
@@ -45,21 +55,6 @@ public class InputForm implements Form{
     @Override
     public String getInput(){
         return input.getText();
-    }
-
-    @Override
-    public Control getAdditionalTextField() {
-        return input;
-    }
-
-    @Override
-    public String getAdditionalInput() {
-        return input.getText();
-    }
-
-    @Override
-    public String getValidateText() {
-        return validateText;
     }
 
 }

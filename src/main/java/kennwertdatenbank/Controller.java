@@ -14,8 +14,10 @@ import java.util.*;
 public class Controller {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private TreeMap<Integer, Project> PROJECTS;
+    private boolean dbAvailable = false;
     private StringBuilder STRING_BUILDER = new StringBuilder();
     private final Locale swissLocale = new Locale("de", "CH");
+    Object[] values;
     private final String[] SQL_PROJECT_DATA = {
             "project_nr,int",
             "version,int",
@@ -50,28 +52,30 @@ public class Controller {
     private int maxTotalCost;
     private int minApartments;
     private int maxApartments;
-    private double avarageRatioUG;
+    private double averageRatioUG;
+    private int averageWindowRatio;
 
 
     public Controller(){
-        /*
-        var type = "CREATE TYPE property_type AS ENUM ('RENT', 'OWN')";
-        try (var conn =  DB.connect();
-             var stmt = conn.createStatement()) {
-            stmt.executeUpdate(type);
-            System.out.println("Enum property_type erfolgreich erstellt!");
-        } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            e.printStackTrace();
+        PROJECTS = new TreeMap<>();
+
+        if (!initializeDatabase()) {
+            System.err.println("Controller läuft im Offline-Modus");
+            return;
         }
 
-         */
-        //var status = "CREATE TYPE status AS ENUM ('BAUKOSTENPLANUNG', 'BAUPROJEKT', 'NACHKALKULATION')";
+        dbAvailable = true;
+        PROJECTS = getProjects();
 
-        //SQL-Tabelle erstellen, fals nicht vorhanden
+        //for testing only, do not load more than 500 projects at once, or it will take very long.
+        //addRandomProjects(500);
+    }
+
+    public boolean initializeDatabase() {
+
         STRING_BUILDER.append("CREATE TABLE IF NOT EXISTS projects(");
 
-        //SQL-Tabelle anhand dem Array SQL_PROJECT_DATA erstellen
+        //construct SQL-table based on array SQL_PROJECT_DATA
         for (int i = 0; i < SQL_PROJECT_DATA.length; i++) {
             var parts = SQL_PROJECT_DATA[i].split(",", 2);
             STRING_BUILDER.append(parts[0]);
@@ -88,30 +92,40 @@ public class Controller {
                     break;
             }
         }
-        //CHECK hinzufügen
         STRING_BUILDER.append("CHECK (project_nr > 9999), PRIMARY KEY(project_nr, version))");
 
         var sql = STRING_BUILDER.toString();
         STRING_BUILDER = new StringBuilder();
 
-        try (var conn =  DB.connect();
-             var stmt = conn.createStatement()) {
+        try (var conn = DB.connect(); var stmt = conn.createStatement()) {
+            if (conn == null) {
+                return false;
+            }
             stmt.executeUpdate(sql);
+            dbAvailable = true;
+            PROJECTS = getProjects();
             System.out.println("Tabelle erfolgreich erstellt oder schon vorhanden.");
+            return true;
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            e.printStackTrace();
+            System.err.println("DB-Initialisierung fehlgeschlagen: " + e.getMessage());
+            return false;
         }
+    }
 
-        //for testing only, do not load more than 1000 projects at once, or it may take long.
-        //addRandomProjects(100);
+    /**
+     * check if DB-connection is available
+     * @return boolean
+     */
+    public boolean isDatabaseAvailable() {
+        return dbAvailable;
+    }
 
-        PROJECTS = getProjects();
+    public boolean testDBConnection() {
+        return DB.isConnectionAvailable();
     }
 
     /**
      * This method inserts a new row into the products table.
-     * Tt needs a valid project from Type Project.
      * code from https://neon.com/postgresql/postgresql-jdbc/insert
      */
     public String addProject(
@@ -143,30 +157,11 @@ public class Controller {
             String special,
             String dataPath) {
 
-        //ToDo: übergebene Daten prüfen
-        //Initialize an INSERT statement.
-        //The question mark (?) is a placeholder that will be replaced by the actual values later.
-        STRING_BUILDER.append("INSERT INTO projects(");
-        for (int i = 0; i < SQL_PROJECT_DATA.length; i++) {
-            var parts = SQL_PROJECT_DATA[i].split(",", 2);
-            STRING_BUILDER.append(parts[0]);
-
-            if (i < SQL_PROJECT_DATA.length - 1) {
-                STRING_BUILDER.append(",");
-            }
+        if (!isDatabaseAvailable()) {
+            return "Keine Datenbankverbindung verfügbar. Projekte können nicht hinzugefügt werden.";
         }
-        STRING_BUILDER.append(") VALUES(");
-
-        for(int i = 0; i < SQL_PROJECT_DATA.length-1; i++){
-            STRING_BUILDER.append("?,");
-        }
-        STRING_BUILDER.append("?)");
-
-        var sql = STRING_BUILDER.toString();
-        STRING_BUILDER = new StringBuilder();
-
         //Versionsabfrage von der DB
-        var version = 1;
+        int version = 1;
         try (var conn = DB.connect();
              var pstmt = conn.prepareStatement("SELECT MAX(version) FROM projects WHERE project_nr = ?")) {
 
@@ -183,43 +178,83 @@ public class Controller {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        var data = new ProjectData(dataPath);
+        String jacksonData = null;
+        try {
+            jacksonData = OBJECT_MAPPER.writeValueAsString(data.getData());
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return e.toString();
+        }
 
+        //input elemente in Array lesen für dynamisches einlesen in DB
+        values = new Object[] {
+                project_nr,
+                version,
+                address,
+                plz,
+                location,
+                owner,
+                property_type,
+                construction_type,
+                document_phase,
+                calculation_phase,
+                apartments_nr,
+                bathroom_nr,
+                hnf,
+                gf,
+                volume_underground,
+                volume_above_ground,
+                facadearea,
+                windowarea,
+                facade_type,
+                window_type,
+                roof_type,
+                heating_type,
+                cooling_type,
+                ventilation_type_apartments,
+                ventilation_type_ug,
+                co_no,
+                special,
+                jacksonData
+        };
+
+        //Initialize an INSERT statement.
+        //The question mark (?) is a placeholder that will be replaced by the actual values later.
+        STRING_BUILDER.append("INSERT INTO projects(");
+        for (int i = 0; i < SQL_PROJECT_DATA.length-1; i++){
+            STRING_BUILDER.append(SQL_PROJECT_DATA[i].split(",")[0]).append(",");
+        }
+        STRING_BUILDER.append(SQL_PROJECT_DATA[SQL_PROJECT_DATA.length-1].split(",")[0]);
+
+        STRING_BUILDER.append(") VALUES(");
+
+        for (int i = 0; i < SQL_PROJECT_DATA.length - 1; i++) {
+            STRING_BUILDER.append("?,");
+        }
+        STRING_BUILDER.append("?)");
+
+        var sql = STRING_BUILDER.toString();
+        STRING_BUILDER = new StringBuilder();
 
         try (var conn =  DB.connect();
              var pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            // bind the values
-            var data = new ProjectData(dataPath);
-            pstmt.setInt(1, project_nr);
-            pstmt.setInt(2, version);
-            pstmt.setString(3, address);
-            pstmt.setInt(4, plz);
-            pstmt.setString(5, location);
-            pstmt.setString(6, owner);
-            pstmt.setString(7, property_type);
-            pstmt.setString(8, construction_type);
-            pstmt.setInt(9, document_phase);
-            pstmt.setInt(10, calculation_phase);
-            pstmt.setInt(11, apartments_nr);
-            pstmt.setInt(12, bathroom_nr);
-            pstmt.setInt(13, hnf);
-            pstmt.setInt(14, gf);
-            pstmt.setInt(15, volume_underground);
-            pstmt.setInt(16, volume_above_ground);
-            pstmt.setInt(17, facadearea);
-            pstmt.setInt(18, windowarea);
-            pstmt.setString(19, facade_type);
-            pstmt.setString(20, window_type);
-            pstmt.setString(21, roof_type);
-            pstmt.setString(22, heating_type);
-            pstmt.setString(23, cooling_type);
-            pstmt.setString(24, ventilation_type_apartments);
-            pstmt.setString(25, ventilation_type_ug);
-            pstmt.setString(26, co_no);
-            pstmt.setString(27, special);
+            for (int i = 0; i < SQL_PROJECT_DATA.length; i++) {
+                var parts = SQL_PROJECT_DATA[i].split(",", 2);
+                String type = parts[1];
 
-            //turns the TreeMap data into a Jsonb format (this part was written by claude.ai)
-            String jacksonData = OBJECT_MAPPER.writeValueAsString(data.getData());
-            pstmt.setObject(28, jacksonData, Types.OTHER);
+                switch (type) {
+                    case "int":
+                        pstmt.setInt(i + 1, (int) values[i]);
+                        break;
+                    case "string":
+                        pstmt.setString(i + 1, (String) values[i]);
+                        break;
+                    case "json":
+                        pstmt.setObject(i + 1, (String) values[i], Types.OTHER);
+                        break;
+                }
+            }
 
             // execute the INSERT statement and get the inserted id
             int insertedRow = pstmt.executeUpdate();
@@ -231,46 +266,115 @@ public class Controller {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        } catch (JsonProcessingException f) {
-            throw new RuntimeException(f);
+            return e.toString();
         }
         return "Projekt konnte nicht hinzugefügt werden";
     }
 
-    public String addCalculation(String name, int position, int number1, String operator, int number2) {
-        int lastId = 1;
-
-        try (var conn =  DB.connect();
-             var stmt = conn.createStatement()) {
-            var rs = stmt.executeQuery("SELECT MAX(id) FROM calculations");
-            if (rs != null)
-                lastId = rs.getInt("id");
-            System.out.println("Projects Tabelle erfolgreich erstellt!");
-        } catch (SQLException e) {
-            System.err.println(e.getMessage());
-            e.printStackTrace();
+    /**
+     * This method does modify a project in the DB.
+     * code from https://neon.com/postgresql/postgresql-jdbc/update
+     */
+    public String modifyProject(
+            int project_nr,
+            int version,
+            String address,
+            int plz,
+            String location,
+            String owner,
+            String property_type,
+            String construction_type,
+            int document_phase,
+            int calculation_phase,
+            int apartments_nr,
+            int bathroom_nr,
+            int hnf,
+            int gf,
+            int volume_underground,
+            int volume_above_ground,
+            int facadearea,
+            int windowarea,
+            String facade_type,
+            String window_type,
+            String roof_type,
+            String heating_type,
+            String cooling_type,
+            String ventilation_type_apartments,
+            String ventilation_type_ug,
+            String co_no,
+            String special){
+        if (!isDatabaseAvailable()) {
+            return "Keine Datenbankverbindung verfügbar. Projekte kann nicht geändert werden.";
         }
+        //Initialize an INSERT statement.
+        //The question mark (?) is a placeholder that will be replaced by the actual values later.
+        var sql = (
+                "UPDATE projects SET " +
+                        "address = ?," +
+                        "plz = ?," +
+                        "location = ?," +
+                        "owner = ?," +
+                        "property_type = ?," +
+                        "construction_type = ?," +
+                        "document_phase = ?," +
+                        "calculation_phase = ?," +
+                        "apartments_nr = ?," +
+                        "bathroom_nr = ?," +
+                        "hnf = ?," +
+                        "gf = ?," +
+                        "volume_underground = ?," +
+                        "volume_above_ground = ?," +
+                        "facadearea = ?," +
+                        "windowarea = ?," +
+                        "facade_type = ?," +
+                        "window_type = ?," +
+                        "roof_type = ?," +
+                        "heating_type = ?," +
+                        "cooling_type = ?," +
+                        "ventilation_type_apartments = ?," +
+                        "ventilation_type_ug = ?," +
+                        "co_no = ?," +
+                        "special = ?" +
+                        " WHERE project_nr = ? AND version = ?");
 
 
-        var sql = "INSERT INTO calculations(id, position, name, number1, operator, number2)"
-                + "VALUES(?,?,?,?)";
-
-        try (var conn =  DB.connect();
-             var pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (var conn =  DB.connect(); var pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             // bind the values
-            pstmt.setInt(1, lastId+1);
-            pstmt.setInt(2, position);
-            pstmt.setString(3, name);
-            pstmt.setInt(4, number1);
-            pstmt.setString(5, operator);
-            pstmt.setInt(6, number2);
+            pstmt.setString(1, address);
+            pstmt.setInt(2, plz);
+            pstmt.setString(3, location);
+            pstmt.setString(4, owner);
+            pstmt.setString(5, property_type);
+            pstmt.setString(6, construction_type);
+            pstmt.setInt(7, document_phase);
+            pstmt.setInt(8, calculation_phase);
+            pstmt.setInt(9, apartments_nr);
+            pstmt.setInt(10, bathroom_nr);
+            pstmt.setInt(11, hnf);
+            pstmt.setInt(12, gf);
+            pstmt.setInt(13, volume_underground);
+            pstmt.setInt(14, volume_above_ground);
+            pstmt.setInt(15, facadearea);
+            pstmt.setInt(16, windowarea);
+            pstmt.setString(17, facade_type);
+            pstmt.setString(18, window_type);
+            pstmt.setString(19, roof_type);
+            pstmt.setString(20, heating_type);
+            pstmt.setString(21, cooling_type);
+            pstmt.setString(22, ventilation_type_apartments);
+            pstmt.setString(23, ventilation_type_ug);
+            pstmt.setString(24, co_no);
+            pstmt.setString(25, special);
+
+            pstmt.setInt(26,project_nr);
+            pstmt.setInt(27,version);
 
             // execute the INSERT statement and get the inserted id
-            int insertedRow = pstmt.executeUpdate();
-            if (insertedRow > 0) {
+            int editedRow = pstmt.executeUpdate();
+            if (editedRow > 0) {
                 var rs = pstmt.getGeneratedKeys();
                 if (rs.next()) {
-                    return "Neue Kalkulation " + name + " wurde hinzugefügt";
+                    return "Projekt Nr. " + rs.getInt(1) + " wurde angepasst.";
                 }
             }
         } catch (SQLException e) {
@@ -279,13 +383,44 @@ public class Controller {
         return "Projekt konnte nicht hinzugefügt werden";
     }
 
+    /**
+     * This method does delete a project in the DB. This cannot be undone.
+     * code from https://neon.com/postgresql/postgresql-jdbc/delete
+     * @param projectNr the project number of the project to be deleted.
+     * @param version the version number of the project to be deleted.
+     * @return if the project was deleted.
+     */
+    public String deleteProject(int projectNr, int version){
+        if (!isDatabaseAvailable()) {
+            return "Keine Datenbankverbindung verfügbar. Projekte kann nicht gelöscht werden.";
+        }
+        var sql = ("DELETE FROM projects WHERE project_nr = ? AND version = ?");
+        try (var conn =  DB.connect(); var pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            pstmt.setInt(1, projectNr);
+            pstmt.setInt(2, version);
+            int editedRow = pstmt.executeUpdate();
+            if (editedRow > 0) {
+                var rs = pstmt.getGeneratedKeys();
+                if (rs.next()) {
+                    return "Projekt Nr. " + rs.getInt(1) + " version Nr. " + rs.getInt(2) + " wurde entfernt";
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return "Projekt konnte nicht entfernt werden";
+    }
 
     /**
      * This method gets all projects from the PostgreSQL Database.
-     * It returns them as a ArrayList of Projects.
+     * It returns them as a TreeMap of Projects.
+     * The key is made from project number * 100 + version number.
      * code from https://neon.com/postgresql/postgresql-jdbc/insert
      */
     public TreeMap<Integer, Project> getProjects(){
+        if (!isDatabaseAvailable()) {
+            return PROJECTS;
+        }
         PROJECTS = new TreeMap<Integer, Project>();
 
         STRING_BUILDER.append("SELECT ");
@@ -296,7 +431,6 @@ public class Controller {
         var sql = STRING_BUILDER.toString();
         STRING_BUILDER = new StringBuilder();
 
-
         try (var conn =  DB.connect();
              var stmt = conn.createStatement()) {
 
@@ -305,7 +439,6 @@ public class Controller {
             while (rs.next()) {
                 String data = rs.getString("data");
 
-                // Wiederverwendeter ObjectMapper!
                 Map<String, Integer> jsonMap = OBJECT_MAPPER.readValue(data, new TypeReference<Map<String, Integer>>() {});
 
                 TreeMap<Integer, Integer> map = new TreeMap<>(new BKPComparator());
@@ -361,43 +494,69 @@ public class Controller {
         maxTotalCost = 0;
         minApartments = Integer.MAX_VALUE;
         maxApartments = 0;
-        avarageRatioUG = 0;
-        double totalRatioUG = 0;
+        averageRatioUG = 0;
+        averageWindowRatio = 0;
+
         for (Project project : PROJECTS.values()){
             int cost = project.getData().getTotalCost();
             int apartments = project.getApartmentsNr();
-            totalRatioUG += ((double) project.getVolumeUnderground() / (double) project.getVolumeAboveGround());
+            averageRatioUG  += ((double) project.getVolumeUnderground() / (double) project.getVolumeAboveGround());
             minTotalCost = Math.min(cost, minTotalCost);
             maxTotalCost = Math.max(cost, maxTotalCost);
             minApartments = Math.min(apartments,minApartments);
             maxApartments = Math.max(apartments, maxApartments);
+            averageWindowRatio += (int) (((double) project.getWindowArea() / (double) project.getFacadeArea())*100);
         }
-        avarageRatioUG = totalRatioUG / PROJECTS.size();
+        averageRatioUG /= PROJECTS.size();
+        averageWindowRatio /= PROJECTS.size();
     }
 
+    /**
+     * @return the lowest project total cost of all projects.
+     */
     public int getMinTotalCost(){
         return minTotalCost;
     }
 
+    /**
+     * @return the highest project total cost of all projects.
+     */
     public int getMaxTotalCost(){
         return maxTotalCost;
     }
 
+    /**
+     * @return the lowest number of Apartment of all projects.
+     */
     public int getMinApartments(){
         return minApartments;
     }
 
+    /**
+     * @return the highest number of Apartment of all projects.
+     */
     public int getMaxApartments(){
         return maxApartments;
     }
 
-    public double getAvarageRatioUG(){
-        return avarageRatioUG;
+    /**
+     * @return the average ration UG to OG as double.
+     */
+    public double getAverageRatioUG(){
+        return averageRatioUG;
     }
 
+    public int getAverageWindowRatio(){
+        return averageWindowRatio;
+    }
+
+    /**
+     * Used to create random projects, it will use project cost from kv1-10 in resources
+     * @param howMany set how many projects should be created.
+     */
     private void addRandomProjects(int howMany) {
         var rand = new Random(123);
-        int j = 0;
+        int j = 1;
         for (int i = 0; i<howMany; i++){
             int num = 10001 + i;
 
@@ -449,8 +608,8 @@ public class Controller {
             int s = rand.nextInt(9999)+1001;
             int w = rand.nextInt(50)+1;
 
-            if (j == 9){
-                j = 0;
+            if (j == 10){
+                j = 1;
             } else {
                 j++;
             }

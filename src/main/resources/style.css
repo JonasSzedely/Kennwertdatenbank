@@ -1,3 +1,41 @@
+#middle-pane #bottom-pane {
+    -fx-background-color: #E3E3E3;
+}
+.scroll-pane {
+    -fx-background-color: #E3E3E3;
+}
+
+*:focused {
+    -fx-focus-color: #256ED1;      /* Haupt-Focus-Farbe */
+    -fx-focus-border-color: #256ED1; /* Alternative Eigenschaft */
+    -fx-faint-focus-color: #256ED122; /* Transparente Variante */
+}
+
+#top-pane .button {
+    -fx-text-fill: black;
+    -fx-background-color: white;
+}
+
+#top-pane .label {
+    -fx-text-fill: #E3E3E3;
+}
+
+#top-pane .combo-box {
+    -fx-text-fill: black;
+    -fx-background-color: white;
+}
+
+*.toggle-switch:selected .thumb-area {
+    -fx-background-color: #555555;
+
+}
+
+.scroll-pane:focused {
+    -fx-background-color: -fx-box-border, -fx-control-inner-background;
+    -fx-background-insets: 0, 1;
+    -fx-padding: 1;
+}
+
 .scroll-pane .scroll-bar {
     -fx-pref-height: 15px;  /* Höhe der Scrollbar */
 }
@@ -50,3 +88,4 @@
 .range-slider .high-thumb:hover {
     -fx-background-color: #333333;
 }
+

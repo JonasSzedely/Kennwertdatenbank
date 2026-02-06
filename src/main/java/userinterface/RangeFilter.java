@@ -4,10 +4,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
-import javafx.scene.layout.GridPane;
-import javafx.util.converter.IntegerStringConverter;
 import javafx.util.converter.NumberStringConverter;
-import kennwertdatenbank.Controller;
 import kennwertdatenbank.Project;
 import org.controlsfx.control.RangeSlider;
 
@@ -29,32 +26,32 @@ public class RangeFilter {
     private final Supplier<Integer> maxSupplier; //from claude.ai
     private final Function<Project, Integer> valueExtractor; //from claude.ai
 
-    //Callback Methode von claude.ai
+
+    //Callback methode interface (from claude.ai)
     @FunctionalInterface
     public interface FilterChangeListener {
         void onFilterChanged();
     }
 
-    private FilterChangeListener changeListener;
+    private FilterChangeListener changeListener; //from claude.ai
 
-    //Methode zum Registrieren des Callbacks
+    //method to register the callback (from claude.ai)
     public void setOnFilterChanged(FilterChangeListener listener) {
         this.changeListener = listener;
     }
 
-    //Hilfsmethode um Callback aufzurufen
+    //helper method to call back (from claude.ai)
     private void notifyFilterChanged() {
         if (changeListener != null) {
             changeListener.onFilterChanged();
         }
     }
-    //Callback Methode von claude.ai
 
     /**
      * Creates a new RangeFilter with UI elements
-     * @param titel = the text that will be displayed in the titel Label
-     * @param resetText = the text that will be displayed in the reset Button
-     * @param locale
+     * @param titel the text that will be displayed in the titel Label
+     * @param resetText the text that will be displayed in the reset Button
+     * @param locale the number format that will be used
      * @param valueExtractor
      * @param minSupplier
      * @param maxSupplier
@@ -65,11 +62,11 @@ public class RangeFilter {
         this.slider = new RangeSlider();
         this.minTextField = new TextField();
         this.maxTextField = new TextField();
-        this.valueExtractor = valueExtractor;
-        this.minSupplier = minSupplier;
-        this.maxSupplier = maxSupplier;
-        NumberFormat integerFormat = NumberFormat.getIntegerInstance(locale);
-        integerFormat.setMaximumFractionDigits(0);
+        this.valueExtractor = valueExtractor; //from claude ai
+        this.minSupplier = minSupplier; //from claude ai
+        this.maxSupplier = maxSupplier; //from claude ai
+        NumberFormat integerFormat = NumberFormat.getIntegerInstance(locale); //formatter to format numbers in swiss style (#'###)
+        integerFormat.setMaximumFractionDigits(0); //set the formatter to display only integers
         this.minFormatter = new TextFormatter<>(new NumberStringConverter(integerFormat), minSupplier.get());
         this.maxFormatter = new TextFormatter<>(new NumberStringConverter(integerFormat), maxSupplier.get());
         this.minTextField.setTextFormatter(minFormatter);
@@ -77,20 +74,24 @@ public class RangeFilter {
 
         setRange();
 
+        //listener when reset button was pressed
         reset.setOnAction(event -> {
             slider.setLowValue(slider.getMin());
             slider.setHighValue(slider.getMax());
             notifyFilterChanged();
         });
 
+        //listener when slider low value is changed
         slider.lowValueProperty().addListener((obs, oldValue, newValue) -> {
             minFormatter.setValue(newValue.intValue());
         });
 
+        //listener when slider heigh value is changed
         slider.highValueProperty().addListener((obs, oldValue, newValue) -> {
             maxFormatter.setValue(newValue.intValue());
         });
 
+        //listener for minimum text field on focus
         minTextField.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
             if(!isNowFocused && wasFocused) {
                 try {
@@ -110,6 +111,7 @@ public class RangeFilter {
             }
         });
 
+        //listener for minimum text field on enter
         minTextField.setOnAction(e ->  {
             try {
                 int value = minFormatter.getValue().intValue();
@@ -127,6 +129,7 @@ public class RangeFilter {
             }
         });
 
+        //listener for maximum text field on focus
         maxTextField.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
             if(!isNowFocused && wasFocused) {
                 try {
@@ -146,6 +149,7 @@ public class RangeFilter {
             }
         });
 
+        //listener for maximum text field on enter
         maxTextField.setOnAction(e -> {
             try {
                 int value = maxFormatter.getValue().intValue();
@@ -163,7 +167,7 @@ public class RangeFilter {
             }
         });
 
-
+        //listener when slider low value was set
         slider.lowValueChangingProperty().addListener((obs, wasChangin, isChanging) -> {
             if(!isChanging && wasChangin) {
                 minFormatter.setValue(slider.getLowValue());
@@ -171,6 +175,7 @@ public class RangeFilter {
             }
         });
 
+        //listener when slider heigh value was set
         slider.highValueChangingProperty().addListener((obs, wasChangin, isChanging) -> {
             if(!isChanging && wasChangin) {
                 maxFormatter.setValue(slider.getHighValue());
@@ -198,28 +203,11 @@ public class RangeFilter {
     public void setRange(){
         int min = minSupplier.get();
         int max = maxSupplier.get();
-        slider.setLowValue(min);
-        slider.setHighValue(max);
         slider.setMin(min);
         slider.setMax(max);
-    }
-
-
-    /**
-     *
-     * @param hgap the hgap for the GridPane
-     * @param vgap the vgap for the GridPane
-     * @return get your filter as a GridPane colspan: 2, rowspan: 3
-     */
-    public GridPane getFilterBox(int hgap, int vgap){
-        GridPane grid = new GridPane(hgap, vgap);
-        grid.add(this.getTitelLabel(), 0, 0);
-        grid.add(this.getResetButton(), 1, 0);
-        grid.add(this.getSlider(), 0, 1, 2, 1);
-        grid.add(this.getMinTextField(), 0, 2);
-        grid.add(this.getMaxTextField(), 1, 2);
-
-        return grid;
+        slider.setLowValue(min);
+        slider.setHighValue(max);
+        notifyFilterChanged();
     }
 
     /**

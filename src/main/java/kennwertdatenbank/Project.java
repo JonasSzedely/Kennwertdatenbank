@@ -79,7 +79,7 @@ public class Project {
     public TreeMap<Integer, Calculation> calculations(){
         TreeMap<Integer, Calculation> map = new TreeMap<>();
 
-        String[] strings = {
+        String[] titel = {
                 "Bausumme",
                 "BKP 2",
                 "BKP 211 + 212",
@@ -91,29 +91,31 @@ public class Project {
                 "Ausbau 2 (o. Res.)",
                 "",
                 "HNF/WHG",
-                "Verhältnis UG/OG"
+                "Verhältnis UG/OG",
+                "Fenster Anteil"
         };
 
         //ToDo Kalkluation muss erkennen wenn eine BKP nicht vorhanden ist.
 
         String[] numbers = {
-                String.format(swissLocale, "%,d", getData().getTotalCost()),
-                String.format(swissLocale, "%,d", data.getBKP(2)),
-                String.format(swissLocale, "%,d", data.getBKP(211) + data.getBKP(212)),
-                String.valueOf(data.getBKP(23) - data.getBKP(2331) - data.getBKP(2332)),
-                String.valueOf(data.getBKP(241) + data.getBKP(242)),
-                String.valueOf(data.getBKP(244)),
-                String.valueOf(data.getBKP(25) - data.getBKP(258) - data.getBKP(259)),
-                String.valueOf(data.getBKP(27)),
-                String.valueOf(data.getBKP(28)-data.getBKP(289)),
+                String.format(swissLocale, "%,d", getData().getTotalCost()) + " Fr.",
+                String.format(swissLocale, "%,d", data.getBKP(2)) + " Fr.",
+                String.format(swissLocale, "%,d", data.getBKP(211) + data.getBKP(212)) + " Fr.",
+                String.format(swissLocale, "%,d",data.getBKP(23) - data.getBKP(2331) - data.getBKP(2332)) + " Fr.",
+                String.format(swissLocale, "%,d",data.getBKP(241) + data.getBKP(242)) + " Fr.",
+                String.format(swissLocale, "%,d",data.getBKP(244)) + " Fr.",
+                String.format(swissLocale, "%,d",data.getBKP(25) - data.getBKP(258) - data.getBKP(259)) + " Fr.",
+                String.format(swissLocale, "%,d",data.getBKP(27)) + " Fr.",
+                String.format(swissLocale, "%,d",data.getBKP(28)-data.getBKP(289)) + " Fr.",
                 "",
-                String.valueOf(hnf / apartmentsNr),
-                String.format("%.2f", (double) volumeUnderground / (double) volumeAboveGround)
+                String.valueOf(hnf / apartmentsNr) + " m²",
+                String.format("%.2f", (double) volumeUnderground / volumeAboveGround),
+                String.valueOf((int) (((double) windowArea / (double) facadeArea)*100)) + " %"
         };
 
-        if (strings.length == numbers.length){
-            for (int i = 0; i < strings.length; i++){
-                map.put(i, new Calculation(strings[i], numbers[i]));
+        if (titel.length == numbers.length){
+            for (int i = 0; i < titel.length; i++){
+                map.put(i, new Calculation(titel[i], numbers[i]));
             }
         } else {
             System.err.println("Error in calculations. Arrays do not have the same length!");

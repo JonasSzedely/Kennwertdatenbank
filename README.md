@@ -47,6 +47,6 @@ These are the sources used for this project. You can find more information in ea
 - PostgreSQL JDBC tutorial by neon.com https://neon.com/postgresql/tutorial
 - Claude AI for code snippets or as a search instrument for information on functionalities, technologies and procedures. https://www.claude.ai
 - stackoverflow for patterns and tipps https://stackoverflow.com
-- JavaFX Alert tutorial by FALCONBYTE.NET https://falconbyte.net/javafx-alert-und-dialog-boxen
+- JavaFX Alert tutorial by code.makery.ch https://code.makery.ch/blog/javafx-dialogs-official/
 - 
 

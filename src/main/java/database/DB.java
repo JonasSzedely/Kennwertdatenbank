@@ -13,20 +13,51 @@ import java.sql.SQLException;
  */
 
 public class DB {
+    private static boolean connectionAvailable = true;
+
     public static Connection connect() throws SQLException {
 
         try {
             // Get database credentials from DatabaseConfig class
+            DBConfig.loadProperties();
             var jdbcUrl = DBConfig.getDbUrl();
             var user = DBConfig.getDbUsername();
             var password = DBConfig.getDbPassword();
 
             // Open a connection
-            return DriverManager.getConnection(jdbcUrl, user, password);
+            Connection conn = DriverManager.getConnection(jdbcUrl, user, password);
+            connectionAvailable = true; // Verbindung erfolgreich
+            return conn;
 
         } catch (SQLException  e) {
-            System.err.println(e.getMessage());
-            return null;
+            System.err.println("DB-Verbindungsfehler: " + e.getMessage());
+            connectionAvailable = false;
+            throw e;
         }
+    }
+
+    /**
+     * Test if DB connection is possible
+     */
+    public static boolean isConnectionAvailable() {
+        try {
+            DBConfig.loadProperties();
+            Connection conn = connect();
+            if (conn != null && !conn.isClosed()) {
+                conn.close();
+                return true;
+            }
+        } catch (SQLException e) {
+            return false;
+        }
+        return false;
+    }
+
+    /**
+     * will not test the connection.
+     * @return returns last known connection status.
+     */
+    public static boolean wasLastConnectionSuccessful() {
+        return connectionAvailable;
     }
 }

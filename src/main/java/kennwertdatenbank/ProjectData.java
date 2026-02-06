@@ -34,7 +34,7 @@ public class ProjectData {
 
             while (line != null) {
                 String[] components = line.split(";");
-                int key = Integer.parseInt(components[0].replace(",", ""));
+                int key = Integer.parseInt(components[0].replaceAll("[,.]", ""));
                 int value = Integer.parseInt(components[1]);
 
                 if (!map.containsKey(key)) {
