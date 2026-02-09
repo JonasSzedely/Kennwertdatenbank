@@ -6,9 +6,9 @@
 }
 
 *:focused {
-    -fx-focus-color: #256ED1;      /* Haupt-Focus-Farbe */
-    -fx-focus-border-color: #256ED1; /* Alternative Eigenschaft */
-    -fx-faint-focus-color: #256ED122; /* Transparente Variante */
+    -fx-focus-color: #256ED1;      /* Main focus color */
+    -fx-focus-border-color: #256ED1; /* alternate color */
+    -fx-faint-focus-color: #256ED122; /* transparent color */
 }
 
 #top-pane .button {
@@ -25,11 +25,13 @@
     -fx-background-color: white;
 }
 
+
 *.toggle-switch:selected .thumb-area {
     -fx-background-color: #555555;
 
 }
 
+/*scroll pane styling */
 .scroll-pane:focused {
     -fx-background-color: -fx-box-border, -fx-control-inner-background;
     -fx-background-insets: 0, 1;
@@ -37,7 +39,7 @@
 }
 
 .scroll-pane .scroll-bar {
-    -fx-pref-height: 15px;  /* Höhe der Scrollbar */
+    -fx-pref-height: 15px;
 }
 
 .scroll-pane .scroll-bar .thumb {
@@ -56,25 +58,25 @@
 }
 
 
-/* RangeSlider Styling */
+/* RangeSlider styling */
 .range-slider {
 -fx-pref-height: 20px;
 }
 
-/* Track (Hintergrund) */
+/* Track (background))*/
 .range-slider .track {
     -fx-background-color: #cccccc;
     -fx-background-radius: 5;
     -fx-pref-height: 8px;
 }
 
-/* Range Track (der Bereich zwischen den beiden Thumbs) */
+/* Range Track (between thumbs)*/
 .range-slider .range-bar {
     -fx-background-color: #888888;
     -fx-background-radius: 5;
     -fx-pref-height: 8px;
 }
-/* Thumbs (die beiden Schieberegler) */
+/* Thumbs*/
 .range-slider .low-thumb,
 .range-slider .high-thumb {
     -fx-background-color: #555555;
@@ -83,9 +85,33 @@
     -fx-pref-height: 15px;
 }
 
-/* Hover-Effekt für Thumbs */
+/* Hover for thumbs */
 .range-slider .low-thumb:hover,
 .range-slider .high-thumb:hover {
     -fx-background-color: #333333;
+}
+
+/* CheckBox */
+.check-box {
+    -fx-padding: 0;
+}
+
+/* CheckBox the thick box itself */
+.check-box .box {
+    -fx-padding: 0;
+    -fx-min-width: 20px;
+    -fx-min-height: 20px;
+    -fx-max-width: 20px;
+    -fx-max-height: 20px;
+    -fx-pref-width: 20px;
+    -fx-pref-height: 20px;
+
+}
+
+
+.check-box:selected .mark {
+    -fx-background-color: #555555;
+    -fx-shape: "";
+    -fx-background-insets: 4px;
 }
 

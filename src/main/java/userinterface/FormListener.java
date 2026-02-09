@@ -24,7 +24,7 @@ public class FormListener {
     public FormListener(DropdownForm dropdown, String name){
         this.name = name;
         this.form = dropdown;
-        this.type ="dropdwon";
+        this.type ="dropdown";
         this.form.getInputField().focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
             if (wasFocused && !isNowFocused){
                 validate();
@@ -48,7 +48,7 @@ public class FormListener {
         this.name = name;
         this.form = form;
         this.max = max;
-        this.type ="text";
+        this.type ="textMax";
         this.form.getInputField().focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
             if (wasFocused && !isNowFocused){
                 validate();
@@ -57,19 +57,25 @@ public class FormListener {
     }
 
     public void validate() {
-        if (type.equals("number")) {
-            var checker = new NumberValidator(form, min, max, form.getInput());
-            isValid = checker.isValid();
-        } else if (type.equals("dropdown")) {
-            isValid = !(form.getInput() == null);
-        } else {
-            isValid = !(form.getInput().isEmpty()) && form.getInput().length() <= max;
-            if(form.getInput().length() > max){
-                form.getInvalidLabel().setText("Maximal " + max + " Zeichen erlaubt!");
-            } else {
-                form.getInvalidLabel().setText(form.getvalidateText());
+        switch(type){
+            case "number"-> {
+                var checker = new NumberValidator(form, min, max, form.getInput());
+                isValid = checker.isValid();
             }
-
+            case "dropdown" -> {
+                isValid = form.getInput() != null;
+            }
+            case "text" -> {
+                isValid = !(form.getInput().isEmpty());
+            }
+            case"textMax" -> {
+                isValid = !(form.getInput().isEmpty()) && form.getInput().length() <= max;
+                if (form.getInput().length() > max) {
+                    form.getInvalidLabel().setText("Maximal " + max + " Zeichen erlaubt!");
+                } else {
+                    form.getInvalidLabel().setText(form.getValidateText());
+                }
+            }
         }
         form.getInvalidLabel().setVisible(!isValid);
     }

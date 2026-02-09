@@ -32,7 +32,7 @@ public class InputForm implements Form{
     }
 
     @Override
-    public String getvalidateText() {
+    public String getValidateText() {
         return validateText;
     }
 

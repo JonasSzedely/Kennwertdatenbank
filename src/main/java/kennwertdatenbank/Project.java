@@ -1,5 +1,7 @@
 package kennwertdatenbank;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.control.Label;
 
 import java.util.Locale;
@@ -36,6 +38,7 @@ public class Project {
     private final ProjectData data;
     private final TreeMap<Integer, Calculation> calculations;
     private final Locale swissLocale;
+    private BooleanProperty pinned = new SimpleBooleanProperty(false); //code from claude.ai
 
     public Project(int projectNr, int version, String address, int plz, String location, String owner, String propertyType,
                    String constructionType, int document_phase, int calculationPhase, int apartmentsNr, int bathroomNr,
@@ -123,7 +126,20 @@ public class Project {
         return map;
     }
 
+    //code from claude.ai
+    public BooleanProperty pinnedProperty() {
+        return pinned;
+    }
 
+    //code from claude.ai
+    public boolean isPinned() {
+        return pinned.get();
+    }
+
+    //code from claude.ai
+    public void setPinned(boolean pinned) {
+        this.pinned.set(pinned);
+    }
 
     public int getProjectNr(){
         return projectNr;
@@ -191,6 +207,10 @@ public class Project {
 
     public int getVolumeAboveGround() {
         return volumeAboveGround;
+    }
+
+    public int getVolume(){
+        return volumeAboveGround + volumeUnderground;
     }
 
     public int getFacadeArea() {

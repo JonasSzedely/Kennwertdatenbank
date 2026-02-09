@@ -3,16 +3,13 @@ package userinterface;
 import database.DBConfig;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
+import javafx.animation.PauseTransition;
 import javafx.animation.Timeline;
-import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
-import javafx.collections.ObservableMap;
+import javafx.collections.*;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
-import javafx.scene.Node;
+import javafx.geometry.Orientation;
 import javafx.scene.control.*;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
@@ -27,8 +24,6 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import kennwertdatenbank.Project;
 import org.controlsfx.control.ToggleSwitch;
-
-import java.awt.event.MouseListener;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -44,14 +39,17 @@ public class UI extends Application {
     private final Locale swissLocale = new Locale("de", "CH");
     private RangeFilter sumFilter;
     private RangeFilter apartmentNrFilter;
+    private RangeFilter volumeFilter;
     private ScrollPane rightScroll;
-    private HBox projectsContainer;       // Enthält nur die SICHTBAREN Projekt-Boxen
+    private HBox projectsContainer;
     private VBox rowLabels;
     private final double CELL_WIDTH = 150;
+    private final double CELL_HEIGHT = 30;
     private final double CELL_GAP = 0;
     private final int SCROLLBAR_WIDTH = 15;
     private final LinkedHashMap<Integer, VBox> cellCache = new LinkedHashMap<>();
     private static final int MAX_CACHE_SIZE = 50;
+    private final int TOOL_TIP_TIME = 500;
 
 
     @Override
@@ -78,7 +76,7 @@ public class UI extends Application {
         primaryStage.setScene(scene);
 
         //Height bind to scene height
-        bottomPane.prefHeightProperty().bind(scene.heightProperty().multiply(0.05));
+        //bottomPane.prefHeightProperty().bind(scene.heightProperty().multiply(0.05));
 
         primaryStage.setMaximized(true);
         primaryStage.show();
@@ -115,6 +113,7 @@ public class UI extends Application {
     private HBox topPane(){
         HBox topPane = new HBox();
         topPane.setAlignment(Pos.CENTER);
+        topPane.setPadding(new Insets(20));
         topPane.setMinHeight(150);
         topPane.setStyle("-fx-background-color: #052048; -fx-border-color: lightgray; -fx-border-width: 1 1 0 1;");
         topPane.setId("top-pane");
@@ -137,24 +136,50 @@ public class UI extends Application {
         topRight.setAlignment(Pos.CENTER);
         topRight.setMinWidth(250);
 
-        VBox buttonBox = new VBox(20);
+        GridPane buttonBox = new GridPane(20,20);
         buttonBox.setAlignment(Pos.CENTER);
+        buttonBox.getColumnConstraints().add(new ColumnConstraints(100));
 
+        Button exportButton = new Button("Exportieren");
+        exportButton.setMaxWidth(Double.MAX_VALUE);
+        Button pdfButton = new Button("PDF erstellen");
+        pdfButton.setMaxWidth(Double.MAX_VALUE);
         Button addOptionsButton = new Button("Einstellungen");
+        addOptionsButton.setMaxWidth(Double.MAX_VALUE);
         Button addProjectButton = new Button("Neues Projekt");
+        addProjectButton.setMaxWidth(Double.MAX_VALUE);
 
-        buttonBox.getChildren().addAll(addOptionsButton, addProjectButton);
+        buttonBox.add(exportButton,1,0);
+        buttonBox.add(pdfButton,0,0);
+        buttonBox.add(addProjectButton,0,1);
+        buttonBox.add(addOptionsButton,1,1);
+
+        //Event-Handler for pdfButton
+        pdfButton.setOnAction(event ->{
+            if (!controller.isDatabaseAvailable()) {
+                noDBConnection();
+                return;
+            }
+            CreatePDF newPDF = new CreatePDF(sortedProjects);
+            try {
+                Stage newStage = new Stage();
+                newPDF.start(newStage);
+            } catch (Exception e) {
+                Alert error = new Alert(Alert.AlertType.ERROR);
+                error.setHeaderText("Fehler beim Öffnen des PDF-Fensters");
+                error.setContentText("Fehler: " + e.getMessage());
+                error.show();
+                throw new RuntimeException(e);
+            }
+        });
 
         //Event-Handler for addProjectButton
         addProjectButton.setOnAction(event -> {
             if (!controller.isDatabaseAvailable()) {
-                Alert error = new Alert(Alert.AlertType.ERROR);
-                error.setHeaderText("Keine Datenbankverbindung");
-                error.setContentText("Projekte können nur bei aktiver Datenbankverbindung hinzugefügt werden.");
-                error.show();
+                noDBConnection();
                 return;
             }
-            var addProject = new ProjectInputWindow(controller);
+            var addProject = new ProjectInputWindow(controller, ProjectInputWindow.Type.NEW);
             try {
                 Stage newStage = new Stage();
                 addProject.start(newStage);
@@ -162,6 +187,10 @@ public class UI extends Application {
                     refreshProjectList();
                 }
             } catch (Exception e) {
+                Alert error = new Alert(Alert.AlertType.ERROR);
+                error.setHeaderText("Fehler beim Öffnen des Projekt-Fensters");
+                error.setContentText("Fehler: " + e.getMessage());
+                error.show();
                 throw new RuntimeException(e);
             }
         });
@@ -170,7 +199,7 @@ public class UI extends Application {
         addOptionsButton.setOnAction(event -> {
             TextInputDialog settingsPW = new TextInputDialog();
             settingsPW.setTitle("Einstellung");
-            settingsPW.setHeaderText("Bitte Passwort für die Einstellungen eingeben");
+            settingsPW.setHeaderText("Bitte Passwort eingeben");
             settingsPW.setContentText("Passwort:");
 
             TextField oldEditor = settingsPW.getEditor();
@@ -251,6 +280,7 @@ public class UI extends Application {
         middlePane.setId("middle-pane");
 
         refreshProjectList();
+        updateSorting();
 
         // left side of the middle pane
         // scroll pane for row labels
@@ -302,8 +332,8 @@ public class UI extends Application {
         });
 
         //update cells when projects get updated (code from claude.ai)
-        filteredProjects.addListener((ListChangeListener<Project>) c -> {
-            double totalWidth = filteredProjects.size() * (CELL_WIDTH + CELL_GAP);
+        sortedProjects.addListener((ListChangeListener<Project>) c -> {
+            double totalWidth = sortedProjects.size() * (CELL_WIDTH + CELL_GAP);
             totalWidthSpacer.setPrefWidth(totalWidth);
             totalWidthSpacer.setMinWidth(totalWidth);
             cellCache.clear();
@@ -370,35 +400,57 @@ public class UI extends Application {
         outerPane.setPadding(new Insets(20,0,20,0));
 
         GridPane filterBox = new GridPane(10,10);
-        filterBox.getColumnConstraints().addAll(new ColumnConstraints(100),new ColumnConstraints(100),new ColumnConstraints(100),new ColumnConstraints(100),new ColumnConstraints(100),new ColumnConstraints(100),new ColumnConstraints(100));
+        filterBox.getColumnConstraints().addAll(new ColumnConstraints(100),new ColumnConstraints(100),new ColumnConstraints(2),new ColumnConstraints(100),new ColumnConstraints(100),new ColumnConstraints(2),new ColumnConstraints(100),new ColumnConstraints(100),new ColumnConstraints(2),new ColumnConstraints(100),new ColumnConstraints(100));
 
         //filter project number
-        Label projectNrLabel = new Label("Projektnummer");
+        //Label projectNrLabel = new Label("Projektnummer");
         TextField filterProjectNr = new TextField();
-        filterProjectNr.setPromptText("Filter nach Projektnummer");
-        filterBox.add(projectNrLabel, 0,0);
-        filterBox.add(filterProjectNr, 1,0);
+        filterProjectNr.setPromptText("Projektnummer");
+        //filterBox.add(projectNrLabel, 0,0);
+        filterBox.add(filterProjectNr, 0,0);
+        filterProjectNr.setTooltip(new Tooltip("Nach Projektnummer filtern"));
+        filterProjectNr.getTooltip().setShowDelay(Duration.millis(TOOL_TIP_TIME));
 
-        //filter project Type
-        Label projectTypeLabel = new Label("Projekt Art");
+        //filter project type
+        //Label projectTypeLabel = new Label("Gebäudenutzung");
         ComboBox<String> projectTypeFilter = new ComboBox<>();
-        ObservableList<String> options = FXCollections.observableArrayList("Neubau", "Sanierung", "Umbau", "Anbau", "Ausbau");
+        ObservableList<String> options = FXCollections.observableArrayList("Alle Gebäudenutzer", "Miete", "Stockwerkeigentum");
         projectTypeFilter.setItems(options);
-        projectTypeFilter.setPromptText("Filter nach Art");
-        filterBox.add(projectTypeLabel,0,2);
-        filterBox.add(projectTypeFilter,1,2);
+        projectTypeFilter.setPromptText("Gebäudenutzer");
+        //filterBox.add(projectTypeLabel,0,2);
+        filterBox.add(projectTypeFilter,0,1);
+        projectTypeFilter.setTooltip(new Tooltip("Nach Gebäudenutzer filtern"));
+        projectTypeFilter.getTooltip().setShowDelay(Duration.millis(TOOL_TIP_TIME));
 
-        //filtere versionen (all/newest)
-        Label versionLabel = new Label("Zeige Versionen");
+        //filter construction Type
+        //Label constructionTypeLabel = new Label("Bauvorhaben Art");
+        ComboBox<String> constructionTypeFilter = new ComboBox<>();
+        ObservableList<String> optionsConstructionType = FXCollections.observableArrayList("Alle Bauvorhaben", "Neubau", "Sanierung", "Umbau", "Anbau", "Ausbau");
+        constructionTypeFilter.setItems(optionsConstructionType);
+        constructionTypeFilter.setPromptText("Bauvorhaben");
+        //filterBox.add(constructionTypeLabel,0,2);
+        filterBox.add(constructionTypeFilter,0,2);
+        constructionTypeFilter.setTooltip(new Tooltip("Nach Bauvorhaben Art filtern"));
+        constructionTypeFilter.getTooltip().setShowDelay(Duration.millis(TOOL_TIP_TIME));
+
+        Separator verticalLine1 = new Separator(Orientation.VERTICAL);
+        filterBox.add(verticalLine1, 2, 0);
+        GridPane.setRowSpan(verticalLine1, 3);
+        GridPane.setFillHeight(verticalLine1, true);
+
+        //filter versions (all/newest)
+        //Label versionLabel = new Label("Zeige Versionen");
         ToggleSwitch versionFilter = new ToggleSwitch();
         versionFilter.setAlignment(Pos.CENTER_RIGHT);
-        versionFilter.setMinWidth(80);
-        versionFilter.setPrefWidth(80);
-        versionFilter.setMaxWidth(80);
+        versionFilter.setMinWidth(99);
+        versionFilter.setPrefWidth(99);
+        versionFilter.setMaxWidth(99);
         versionFilter.setSelected(false);
-        versionFilter.setText("alle");
-        filterBox.add(versionLabel, 0,1);
-        filterBox.add(versionFilter, 1,1);
+        versionFilter.setText("vollständig");
+        //filterBox.add(versionLabel, 0,1);
+        filterBox.add(versionFilter, 1,0);
+        versionFilter.setTooltip(new Tooltip("Nach Versionen filtern"));
+        versionFilter.getTooltip().setShowDelay(Duration.millis(TOOL_TIP_TIME));
 
         sumFilter = new RangeFilter(
                 "Bausumme",
@@ -409,12 +461,17 @@ public class UI extends Application {
                 controller::getMaxTotalCost
         );
 
-        filterBox.add(sumFilter.getTitelLabel(),2,0);
-        filterBox.add(sumFilter.getResetButton(),3,0);
-        filterBox.add(sumFilter.getSlider(),2,1);
+        filterBox.add(sumFilter.getTitelLabel(),3,0);
+        filterBox.add(sumFilter.getResetButton(),4,0);
+        filterBox.add(sumFilter.getSlider(),3,1);
         GridPane.setColumnSpan(sumFilter.getSlider(),2);
-        filterBox.add(sumFilter.getMinTextField(),2,2);
-        filterBox.add(sumFilter.getMaxTextField(),3,2);
+        filterBox.add(sumFilter.getMinTextField(),3,2);
+        filterBox.add(sumFilter.getMaxTextField(),4,2);
+
+        Separator verticalLine2 = new Separator(Orientation.VERTICAL);
+        filterBox.add(verticalLine2, 5, 0);
+        GridPane.setRowSpan(verticalLine2, 3);
+        GridPane.setFillHeight(verticalLine2, true);
 
         apartmentNrFilter = new RangeFilter(
                 "Wohnungen",
@@ -425,22 +482,47 @@ public class UI extends Application {
                 controller::getMaxApartments
         );
 
-        filterBox.add(apartmentNrFilter.getTitelLabel(), 4, 0);
-        filterBox.add(apartmentNrFilter.getResetButton(), 5, 0);
-        filterBox.add(apartmentNrFilter.getSlider(),4,1);
+        filterBox.add(apartmentNrFilter.getTitelLabel(), 6, 0);
+        filterBox.add(apartmentNrFilter.getResetButton(), 7, 0);
+        filterBox.add(apartmentNrFilter.getSlider(),6,1);
         GridPane.setColumnSpan(apartmentNrFilter.getSlider(),2);
-        filterBox.add(apartmentNrFilter.getMinTextField(),4,2);
-        filterBox.add(apartmentNrFilter.getMaxTextField(),5,2);
+        filterBox.add(apartmentNrFilter.getMinTextField(),6,2);
+        filterBox.add(apartmentNrFilter.getMaxTextField(),7,2);
+
+        Separator verticalLine3 = new Separator(Orientation.VERTICAL);
+        filterBox.add(verticalLine3, 8, 0);
+        GridPane.setRowSpan(verticalLine3, 3);
+        GridPane.setFillHeight(verticalLine3, true);
+
+        volumeFilter = new RangeFilter(
+                "Volumen",
+                "Reset",
+                swissLocale,
+                Project::getVolume,
+                controller::getMinVolume,
+                controller::getMaxVolume
+        );
+
+        filterBox.add(volumeFilter.getTitelLabel(), 9, 0);
+        filterBox.add(volumeFilter.getResetButton(), 10, 0);
+        filterBox.add(volumeFilter.getSlider(),9,1);
+        GridPane.setColumnSpan(volumeFilter.getSlider(),2);
+        filterBox.add(volumeFilter.getMinTextField(),9,2);
+        filterBox.add(volumeFilter.getMaxTextField(),10,2);
 
         //listener for filter
-        sumFilter.setOnFilterChanged(() -> updateFilter(filterProjectNr, versionFilter, projectTypeFilter));
-        apartmentNrFilter.setOnFilterChanged(() -> updateFilter(filterProjectNr, versionFilter, projectTypeFilter));
-        filterProjectNr.setOnAction(e -> updateFilter(filterProjectNr, versionFilter, projectTypeFilter));
+        sumFilter.setOnFilterChanged(() -> updateFilter(filterProjectNr, versionFilter, constructionTypeFilter, projectTypeFilter));
+        apartmentNrFilter.setOnFilterChanged(() -> updateFilter(filterProjectNr, versionFilter, constructionTypeFilter,projectTypeFilter));
+        volumeFilter.setOnFilterChanged(() -> updateFilter(filterProjectNr, versionFilter, constructionTypeFilter,projectTypeFilter));
+
+        filterProjectNr.setOnAction(e -> updateFilter(filterProjectNr, versionFilter, constructionTypeFilter,projectTypeFilter));
+
         projectList.addListener(new ListChangeListener<Project>() {
             @Override
             public void onChanged(Change<? extends Project> c) {
                 sumFilter.setRange();
                 apartmentNrFilter.setRange();
+                volumeFilter.setRange();
             }
         });
 
@@ -448,12 +530,14 @@ public class UI extends Application {
             if (newValue) {
                 versionFilter.setText("neuste");
             } else {
-                versionFilter.setText("alle");
+                versionFilter.setText("vollständig");
             }
-            updateFilter(filterProjectNr, versionFilter, projectTypeFilter);
+            updateFilter(filterProjectNr, versionFilter, constructionTypeFilter,projectTypeFilter);
         });
 
-        projectTypeFilter.setOnAction(e -> updateFilter(filterProjectNr, versionFilter, projectTypeFilter));
+        constructionTypeFilter.setOnAction(e -> updateFilter(filterProjectNr, versionFilter, constructionTypeFilter,projectTypeFilter));
+
+        projectTypeFilter.setOnAction(e -> updateFilter(filterProjectNr, versionFilter, constructionTypeFilter,projectTypeFilter));
 
         outerPane.getChildren().addAll(filterBox);
         return outerPane;
@@ -463,20 +547,30 @@ public class UI extends Application {
      * used to update the projects
      * @param filterProjectNr
      * @param versionFilter
-     * @param projectTypeFilter
+     * @param constructionTypeFilter
      */
     private void updateFilter(TextField filterProjectNr,
                               ToggleSwitch versionFilter,
+                              ComboBox<String> constructionTypeFilter,
                               ComboBox<String> projectTypeFilter) {
 
         if (filteredProjects == null) return;
 
         //predicate methode von claude.ai
         filteredProjects.setPredicate(project -> {
+            String selectedConstructionType = constructionTypeFilter.getSelectionModel().getSelectedItem();
             String selectedProjectType = projectTypeFilter.getSelectionModel().getSelectedItem();
 
-            if (isEmpty(filterProjectNr) && selectedProjectType == null && !versionFilter.isSelected()) {
-                return sumFilter.getPredicate().test(project) && apartmentNrFilter.getPredicate().test(project);
+            boolean matchSumFilter = sumFilter.getPredicate().test(project);
+            boolean matchApartmentFilter = apartmentNrFilter.getPredicate().test(project);
+            boolean matchVolumeFilter = volumeFilter.getPredicate().test(project);
+
+            if (isEmpty(filterProjectNr) 
+                    && (selectedConstructionType == null || selectedConstructionType.equals("Alle Bauvorhaben"))
+                    && (selectedProjectType == null || selectedProjectType.equals("Alle Gebäudenutzer"))
+                    && !versionFilter.isSelected())
+            {
+                return matchSumFilter && matchApartmentFilter && matchVolumeFilter;
             }
 
             boolean matchProjectNrFilter = isEmpty(filterProjectNr) || String.valueOf(project.getProjectNr()).contains(filterProjectNr.getText().toLowerCase());
@@ -486,10 +580,10 @@ public class UI extends Application {
                 matchVersionFilter = false;
             }
 
-            boolean matchProjectType = selectedProjectType == null || String.valueOf(project.getConstructionType()).contains(selectedProjectType);
-            boolean matchSumFilter = sumFilter.getPredicate().test(project);
-            boolean matchApartmentFilter = apartmentNrFilter.getPredicate().test(project);
-            return matchProjectNrFilter && matchVersionFilter && matchProjectType && matchSumFilter && matchApartmentFilter;
+            boolean matchConstructionType = selectedConstructionType == null || selectedConstructionType.equals("Alle Bauvorhaben") || String.valueOf(project.getConstructionType()).contains(selectedConstructionType);
+            boolean matchProjectType = selectedProjectType == null || selectedProjectType.equals("Alle Gebäudenutzer") || String.valueOf(project.getPropertyType()).contains(selectedProjectType);
+
+            return matchProjectNrFilter && matchVersionFilter && matchVolumeFilter && matchConstructionType && matchProjectType && matchSumFilter && matchApartmentFilter;
         });
     }
 
@@ -499,6 +593,7 @@ public class UI extends Application {
         projectList.addListener(new ListChangeListener<Project>() {
             @Override
             public void onChanged(Change<? extends Project> c) {
+                rowLabels.getChildren().clear();
                 rowLabels.getChildren().addAll(
                         projectLabel("Projekt-Nr."),
                         projectLabel("Version"),
@@ -546,7 +641,7 @@ public class UI extends Application {
         if (rightScroll == null || projectsContainer == null) return;
 
         double scrollPaneWidth = rightScroll.getWidth() - (rightScroll.getVbarPolicy() != ScrollPane.ScrollBarPolicy.NEVER ? SCROLLBAR_WIDTH : 0); // Scrollbar-Breite abziehen
-        double totalWidth = filteredProjects.size() * (CELL_WIDTH + CELL_GAP);
+        double totalWidth = sortedProjects.size() * (CELL_WIDTH + CELL_GAP);
 
         // hvalue between 0 und 1 → calculate to Pixel
         double scrollOffset = rightScroll.getHvalue() * Math.max(0, totalWidth - scrollPaneWidth);
@@ -554,7 +649,7 @@ public class UI extends Application {
         // Welche Indizes sind sichtbar?
         int firstVisible = Math.max(0, (int) (scrollOffset / (CELL_WIDTH + CELL_GAP)));
         int lastVisible = Math.min(
-                filteredProjects.size() - 1,
+                sortedProjects.size() - 1,
                 (int) ((scrollOffset + scrollPaneWidth) / (CELL_WIDTH + CELL_GAP))
         );
 
@@ -572,7 +667,7 @@ public class UI extends Application {
         for (int i = firstVisible; i <= lastVisible; i++) {
             VBox cell = cellCache.get(i);
             if (cell == null) {
-                cell = createProjectCell(filteredProjects.get(i));
+                cell = createProjectCell(sortedProjects.get(i));
                 cellCache.put(i, cell);
                 evictCacheIfNeeded();
             }
@@ -595,7 +690,7 @@ public class UI extends Application {
         //Modify-Project-Button, opens a new ProjectInputWindow
         Button modifyProjectButton = new Button("⟲");
         modifyProjectButton.setOnAction(event -> {
-            ProjectInputWindow modify = new ProjectInputWindow(controller, project);
+            ProjectInputWindow modify = new ProjectInputWindow(controller, project, ProjectInputWindow.Type.MODIFY);
             try {
                 Stage newStage = new Stage();
                 modify.start(newStage);
@@ -606,6 +701,12 @@ public class UI extends Application {
                 throw new RuntimeException(e);
             }
         });
+        modifyProjectButton.setTooltip(new Tooltip("Projekt bearbeiten"));
+        modifyProjectButton.getTooltip().setShowDelay(Duration.millis(100));
+        modifyProjectButton.setMinSize(CELL_HEIGHT*0.66, CELL_HEIGHT*0.66);
+        modifyProjectButton.setMaxSize(CELL_HEIGHT*0.66, CELL_HEIGHT*0.66);
+        modifyProjectButton.setPrefSize(CELL_HEIGHT*0.66, CELL_HEIGHT*0.66);
+        modifyProjectButton.setPadding(new Insets(0));
 
         //Delete-Project-Button, delete the project from the database
         Button deletProjectButton = new Button("\uD83D\uDDD1");
@@ -626,22 +727,81 @@ public class UI extends Application {
                 confirmAlert.showAndWait();
             }
         });
+        deletProjectButton.setTooltip(new Tooltip("Projekt löschen"));
+        deletProjectButton.getTooltip().setShowDelay(Duration.millis(100));
+        deletProjectButton.setMinSize(CELL_HEIGHT*0.66, CELL_HEIGHT*0.66);
+        deletProjectButton.setMaxSize(CELL_HEIGHT*0.66, CELL_HEIGHT*0.66);
+        deletProjectButton.setPrefSize(CELL_HEIGHT*0.66, CELL_HEIGHT*0.66);
+        deletProjectButton.setPadding(new Insets(0));
 
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
+        Region spacerHead = new Region();
+        HBox.setHgrow(spacerHead, Priority.ALWAYS);
 
         HBox projectHead = new HBox(10);
         projectHead.setPadding(new Insets(0, 10, 0, 0));
-        projectHead.setMinHeight(30);
-        projectHead.setMaxHeight(30);
-        projectHead.setPrefHeight(30);
+        projectHead.setMinHeight(CELL_HEIGHT);
+        projectHead.setMaxHeight(CELL_HEIGHT);
+        projectHead.setPrefHeight(CELL_HEIGHT);
         projectHead.setAlignment(Pos.CENTER_LEFT);
-        projectHead.getChildren().addAll(projectLabelNoBorder(String.valueOf(project.getProjectNr())), spacer, modifyProjectButton, deletProjectButton);
+        projectHead.getChildren().addAll(projectLabelNoBorder(String.valueOf(project.getProjectNr())), spacerHead, modifyProjectButton, deletProjectButton);
         projectHead.setStyle("-fx-border-color: #cccccc; -fx-border-width: 0 0 1 0;");
+
+        //adding next version of Project
+        Button nextVersionButton = new Button("+");
+        nextVersionButton.setPadding(new Insets(0));
+        nextVersionButton.setOnAction(event -> {
+            ProjectInputWindow nextVersion = new ProjectInputWindow(controller, project, ProjectInputWindow.Type.NEXT);
+            try {
+                Stage newStage = new Stage();
+                nextVersion.start(newStage);
+                if (nextVersion.getAddButtonStatus()) {
+                    refreshProjectList();
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+        nextVersionButton.setTooltip(new Tooltip("Neue Version erstellen"));
+        nextVersionButton.getTooltip().setShowDelay(Duration.millis(100));
+        nextVersionButton.setMinSize(CELL_HEIGHT*0.66, CELL_HEIGHT*0.66);
+        nextVersionButton.setMaxSize(CELL_HEIGHT*0.66, CELL_HEIGHT*0.66);
+        nextVersionButton.setPrefSize(CELL_HEIGHT*0.66, CELL_HEIGHT*0.66);
+
+        //focus checkbox, sets the project to be focused and sorted first
+        CheckBox focus = new CheckBox();
+        focus.setTooltip(new Tooltip("Projekt als erstes anzeigen"));
+        focus.getTooltip().setShowDelay(Duration.millis(100));
+        focus.selectedProperty().bindBidirectional(project.pinnedProperty()); //code from claude.ai
+        focus.setPadding(new Insets(0));
+
+        HBox focusContainer = new HBox(focus);
+        focusContainer.setAlignment(Pos.CENTER);
+        focusContainer.setMinSize(CELL_HEIGHT*0.66, CELL_HEIGHT*0.66);
+        focusContainer.setMaxSize(CELL_HEIGHT*0.66, CELL_HEIGHT*0.66);
+        focusContainer.setPrefSize(CELL_HEIGHT*0.66, CELL_HEIGHT*0.66);
+
+        // Update sorting when the pinned property changes (from claude.ai)
+        project.pinnedProperty().addListener((obs, oldVal, newVal) -> {
+            PauseTransition pause = new PauseTransition(Duration.millis(500));
+            pause.setOnFinished(event -> updateSorting());
+            pause.play();
+        });
+
+        Region spacerVersion = new Region();
+        HBox.setHgrow(spacerVersion, Priority.ALWAYS);
+
+        HBox projectVersion = new HBox(10);
+        projectVersion.setPadding(new Insets(0, 10, 0, 0));
+        projectVersion.setMinHeight(CELL_HEIGHT);
+        projectVersion.setMaxHeight(CELL_HEIGHT);
+        projectVersion.setPrefHeight(CELL_HEIGHT);
+        projectVersion.setAlignment(Pos.CENTER_LEFT);
+        projectVersion.getChildren().addAll(projectLabelNoBorder(String.valueOf(project.getVersion())), spacerVersion, nextVersionButton, focusContainer);
+        projectVersion.setStyle("-fx-border-color: #cccccc; -fx-border-width: 0 0 1 0;");
 
         projectBox.getChildren().addAll(
                 projectHead,
-                projectLabel(project.getVersion()),
+                projectVersion,
                 projectLabel(project.getAddress()),
                 projectLabel(project.getPlz()),
                 projectLabel(project.getLocation()),
@@ -653,7 +813,7 @@ public class UI extends Application {
                 projectLabel(project.getApartmentsNr()),
                 projectLabel(project.getHnf()),
                 projectLabel(project.getGf()),
-                projectLabel(project.getVolumeUnderground() + project.getVolumeAboveGround()),
+                projectLabel(project.getVolume()),
                 projectLabel(project.getFacadeType()),
                 projectLabel(project.getWindowType()),
                 projectLabel(project.getRoofType()),
@@ -694,6 +854,17 @@ public class UI extends Application {
         data.putAll(controller.getProjects());
         controller.calculate();
         projectList.setAll(data.values());
+    }
+
+    /**
+     * sorts the project list (from claude.ai)
+     */
+    private void updateSorting() {
+        sortedProjects.setComparator(
+                Comparator.comparing(Project::isPinned).reversed() // true first
+                        .thenComparing(Project::getProjectNr) // project number
+                        .thenComparing(Project::getVersion) // version
+        );
     }
 
     private HBox statistics(){
@@ -741,10 +912,11 @@ public class UI extends Application {
     private Label projectLabel(String text) {
         Label label = new Label(text);
         label.setPadding(new Insets(0,0,0,10));
-        label.setMinHeight(30);
-        label.setMaxHeight(30);
-        label.setPrefHeight(30);
+        label.setMinHeight(CELL_HEIGHT);
+        label.setMaxHeight(CELL_HEIGHT);
+        label.setPrefHeight(CELL_HEIGHT);
         label.setMaxWidth(Double.MAX_VALUE);
+        label.setStyle("-fx-border-color: #cccccc; -fx-border-width: 0 0 1 0;");
         return label;
     }
 
@@ -752,9 +924,9 @@ public class UI extends Application {
         Text newText = new Text(text);
         TextFlow label = new TextFlow(newText);
         label.setPadding(new Insets(5,10,0,10));
-        label.setMinHeight(60);
-        label.setMaxHeight(60);
-        label.setPrefHeight(60);
+        label.setMinHeight(CELL_HEIGHT*2);
+        label.setMaxHeight(CELL_HEIGHT*2);
+        label.setPrefHeight(CELL_HEIGHT*2);
         label.setMaxWidth(Double.MAX_VALUE);
         label.setTextAlignment(TextAlignment.LEFT);
         label.setStyle("-fx-border-color: #cccccc; -fx-border-width: 0 0 1 0;");
@@ -764,9 +936,9 @@ public class UI extends Application {
     private Label projectLabelRight(String text) {
         Label label = new Label(text);
         label.setPadding(new Insets(0,0,0,10));
-        label.setMinHeight(30);
-        label.setMaxHeight(30);
-        label.setPrefHeight(30);
+        label.setMinHeight(CELL_HEIGHT);
+        label.setMaxHeight(CELL_HEIGHT);
+        label.setPrefHeight(CELL_HEIGHT);
         label.setMaxWidth(Double.MAX_VALUE);
         label.setAlignment(Pos.CENTER_RIGHT);
         label.setStyle("-fx-border-color: #cccccc; -fx-border-width: 0 0 1 0;");
@@ -776,9 +948,9 @@ public class UI extends Application {
     private Label projectLabel(int number) {
         Label label = new Label(String.format(swissLocale, "%,d",number));
         label.setPadding(new Insets(0,0,0,10));
-        label.setMinHeight(30);
-        label.setMaxHeight(30);
-        label.setPrefHeight(30);
+        label.setMinHeight(CELL_HEIGHT);
+        label.setMaxHeight(CELL_HEIGHT);
+        label.setPrefHeight(CELL_HEIGHT);
         label.setMaxWidth(Double.MAX_VALUE);
         label.setStyle("-fx-border-color: #cccccc; -fx-border-width: 0 0 1 0;");
         if(number == 0){
@@ -790,10 +962,17 @@ public class UI extends Application {
     private Label projectLabelNoBorder(String text) {
         Label label = new Label(text);
         label.setPadding(new Insets(0,0,0,10));
-        label.setMinHeight(30);
-        label.setMaxHeight(30);
-        label.setPrefHeight(30);
+        label.setMinHeight(CELL_HEIGHT);
+        label.setMaxHeight(CELL_HEIGHT);
+        label.setPrefHeight(CELL_HEIGHT);
         label.setMaxWidth(Double.MAX_VALUE);
         return label;
+    }
+
+    private void noDBConnection(){
+        Alert error = new Alert(Alert.AlertType.ERROR);
+        error.setHeaderText("Keine Datenbankverbindung");
+        error.setContentText("Die Funktion kann nur bei aktiver Datenbankverbindung verwendet werden.");
+        error.show();
     }
 }

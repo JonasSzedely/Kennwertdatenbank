@@ -1,9 +1,7 @@
 package userinterface;
 
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TextFormatter;
+import javafx.scene.control.*;
+import javafx.util.Duration;
 import javafx.util.converter.NumberStringConverter;
 import kennwertdatenbank.Project;
 import org.controlsfx.control.RangeSlider;
@@ -71,6 +69,14 @@ public class RangeFilter {
         this.maxFormatter = new TextFormatter<>(new NumberStringConverter(integerFormat), maxSupplier.get());
         this.minTextField.setTextFormatter(minFormatter);
         this.maxTextField.setTextFormatter(maxFormatter);
+
+        maxTextField.setTooltip(new Tooltip("Maximum"));
+        maxTextField.getTooltip().setShowDelay(Duration.millis(500));
+        minTextField.setTooltip(new Tooltip("Minimum"));
+        minTextField.getTooltip().setShowDelay(Duration.millis(500));
+
+        reset.setMaxWidth(Double.MAX_VALUE);
+        this.titel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
 
         setRange();
 

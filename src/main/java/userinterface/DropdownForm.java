@@ -48,7 +48,7 @@ public class DropdownForm implements Form{
     }
 
     @Override
-    public String getvalidateText() {
+    public String getValidateText() {
         return validateText;
     }
 

@@ -54,6 +54,8 @@ public class Controller {
     private int maxApartments;
     private double averageRatioUG;
     private int averageWindowRatio;
+    private int minVolume;
+    private int maxVolume;
 
 
     public Controller(){
@@ -261,7 +263,7 @@ public class Controller {
             if (insertedRow > 0) {
                 var rs = pstmt.getGeneratedKeys();
                 if (rs.next()) {
-                    return "Projekt Nr. " + rs.getInt(1) + " wurde hinzugefügt.";
+                    return "Projekt Nr. " + rs.getInt(1) + " Version " + rs.getInt(2) + " wurde hinzugefügt.";
                 }
             }
         } catch (SQLException e) {
@@ -374,13 +376,13 @@ public class Controller {
             if (editedRow > 0) {
                 var rs = pstmt.getGeneratedKeys();
                 if (rs.next()) {
-                    return "Projekt Nr. " + rs.getInt(1) + " wurde angepasst.";
+                    return "Projekt Nr. " + project_nr + " Version " + version + " wurde angepasst.";
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return "Projekt konnte nicht hinzugefügt werden";
+        return "Projekt konnte nicht angepasst werden";
     }
 
     /**
@@ -496,19 +498,38 @@ public class Controller {
         maxApartments = 0;
         averageRatioUG = 0;
         averageWindowRatio = 0;
+        minVolume = Integer.MAX_VALUE;
+        maxVolume = 0;
 
         for (Project project : PROJECTS.values()){
             int cost = project.getData().getTotalCost();
             int apartments = project.getApartmentsNr();
-            averageRatioUG  += ((double) project.getVolumeUnderground() / (double) project.getVolumeAboveGround());
+            int volume = project.getVolume();
+            averageRatioUG  += (double) project.getVolumeUnderground() / volume;
             minTotalCost = Math.min(cost, minTotalCost);
             maxTotalCost = Math.max(cost, maxTotalCost);
             minApartments = Math.min(apartments,minApartments);
             maxApartments = Math.max(apartments, maxApartments);
             averageWindowRatio += (int) (((double) project.getWindowArea() / (double) project.getFacadeArea())*100);
+            minVolume = Math.min(volume, minVolume);
+            maxVolume = Math.max(volume, maxVolume);
         }
         averageRatioUG /= PROJECTS.size();
         averageWindowRatio /= PROJECTS.size();
+    }
+
+    /**
+     * @return the highest volume of all projects.
+     */
+    public int getMinVolume(){
+        return minVolume;
+    }
+
+    /**
+     * @return the lowest volume of all projects.
+     */
+    public int getMaxVolume(){
+        return maxVolume;
     }
 
     /**
@@ -546,6 +567,9 @@ public class Controller {
         return averageRatioUG;
     }
 
+    /**
+     * @return the average window to fassade are ratio for all projects.
+     */
     public int getAverageWindowRatio(){
         return averageWindowRatio;
     }

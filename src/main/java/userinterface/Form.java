@@ -9,5 +9,5 @@ public interface Form {
     Label getInvalidLabel();
     String getInput();
     void setInputFieldText(String text);
-    String getvalidateText();
+    String getValidateText();
 }
