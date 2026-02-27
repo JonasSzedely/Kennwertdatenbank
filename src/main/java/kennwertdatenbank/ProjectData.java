@@ -63,6 +63,14 @@ public class ProjectData {
         return total;
     }
 
+    public int getRange(int bkpStart, int bkpEnd){
+        int sum = 0;
+        for(int val : map.subMap(bkpStart, true, bkpEnd, true).values()){
+            sum += val;
+        }
+        return sum;
+    }
+
     public int getBKP(int bkp){
         if(map.containsKey(bkp)){
             return map.get(bkp);

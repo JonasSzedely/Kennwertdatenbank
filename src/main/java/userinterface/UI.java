@@ -622,39 +622,39 @@ public class UI extends Application {
         projectList.addListener((ListChangeListener<Project>) change -> {
                 rowLabels.getChildren().clear();
                 rowLabels.getChildren().addAll(
-                        projectLabel("Projekt-Nr."),
-                        projectLabel("Version"),
-                        projectLabel("Adresse"),
-                        projectLabel("PLZ"),
-                        projectLabel("Ort"),
-                        projectLabel("Bauherr"),
-                        projectLabel("Gebäudenutzungen"),
-                        projectLabel("Art des Bauvorhaben"),
-                        projectLabel("Planstand"),
-                        projectLabel("Gerechnete Phasen"),
-                        projectLabel("Anzahl Wohnungen"),
-                        //projectLabel("Anzahl Nasszellen"),
-                        projectLabel("HNF in m²"),
-                        projectLabel("GF in m²"),
-                        projectLabel("SIA m³"),
-                        //projectLabel("unten"),
-                        //projectLabel("oben"),
-                        projectLabel("Fassaden-Typ"),
-                        projectLabel("Fenster-Typ"),
-                        projectLabel("Dach-Typ"),
-                        projectLabel("Heizungs-Typ"),
-                        projectLabel("Kühlungs-Typ"),
-                        projectLabel("Lüftungs-Typ Whg."),
-                        projectLabel("Lüftungs-Typ TG"),
-                        projectLabel("CO/NO-Anlage"),
-                        projectLabelSpez("Sepzielles"),
-                        projectLabel("")//,
+                        rowLabel("Projekt-Nr."),
+                        rowLabel("Version"),
+                        rowLabel("Adresse"),
+                        rowLabel("PLZ"),
+                        rowLabel("Ort"),
+                        rowLabel("Bauherr"),
+                        rowLabel("Gebäudenutzungen"),
+                        rowLabel("Art des Bauvorhaben"),
+                        rowLabel("Planstand"),
+                        rowLabel("Gerechnete Phasen"),
+                        rowLabel("Anzahl Wohnungen"),
+                        //rowLabel()("Anzahl Nasszellen"),
+                        rowLabel("HNF in m²"),
+                        rowLabel("GF in m²"),
+                        rowLabel("SIA m³"),
+                        //rowLabel()("unten"),
+                        //rowLabel()("oben"),
+                        rowLabel("Fassaden-Typ"),
+                        rowLabel("Fenster-Typ"),
+                        rowLabel("Dach-Typ"),
+                        rowLabel("Heizungs-Typ"),
+                        rowLabel("Kühlungs-Typ"),
+                        rowLabel("Lüftungs-Typ Whg."),
+                        rowLabel("Lüftungs-Typ TG"),
+                        rowLabel("CO/NO-Anlage"),
+                        rowLabelSpez("Sepzielles"),
+                        rowLabel("")//,
                 );
                 HBox noScroll = new HBox();
                 noScroll.setMinHeight(15);
 
                 for (int i = 0; i < projectList.getFirst().getCalculations().size(); i++) {
-                    rowLabels.getChildren().add(projectLabel(projectList.getFirst().getCalculations().get(i).getName()));
+                    rowLabels.getChildren().add(rowLabel(projectList.getFirst().getCalculations().get(i).getName()));
                 }
                 rowLabels.getChildren().add(noScroll);
         });
@@ -853,7 +853,7 @@ public class UI extends Application {
         );
 
         for (Calculation calc : project.getCalculations().values()) {
-            projectBox.getChildren().add(projectLabelRight(calc.getCalculation()));
+            projectBox.getChildren().add(projectLabel(calc.getCalculation()));
         }
 
         return projectBox;
@@ -932,7 +932,7 @@ public class UI extends Application {
         return textField.getText() == null || textField.getText().trim().isEmpty();
     }
 
-    private Label projectLabel(String text) {
+    private Label rowLabel(String text) {
         Label label = new Label(text);
         label.setPadding(new Insets(0,0,0,10));
         label.setMinHeight(CELL_HEIGHT);
@@ -942,8 +942,7 @@ public class UI extends Application {
         label.setStyle("-fx-border-color: #cccccc; -fx-border-width: 0 0 1 0;");
         return label;
     }
-
-    private TextFlow projectLabelSpez(String text) {
+    private TextFlow rowLabelSpez(String text) {
         Text newText = new Text(text);
         TextFlow label = new TextFlow(newText);
         label.setPadding(new Insets(5,10,0,10));
@@ -956,9 +955,9 @@ public class UI extends Application {
         return label;
     }
 
-    private Label projectLabelRight(String text) {
+    private Label projectLabel(String text) {
         Label label = new Label(text);
-        label.setPadding(new Insets(0,0,0,10));
+        label.setPadding(new Insets(5,10,0,10));
         label.setMinHeight(CELL_HEIGHT);
         label.setMaxHeight(CELL_HEIGHT);
         label.setPrefHeight(CELL_HEIGHT);
@@ -968,13 +967,27 @@ public class UI extends Application {
         return label;
     }
 
+    private TextFlow projectLabelSpez(String text) {
+        Text newText = new Text(text);
+        TextFlow label = new TextFlow(newText);
+        label.setPadding(new Insets(5,10,0,10));
+        label.setMinHeight(CELL_HEIGHT*2);
+        label.setMaxHeight(CELL_HEIGHT*2);
+        label.setPrefHeight(CELL_HEIGHT*2);
+        label.setMaxWidth(Double.MAX_VALUE);
+        label.setTextAlignment(TextAlignment.RIGHT);
+        label.setStyle("-fx-border-color: #cccccc; -fx-border-width: 0 0 1 0;");
+        return label;
+    }
+
     private Label projectLabel(int number) {
         Label label = new Label(String.format(swissLocale, "%,d",number));
-        label.setPadding(new Insets(0,0,0,10));
+        label.setPadding(new Insets(5,10,0,10));
         label.setMinHeight(CELL_HEIGHT);
         label.setMaxHeight(CELL_HEIGHT);
         label.setPrefHeight(CELL_HEIGHT);
         label.setMaxWidth(Double.MAX_VALUE);
+        label.setAlignment(Pos.CENTER_RIGHT);
         label.setStyle("-fx-border-color: #cccccc; -fx-border-width: 0 0 1 0;");
         if(number == 0){
             label.setText("");
@@ -984,11 +997,12 @@ public class UI extends Application {
 
     private Label projectLabelNoBorder(String text) {
         Label label = new Label(text);
-        label.setPadding(new Insets(0,0,0,10));
+        label.setPadding(new Insets(5,10,0,10));
         label.setMinHeight(CELL_HEIGHT);
         label.setMaxHeight(CELL_HEIGHT);
         label.setPrefHeight(CELL_HEIGHT);
         label.setMaxWidth(Double.MAX_VALUE);
+        label.setAlignment(Pos.CENTER_RIGHT);
         return label;
     }
 

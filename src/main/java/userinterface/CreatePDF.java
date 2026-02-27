@@ -543,7 +543,7 @@ public class CreatePDF extends Application {
      */
     private void addDataCell(PdfPTable table, String text, Font font) {
         PdfPCell cell = new PdfPCell(new Phrase(text != null ? text : "", font));
-        cell.setHorizontalAlignment(Element.ALIGN_LEFT);
+        cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
         cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
         cell.setPadding(4);
         cell.setFixedHeight(CELL_HEIGHT); // Consistent height for regular cells
@@ -560,7 +560,7 @@ public class CreatePDF extends Application {
      */
     private void addSpecialDataCell(PdfPTable table, String text, Font font) {
         PdfPCell cell = new PdfPCell(new Phrase(text != null ? text : "", font));
-        cell.setHorizontalAlignment(Element.ALIGN_LEFT);
+        cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
         cell.setVerticalAlignment(Element.ALIGN_TOP); // Align text to top for multi-line
         cell.setPadding(4);
 

@@ -1,26 +1,31 @@
 {
-  "name": "kennwertdatenbank",
-  "version": "1.0.6",
-  "description": "Kennwertdatenbank Java Application",
-  "main": "index.js",
-  "preferGlobal": true,
-  "repository": "https://github.com/JonasSzedely/Kennwertdatenbank",
-  "jdeploy": {
-    "jar": "target/Kennwertdatenbank-1.0-SNAPSHOT.jar",
-    "javaVersion": "21",
-    "title": "Kennwertdatenbank",
-    "javafx": true,
-    "jdk": false,
-    "npm": {
-      "registry": "https://registry.npmjs.org/"
+    "author": "Jonas Szedely",
+    "name": "kennwertdatenbank",
+    "description": "Kennwertdatenbank Java Application",
+    "files": ["jdeploy-bundle"],
+    "main": "index.js",
+    "preferGlobal": true,
+    "repository": {"url": "https://github.com/JonasSzedely/Kennwertdatenbank"},
+    "scripts": {"test": "echo \"Error: no test specified\" && exit 1"},
+    "version": "1.1.0",
+    "jdeploy": {
+        "jdk": true,
+        "singleton": true,
+        "fallbackToUniversal": false,
+        "publishTargets": [{
+            "name": "github: github",
+            "type": "GITHUB",
+            "url": "https://github.com/JonasSzedely/Kennwertdatenbank"
+        }],
+        "javaVersion": "21",
+        "jar": "target/Kennwertdatenbank-1.0-SNAPSHOT.jar",
+        "javafx": true,
+        "title": "Kennwertdatenbank",
+        "platformBundlesEnabled": false,
+        "downloadPage": {"platforms": ["default"]}
+    },
+    "dependencies": {
+        "njre": "^0.2.0",
+        "shelljs": "^0.8.4"
     }
-  },
-  "dependencies": {
-    "shelljs": "^0.8.4", 
-    "njre": "^0.2.0"
-  },
-  "files": ["jdeploy-bundle"],
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  }
 }

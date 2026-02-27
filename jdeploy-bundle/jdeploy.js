@@ -12,10 +12,10 @@ var javaVersionString = "21";
 var tryJavaHomeFirst = false;
 var javafx = false;
 var bundleType = 'jre';
-if ('{{JAVAFX}}' === 'true') {
+if ('true' === 'true') {
     javafx = true;
 }
-if ('{{JDK}}' === 'true') {
+if ('true' === 'true') {
     bundleType = 'jdk';
 }
 
@@ -63,6 +63,10 @@ function njreWrap() {
         createDir(dir)
           .then(() => fetch(url))
           .then(response => {
+            // Validate HTTP status code before writing the file
+            if (!response.ok) {
+              return reject(new Error(`HTTP ${response.status}: ${response.statusText} for ${url}`))
+            }
             const destFile = path.join(dir, destName)
             const destStream = fs.createWriteStream(destFile)
             response.body.pipe(destStream).on('finish', () => resolve(destFile))
@@ -332,25 +336,12 @@ function njreWrap() {
                 .then(extract);
         };
 
-        // First, attempt to download the JRE
-        return download(tmpdir, url)
-            .then(response => {
-                // If the JRE is available, proceed with the download and extraction
-                if (response.status === 200) {
-                    return attemptDownload(url);
-                } else {
-                    // If JRE is not available, switch to JDK
-                    console.log(`JRE not available for version ${version}, falling back to JDK...`);
-                    // Update the query to request JDK instead of JRE
-                    q.bundle_type = 'jdk';  // Switch to JDK
-                    url = zuluBaseURL;
-                    Object.keys(q).forEach(key => { url += key + '=' + q[key] + '&' });
-                    return attemptDownload(url); // Try downloading the JDK
-                }
-            })
+        // Attempt to download and extract the JRE/JDK
+        return attemptDownload(url)
             .catch(err => {
                 console.error("Download failed: ", err);
-                throw err; // Re-throw the error after logging
+                // Exit with non-zero status code to signal failure to CI/CD systems
+                process.exit(1);
             });
     }
 
@@ -548,7 +539,7 @@ if (!done) {
 }
 
 if (!done) {
-    console.log("Downloading java runtime environment for version "+targetJavaVersion);
+    console.error("Downloading java runtime environment for version "+targetJavaVersion);
     njre.install(targetJavaVersion, {type: bundleType, javafx: javafx}).then(function(dir) {
         var _javaHome = getJavaHomeInPath(dir);
         if (_javaHome == null)
@@ -569,7 +560,9 @@ if (!done) {
 
         run(env['JAVA_HOME']);
     }).catch(function(err) {
-        console.log("Failed to install JRE", err);
+        console.error("Failed to install JRE", err);
+        // Exit with non-zero status code to signal failure to CI/CD systems
+        process.exit(1);
     });
 }
 
@@ -595,6 +588,7 @@ function run(_javaHome) {
 
     var userArgs = process.argv.slice(2);
     var javaArgs = [];
+    javaArgs.push('-Djdeploy.mode=npx');
     javaArgs.push('-Djdeploy.base='+__dirname);
     javaArgs.push('-Djdeploy.port='+port);
     javaArgs.push('-Djdeploy.war.path='+warPath);

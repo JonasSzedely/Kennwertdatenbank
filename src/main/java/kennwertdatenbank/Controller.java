@@ -500,7 +500,7 @@ public class Controller {
             int cost = project.getData().getTotalCost();
             int apartments = project.getApartmentsNr();
             int volume = project.getVolume();
-            averageRatioUG  += (double) project.getVolumeUnderground() / volume;
+            averageRatioUG  += (double) ((project.getVolumeUnderground()*100) / project.getVolumeAboveGround());
             minTotalCost = Math.min(cost, minTotalCost);
             maxTotalCost = Math.max(cost, maxTotalCost);
             minApartments = Math.min(apartments,minApartments);
