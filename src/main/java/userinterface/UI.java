@@ -272,19 +272,16 @@ public class UI extends Application {
                     Stage newStage = StageFactory.createStage("Einstellungen");
                     options.start(newStage);
                     if(options.isSetButtonUsed()) {
-                        DBConfig.loadProperties(); // Lade neue Properties
+                        DBConfig.loadProperties();
                         if (controller.initializeDatabase()) {
-                            // Erfolgreich verbunden
-                            refreshProjectList(); // Lädt Projekte neu
-
+                            refreshProjectList();
                             Alert success = new Alert(Alert.AlertType.INFORMATION);
                             success.setTitle("Datenbankverbindung");
                             success.setHeaderText("Verbindung erfolgreich");
                             success.setContentText("Die Datenbankverbindung wurde erfolgreich wiederhergestellt.");
                             success.show();
                         } else {
-                            // Verbindung fehlgeschlagen
-                            refreshProjectList(); // Aktualisiert UI trotzdem (zeigt leere Liste)
+                            refreshProjectList();
                             showDatabaseWarning();
                         }
                     }

@@ -1,8 +1,6 @@
 package database;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Properties;
 
 /**
@@ -19,16 +17,41 @@ import java.util.Properties;
  */
 public class DBConfig {
     private static final Properties properties = new Properties();
-    private static final String PROPERTIES_PATH = "src/main/resources/db.properties";
+    private static final String PROPERTIES_PATH = System.getProperty("user.dir") + "/db.properties";
 
-    public static void loadProperties(){
+    private static String getPropertiesFilePath() {
+        File exePath = new File(System.getProperty("user.dir") + "/db.properties");
+        if (exePath.exists()) {
+            return exePath.getAbsolutePath();
+        }
+        return "src/main/resources/db.properties";
+    }
+
+    private static void createDefaultProperties(File file) throws IOException {
+        file.getParentFile().mkdirs();
+        Properties defaultProps = new Properties();
+        defaultProps.setProperty("db.url", "jdbc:postgresql://localhost:5432/kennwertdatenbank");
+        defaultProps.setProperty("db.username", "postgres");
+        defaultProps.setProperty("db.password", "password");
+        try (FileOutputStream out = new FileOutputStream(file)) {
+            defaultProps.store(out, "Datenbank Konfiguration");
+        }
+    }
+
+    public static void loadProperties() {
+        File file = new File(PROPERTIES_PATH);
+        if (!file.exists()) {
+            try {
+                createDefaultProperties(file); // NEU: Standardwerte beim ersten Start
+            } catch (IOException e) {
+                System.err.println("Konnte db.properties nicht erstellen: " + e.getMessage());
+            }
+        }
         try {
-            // Versuche zuerst aus der Datei zu laden (damit Änderungen erkannt werden)
             FileInputStream fileInput = new FileInputStream(PROPERTIES_PATH);
             properties.load(fileInput);
             fileInput.close();
         } catch (IOException e) {
-            // Fallback: Lade aus Classpath (für Deployment)
             try (InputStream input = DBConfig.class.getClassLoader().getResourceAsStream("db.properties")) {
                 if (input == null) {
                     System.out.println("Sorry, unable to find db.properties");
@@ -51,5 +74,9 @@ public class DBConfig {
 
     public static String getDbPassword() {
         return properties.getProperty("db.password");
+    }
+
+    public static String getPropertiesPath() {
+        return PROPERTIES_PATH;
     }
 }

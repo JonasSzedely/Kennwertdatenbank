@@ -1,5 +1,6 @@
 package userinterface;
 
+import database.DBConfig;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -24,7 +25,7 @@ public class Settings {
     public void start(Stage stage) {
         VBox outerPane = new VBox();
         outerPane.setAlignment(Pos.CENTER);
-        String path = "src/main/resources/db.properties";
+        String path = DBConfig.getPropertiesPath();
 
         Label dbURLLabel = new Label("Datenbank URL");
         TextField dbURLInput = new TextField();
