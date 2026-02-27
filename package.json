@@ -1,6 +1,6 @@
 {
   "name": "kennwertdatenbank",
-  "version": "1.0.0",
+  "version": "1.0.5",
   "description": "Kennwertdatenbank Java Application",
   "main": "index.js",
   "preferGlobal": true,
@@ -10,9 +10,17 @@
     "javaVersion": "21",
     "title": "Kennwertdatenbank",
     "javafx": true,
-    "jdk": false
+    "jdk": false,
+    "npm": {
+      "registry": "https://registry.npmjs.org/"
+    }
   },
-  "dependencies": {"shelljs": "^0.8.4", "njre": "^0.2.0"},
+  "dependencies": {
+    "shelljs": "^0.8.4", 
+    "njre": "^0.2.0"
+  },
   "files": ["jdeploy-bundle"],
-  "scripts": {"test": "echo \"Error: no test specified\" && exit 1"}
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
 }
