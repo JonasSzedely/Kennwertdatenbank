@@ -2,11 +2,11 @@
   "name": "kennwertdatenbank",
   "version": "1.0.0",
   "description": "Kennwertdatenbank Java Application",
+  "main": "userinterface.Main",
   "jdeploy": {
     "jar": "target/Kennwertdatenbank-1.0-SNAPSHOT.jar",
     "javaVersion": 21,
     "title": "Kennwertdatenbank",
-    "mainClass": "userinterface.Main",
     "modules": ["javafx.controls", "javafx.fxml"]
   },
   "scripts": {
