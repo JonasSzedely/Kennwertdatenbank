@@ -2,8 +2,6 @@ package kennwertdatenbank;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.scene.control.Label;
-
 import java.util.Locale;
 import java.util.TreeMap;
 
@@ -111,7 +109,7 @@ public class Project {
                 String.format(swissLocale, "%,d",data.getBKP(27)) + " Fr.",
                 String.format(swissLocale, "%,d",data.getBKP(28)-data.getBKP(289)) + " Fr.",
                 "",
-                String.valueOf(hnf / apartmentsNr) + " m²",
+                String.format(swissLocale, "%,d",hnf / apartmentsNr) + " m²",
                 String.format("%.2f", (double) volumeUnderground / volumeAboveGround),
                 String.valueOf((int) (((double) windowArea / (double) facadeArea)*100)) + " %"
         };

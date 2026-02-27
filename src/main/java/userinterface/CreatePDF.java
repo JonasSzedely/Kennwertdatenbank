@@ -1,16 +1,17 @@
 package userinterface;
 
 import javafx.application.Application;
-import javafx.collections.FXCollections;
 import javafx.collections.transformation.SortedList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import kennwertdatenbank.Project;
@@ -20,6 +21,7 @@ import java.awt.Color;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -36,7 +38,7 @@ import java.util.List;
 public class CreatePDF extends Application {
 
     /** Sorted list of projects to display in the PDF */
-    private SortedList<Project> sortedProjects;
+    private final SortedList<Project> sortedProjects;
 
     /** Form elements mapping */
     private HashMap<String, Form> forms;
@@ -44,33 +46,36 @@ public class CreatePDF extends Application {
     /** Form validation listeners */
     private ArrayList<FormListener> formListeners;
 
-    /** Button to trigger PDF creation */
-    private final Button addButton = new Button("PDF erstellen");
-
     /** Flag indicating if the add button was used */
     private boolean addButtonUsed = false;
 
     /** Header background color (blue) */
-    private static final Color HEADER_COLOR = Color.decode("#052048");
+    private final Color HEADER_COLOR = Color.decode("#052048");
 
     /** Header height in points */
-    private static final float HEADER_HEIGHT = 80f;
+    private final float HEADER_HEIGHT = 60f;
 
     /** Logo dimensions */
-    private static final int LOGO_WIDTH = 60;
-    private static final int LOGO_HEIGHT = 60;
+    private final int LOGO_HEIGHT = (int) (HEADER_HEIGHT * 0.8);
+    private final int LOGO_WIDTH = LOGO_HEIGHT*2;
 
     /** Fixed column width in points (200px ≈ 150 points) */
-    private static final float COLUMN_WIDTH = 120f;
+    private final float COLUMN_WIDTH = 89f;
 
     /** Normal cell height */
-    private static final float CELL_HEIGHT = 20f;
+    private final float CELL_HEIGHT = 20f;
 
     /** Special cell height for column to fit 65 characters */
-    private static final float SPECIAL_CELL_HEIGHT = 30f;
+    private final float SPECIAL_CELL_HEIGHT = 30f;
 
     /** Maximum projects to export */
-    private static final int MAX_PROJECTS_TO_EXPORT = 8;
+    private int MAX_PROJECTS_TO_EXPORT = 8;
+
+    private String title;
+    private Image logo;
+    private final float PADDING = 20f;
+    private final float TITLE_HEIGHT = 14f;
+    private final float TITLE_OFFSET = 0.3f;
 
     /**
      * Constructor initializing the PDF creator with project data.
@@ -85,10 +90,9 @@ public class CreatePDF extends Application {
      * Starts the PDF creation GUI.
      *
      * @param stage primary stage for the GUI
-     * @throws Exception if GUI initialization fails
      */
     @Override
-    public void start(Stage stage) throws Exception {
+    public void start(Stage stage) {
         stage.setTitle("PDF Creator");
 
         VBox outerPane = new VBox(10);
@@ -106,7 +110,7 @@ public class CreatePDF extends Application {
         gridPane.getColumnConstraints().addAll(
                 new ColumnConstraints(150),
                 new ColumnConstraints(200),
-                new ColumnConstraints(150)
+                new ColumnConstraints(200)
         );
 
         forms = new HashMap<>();
@@ -114,25 +118,24 @@ public class CreatePDF extends Application {
 
         // Form configuration: name;label;placeholder;errorMessage;type;maxLength(optional)
         String[] formsArray = {
-                "title;Überschrift;Projektname eingeben;Bitte Überschrift eingeben;text;45",
-                "path;Speicherort (Ordner);C:\\Users\\Name\\Downloads;Bitte Ordner-Pfad eingeben!;path"
+                "title;Überschrift;Projektname eingeben;Bitte Überschrift eingeben;format;^[0-9]{5};5;45",
+                "path;Speicherort (Ordner);C:\\Users\\Name\\Downloads;Bitte Ordner-Pfad eingeben!;text;260",
+                "nOfProj; Anzahl Projekte (1-8);8;Bitte Ganzzahl eingeben (1-8);format;^[1-8]{1}$;1;1"
         };
 
         // Create form elements based on configuration
-        for (int i = 0; i < formsArray.length; i++) {
+        int i;
+        for (i = 0; i < formsArray.length; i++) {
             String[] parts = formsArray[i].split(";");
             String name = parts[0];
 
-            if (parts[4].equals("text")) {
+            if (parts[4].equals("format")) {
                 forms.put(name, new InputForm(parts[1], parts[2], parts[3]));
-                formListeners.add(new FormListener(
-                        (InputForm) forms.get(name),
-                        name,
-                        Integer.parseInt(parts[5])
+                formListeners.add(new FormListener((InputForm) forms.get(name), name, parts[5], Integer.parseInt(parts[6]), Integer.parseInt(parts[7])
                 ));
-            } else if (parts[4].equals("path")) {
+            } else if (parts[4].equals("text")) {
                 forms.put(name, new InputForm(parts[1], parts[2], parts[3]));
-                formListeners.add(new FormListener((InputForm) forms.get(name), name));
+                formListeners.add(new FormListener((InputForm) forms.get(name), name, Integer.parseInt(parts[5])));
             }
 
             gridPane.add(forms.get(name).getLabel(), 0, i);
@@ -140,22 +143,47 @@ public class CreatePDF extends Application {
             gridPane.add(forms.get(name).getInvalidLabel(), 2, i);
         }
 
-        gridPane.add(addButton, 0, formsArray.length);
+        String infoTextDefault = "Die Projektdatei wir nach der Projektnummer in der Überschrift benannt.\nEs werden die ersten 1-8 gefilterten Projekte als PDF exportiert.";
+        Label infoText = new Label(infoTextDefault);
+        forms.get("nOfProj").getInputField().focusedProperty().addListener(((observable, oldValue, newValue) -> {
+            if(formListeners.get(2).isValid()){
+                infoText.setText("Die Projektdatei wir nach der Projektnummer in der Überschrift benannt.\nEs werden die ersten " + forms.get("nOfProj").getInput() + " Projekte als PDF exportiert.");
+            } else {
+                infoText.setText(infoTextDefault);
+            }
+        }));
+        gridPane.add(infoText,0, i);
+        GridPane.setColumnSpan(infoText,3);
+
+        Button addButton = new Button("PDF erstellen");
+        gridPane.add(addButton, 0, formsArray.length+1);
+        addButton.prefWidthProperty().bind(gridPane.widthProperty());
         GridPane.setColumnSpan(addButton, 2);
 
         addButton.setOnAction(event -> {
             if (validate()) {
+                MAX_PROJECTS_TO_EXPORT = Integer.parseInt(forms.get("nOfProj").getInput());
+                String pdfPath = forms.get("path").getInput().replaceAll("\"", "");
                 String message = createPDF(
                         sortedProjects,
                         forms.get("title").getInput(),
-                        forms.get("path").getInput().replaceAll("\"", "")
+                        pdfPath
                 );
 
-                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                alert.setTitle("PDF erstellt");
-                alert.setHeaderText("Rückmeldung");
-                alert.setContentText(message + "\nDrücken Sie OK um den Vorgang zu beenden.");
+                Hyperlink textLink = new Hyperlink("Ordner öffnen.");
+                textLink.setOnAction(newEvent -> getHostServices().showDocument(pdfPath));
+
+                Label label = new Label("Daten erfolgreich exportiert. ");
+
+                HBox content = new HBox(label, textLink);
+                content.setAlignment(Pos.CENTER_LEFT);
+
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("PDF erstellen");
+                alert.setHeaderText(null);
+                alert.getDialogPane().setContent(content);
                 alert.showAndWait();
+
                 addButtonUsed = true;
                 stage.close();
             }
@@ -165,7 +193,7 @@ public class CreatePDF extends Application {
         Scene scene = new Scene(outerPane);
 
         // Apply CSS styling if available
-        var cssResource = getClass().getResource("/style.css");
+        URL cssResource = getClass().getResource("/style.css");
         if (cssResource != null) {
             scene.getStylesheets().add(cssResource.toExternalForm());
         } else {
@@ -173,7 +201,7 @@ public class CreatePDF extends Application {
         }
 
         stage.setScene(scene);
-        stage.setMinWidth(500);
+        stage.setMinWidth(600);
         stage.setMinHeight(300);
         stage.showAndWait();
     }
@@ -199,7 +227,9 @@ public class CreatePDF extends Application {
         Document document = new Document(PageSize.A4.rotate());
 
         // Set margins: left, right, top, bottom
-        document.setMargins(20, 20, HEADER_HEIGHT + 20, 40);
+        document.setMargins(20, 20, HEADER_HEIGHT+20, 40);
+
+        this.title = title;
 
         try {
             if (sortedProjects.isEmpty()) {
@@ -228,7 +258,7 @@ public class CreatePDF extends Application {
             PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(file));
 
             // Add header/footer event handler
-            HeaderFooter headerFooter = new HeaderFooter(title);
+            HeaderFooter headerFooter = new HeaderFooter();
             writer.setPageEvent(headerFooter);
 
             document.open();
@@ -383,10 +413,10 @@ public class CreatePDF extends Application {
 
         // Add calculation rows
         if (!projects.isEmpty()) {
-            int calcCount = projects.get(0).getCalculations().size();
+            int calcCount = projects.getFirst().getCalculations().size();
             for (int i = 0; i < calcCount; i++) {
                 final int index = i;
-                String calcName = projects.get(0).getCalculations().get(i).getName();
+                String calcName = projects.getFirst().getCalculations().get(i).getName();
                 addAttributeRow(table, calcName, projects, labelFont, cellFont,
                         p -> p.getCalculations().get(index).getCalculation());
             }
@@ -402,38 +432,18 @@ public class CreatePDF extends Application {
      * @param projectCount number of projects (data columns)
      */
     private void setFixedColumnWidths(PdfPTable table, int projectCount) {
+        int totalColumns = 1 + projectCount;
+        float[] columnWidths = new float[totalColumns];
+
+        for (int i = 0; i < totalColumns; i++) {
+            columnWidths[i] = COLUMN_WIDTH;
+        }
+
         try {
-            // Calculate available width
-            float availableWidth = PageSize.A4.rotate().getWidth() - 40;
-
-            // Calculate total columns
-            int totalColumns = 1 + projectCount;
-
-            // Calculate width per column (ensure it fits)
-            float widthPerColumn = Math.min(COLUMN_WIDTH, availableWidth / totalColumns);
-
-            // Ensure minimum width
-            widthPerColumn = Math.max(widthPerColumn, 80f);
-
-            float[] columnWidths = new float[totalColumns];
-
-            // First column (labels)
-            columnWidths[0] = widthPerColumn;
-
-            // All data columns get same width
-            for (int i = 1; i < columnWidths.length; i++) {
-                columnWidths[i] = widthPerColumn;
-            }
-
-            table.setWidths(columnWidths);
-
-            System.out.println("Table with " + projectCount + " projects: " +
-                    totalColumns + " columns, " + widthPerColumn + " points each");
-
+            table.setTotalWidth(columnWidths);
+            table.setLockedWidth(true);
         } catch (DocumentException e) {
             System.err.println("Error setting column widths: " + e.getMessage());
-            // Fallback: use percentage
-            table.setWidthPercentage(100);
         }
     }
 
@@ -566,24 +576,15 @@ public class CreatePDF extends Application {
      * Manages logo, title, date, and page numbering.
      */
     class HeaderFooter extends PdfPageEventHelper {
-        private String title;
-        private Image logo;
-        private static final float LOGO_WIDTH = 60f;
-        private static final float LOGO_HEIGHT = 60f;
-        private static final float PADDING = 20f;
 
         /**
          * Creates a new HeaderFooter with specified title.
-         *
-         * @param title document title to display in header
          */
-        public HeaderFooter(String title) {
-            this.title = title;
-
+        public HeaderFooter() {
             try {
                 // Load logo from classpath resources
                 ClassLoader classLoader = getClass().getClassLoader();
-                java.net.URL resource = classLoader.getResource("imag_logo.png");
+                java.net.URL resource = classLoader.getResource("imag_logo_cropped.png");
 
                 if (resource != null) {
                     logo = Image.getInstance(resource);
@@ -619,12 +620,11 @@ public class CreatePDF extends Application {
                 canvas.fill();
                 canvas.restoreState();
 
-                float headerTop = page.getHeight();
                 float headerBottom = page.getHeight() - HEADER_HEIGHT;
                 float headerCenterY = headerBottom + (HEADER_HEIGHT / 2);
 
                 // 1. LEFT TEXT: "Kennwert\n    Datenbank" vertically centered
-                Font leftTextFont = new Font(Font.HELVETICA, 14, Font.BOLD, Color.WHITE);
+                Font leftTextFont = new Font(Font.HELVETICA, TITLE_HEIGHT, Font.BOLD, Color.WHITE);
 
                 // First line: "Kennwert"
                 Phrase line1 = new Phrase("Kennwert", leftTextFont);
@@ -632,19 +632,13 @@ public class CreatePDF extends Application {
                 // Second line: "    Datenbank" (indented)
                 Phrase line2 = new Phrase("    Datenbank", leftTextFont);
 
-                // Calculate line height
-                float lineHeight = 16f;
-
-                // Y position for vertical centering (for 2 lines)
-                float textStartY = headerCenterY + (lineHeight / 2);
-
                 // Draw first line
                 ColumnText.showTextAligned(
                         canvas,
                         Element.ALIGN_LEFT,
                         line1,
                         PADDING,
-                        textStartY,
+                        headerCenterY + TITLE_HEIGHT/2 - (TITLE_HEIGHT * TITLE_OFFSET),
                         0
                 );
 
@@ -654,17 +648,15 @@ public class CreatePDF extends Application {
                         Element.ALIGN_LEFT,
                         line2,
                         PADDING,
-                        textStartY - lineHeight,
+                        headerCenterY - TITLE_HEIGHT/2 - (TITLE_HEIGHT * TITLE_OFFSET),
                         0
                 );
 
                 // 2. LOGO: Right side, vertically centered
-                float logoWidth = 0;
                 if (logo != null) {
                     try {
                         float logoY = headerCenterY - (logo.getScaledHeight() / 2);
                         float logoX = page.getWidth() - PADDING - logo.getScaledWidth();
-                        logoWidth = logo.getScaledWidth();
 
                         logo.setAbsolutePosition(logoX, logoY);
                         canvas.addImage(logo);
@@ -675,11 +667,11 @@ public class CreatePDF extends Application {
                 }
 
                 // 3. TITLE: Vertically centered and horizontally centered between left text and logo
-                Font titleFont = new Font(Font.HELVETICA, 20, Font.BOLD, Color.WHITE);
+                Font titleFont = new Font(Font.HELVETICA, TITLE_HEIGHT, Font.BOLD, Color.WHITE);
 
                 // Calculate available space for title
                 float leftBoundary = PADDING + 150;  // After left text
-                float rightBoundary = page.getWidth() - PADDING - logoWidth - 10;  // Before logo (with spacing)
+                float rightBoundary = page.getWidth() - PADDING - LOGO_WIDTH - 10;  // Before logo (with spacing)
 
                 // Calculate center between leftBoundary and rightBoundary
                 float titleCenterX = leftBoundary + (rightBoundary - leftBoundary) / 2;
@@ -690,7 +682,7 @@ public class CreatePDF extends Application {
                         Element.ALIGN_CENTER,
                         new Phrase(title, titleFont),
                         titleCenterX,
-                        headerCenterY,
+                        headerCenterY - (TITLE_HEIGHT * TITLE_OFFSET),
                         0
                 );
 
@@ -735,7 +727,7 @@ public class CreatePDF extends Application {
         for (FormListener formListener : formListeners) {
             formListener.validate();
             inputIsValid = formListener.isValid();
-            formListener.setInvalidLabel(inputIsValid);
+            formListener.setInvalidLabel(!inputIsValid);
         }
         return inputIsValid;
     }

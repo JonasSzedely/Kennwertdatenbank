@@ -20,9 +20,9 @@ public class DB {
         try {
             // Get database credentials from DatabaseConfig class
             DBConfig.loadProperties();
-            var jdbcUrl = DBConfig.getDbUrl();
-            var user = DBConfig.getDbUsername();
-            var password = DBConfig.getDbPassword();
+            String jdbcUrl = DBConfig.getDbUrl();
+            String user = DBConfig.getDbUsername();
+            String password = DBConfig.getDbPassword();
 
             // Open a connection
             Connection conn = DriverManager.getConnection(jdbcUrl, user, password);

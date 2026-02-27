@@ -1,6 +1,5 @@
 package userinterface;
 
-import database.DB;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -22,8 +21,8 @@ public class Settings {
         this.controller = controller;
     }
 
-    public void start(Stage stage) throws Exception {
-        var outerPane = new VBox();
+    public void start(Stage stage) {
+        VBox outerPane = new VBox();
         outerPane.setAlignment(Pos.CENTER);
         String path = "src/main/resources/db.properties";
 
@@ -41,9 +40,7 @@ public class Settings {
         dbPasswordInput.setText(dbPassword);
         AtomicReference<String> newPassword = new AtomicReference<>(dbPassword);
 
-        dbPasswordInput.textProperty().addListener((observable, oldValue, newValue) -> {
-            newPassword.set(newValue);
-        });
+        dbPasswordInput.textProperty().addListener((observable, oldValue, newValue) -> newPassword.set(newValue));
 
         Button setSettingsButton = new Button("Einstellungen speichern");
         setSettingsButton.setOnAction(event -> {
@@ -64,7 +61,7 @@ public class Settings {
         });
 
         Button tryDBConnectionButton = new Button("DB-Verbindung testen");
-        tryDBConnectionButton.setOnAction(e -> {
+        tryDBConnectionButton.setOnAction(event -> {
             boolean dbPath = setValue(path, "db.url", dbURLInput.getText());
             boolean dbUser = setValue(path, "db.username", dbUsernameInput.getText());
             boolean dbPass = setValue(path, "db.password", String.valueOf(newPassword));
@@ -77,7 +74,7 @@ public class Settings {
             }
         });
 
-        var gridPane = new GridPane(10,10);
+        GridPane gridPane = new GridPane(10,10);
         gridPane.setPadding(new Insets(20,20,20,20));
         gridPane.setAlignment(Pos.CENTER);
 

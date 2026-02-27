@@ -6,9 +6,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import database.DB;
 
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Types;
+import java.sql.*;
 import java.util.*;
 
 public class Controller {
@@ -16,7 +14,7 @@ public class Controller {
     private TreeMap<Integer, Project> PROJECTS;
     private boolean dbAvailable = false;
     private StringBuilder STRING_BUILDER = new StringBuilder();
-    private final Locale swissLocale = new Locale("de", "CH");
+    private final Locale swissLocale = Locale.of("de", "CH");
     Object[] values;
     private final String[] SQL_PROJECT_DATA = {
             "project_nr,int",
@@ -78,31 +76,28 @@ public class Controller {
         STRING_BUILDER.append("CREATE TABLE IF NOT EXISTS projects(");
 
         //construct SQL-table based on array SQL_PROJECT_DATA
-        for (int i = 0; i < SQL_PROJECT_DATA.length; i++) {
-            var parts = SQL_PROJECT_DATA[i].split(",", 2);
+        for (String str : SQL_PROJECT_DATA) {
+            String[] parts = str.split(",", 2);
             STRING_BUILDER.append(parts[0]);
 
             switch (parts[1]) {
-                case "int" :
+                case "int":
                     STRING_BUILDER.append(" INT NOT NULL,");
                     break;
-                case "string" :
+                case "string":
                     STRING_BUILDER.append(" VARCHAR(255) NOT NULL,");
                     break;
-                case "json" :
+                case "json":
                     STRING_BUILDER.append(" JSONB NOT NULL,");
                     break;
             }
         }
         STRING_BUILDER.append("CHECK (project_nr > 9999), PRIMARY KEY(project_nr, version))");
 
-        var sql = STRING_BUILDER.toString();
+        String sql = STRING_BUILDER.toString();
         STRING_BUILDER = new StringBuilder();
 
-        try (var conn = DB.connect(); var stmt = conn.createStatement()) {
-            if (conn == null) {
-                return false;
-            }
+        try (Connection conn = DB.connect(); Statement stmt = conn.createStatement()) {
             stmt.executeUpdate(sql);
             dbAvailable = true;
             PROJECTS = getProjects();
@@ -164,13 +159,13 @@ public class Controller {
         }
         //Versionsabfrage von der DB
         int version = 1;
-        try (var conn = DB.connect();
-             var pstmt = conn.prepareStatement("SELECT MAX(version) FROM projects WHERE project_nr = ?")) {
+        try (Connection conn = DB.connect();
+            PreparedStatement pstmt = conn.prepareStatement("SELECT MAX(version) FROM projects WHERE project_nr = ?")) {
 
             pstmt.setInt(1, project_nr);
-            var rs = pstmt.executeQuery();
+            ResultSet rs = pstmt.executeQuery();
 
-            //Wenn bereits min. eine Projekt-Version existiert, wird die Versionierung um eins erhöht
+            //if the same project exists, the highest version will be set. (1,3,4 -> 5)
             if (rs.next()) {
                 int maxVersion = rs.getInt(1);
                 if (!rs.wasNull()) {
@@ -180,8 +175,8 @@ public class Controller {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        var data = new ProjectData(dataPath);
-        String jacksonData = null;
+        ProjectData data = new ProjectData(dataPath);
+        String jacksonData;
         try {
             jacksonData = OBJECT_MAPPER.writeValueAsString(data.getData());
         } catch (JsonProcessingException e) {
@@ -236,13 +231,13 @@ public class Controller {
         }
         STRING_BUILDER.append("?)");
 
-        var sql = STRING_BUILDER.toString();
+        String sql = STRING_BUILDER.toString();
         STRING_BUILDER = new StringBuilder();
 
-        try (var conn =  DB.connect();
-             var pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection conn =  DB.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             for (int i = 0; i < SQL_PROJECT_DATA.length; i++) {
-                var parts = SQL_PROJECT_DATA[i].split(",", 2);
+                String[] parts = SQL_PROJECT_DATA[i].split(",", 2);
                 String type = parts[1];
 
                 switch (type) {
@@ -261,7 +256,7 @@ public class Controller {
             // execute the INSERT statement and get the inserted id
             int insertedRow = pstmt.executeUpdate();
             if (insertedRow > 0) {
-                var rs = pstmt.getGeneratedKeys();
+                ResultSet rs = pstmt.getGeneratedKeys();
                 if (rs.next()) {
                     return "Projekt Nr. " + rs.getInt(1) + " Version " + rs.getInt(2) + " wurde hinzugefügt.";
                 }
@@ -310,7 +305,7 @@ public class Controller {
         }
         //Initialize an INSERT statement.
         //The question mark (?) is a placeholder that will be replaced by the actual values later.
-        var sql = (
+        String sql = (
                 "UPDATE projects SET " +
                         "address = ?," +
                         "plz = ?," +
@@ -340,7 +335,7 @@ public class Controller {
                         " WHERE project_nr = ? AND version = ?");
 
 
-        try (var conn =  DB.connect(); var pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection conn =  DB.connect(); PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             // bind the values
             pstmt.setString(1, address);
             pstmt.setInt(2, plz);
@@ -374,7 +369,7 @@ public class Controller {
             // execute the INSERT statement and get the inserted id
             int editedRow = pstmt.executeUpdate();
             if (editedRow > 0) {
-                var rs = pstmt.getGeneratedKeys();
+                ResultSet rs = pstmt.getGeneratedKeys();
                 if (rs.next()) {
                     return "Projekt Nr. " + project_nr + " Version " + version + " wurde angepasst.";
                 }
@@ -396,13 +391,13 @@ public class Controller {
         if (!isDatabaseAvailable()) {
             return "Keine Datenbankverbindung verfügbar. Projekte kann nicht gelöscht werden.";
         }
-        var sql = ("DELETE FROM projects WHERE project_nr = ? AND version = ?");
-        try (var conn =  DB.connect(); var pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        String sql = ("DELETE FROM projects WHERE project_nr = ? AND version = ?");
+        try (Connection conn =  DB.connect(); PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setInt(1, projectNr);
             pstmt.setInt(2, version);
             int editedRow = pstmt.executeUpdate();
             if (editedRow > 0) {
-                var rs = pstmt.getGeneratedKeys();
+                ResultSet rs = pstmt.getGeneratedKeys();
                 if (rs.next()) {
                     return "Projekt Nr. " + rs.getInt(1) + " version Nr. " + rs.getInt(2) + " wurde entfernt";
                 }
@@ -423,20 +418,20 @@ public class Controller {
         if (!isDatabaseAvailable()) {
             return PROJECTS;
         }
-        PROJECTS = new TreeMap<Integer, Project>();
+        PROJECTS = new TreeMap<>();
 
         STRING_BUILDER.append("SELECT ");
         for(int i = 0; i < SQL_PROJECT_DATA.length-1; i++){
-            STRING_BUILDER.append(SQL_PROJECT_DATA[i].split(",")[0] + ", ");
+            STRING_BUILDER.append(SQL_PROJECT_DATA[i].split(",")[0]).append(", ");
         }
-        STRING_BUILDER.append(SQL_PROJECT_DATA[SQL_PROJECT_DATA.length-1].split(",")[0] + " FROM projects ORDER BY project_nr");
-        var sql = STRING_BUILDER.toString();
+        STRING_BUILDER.append(SQL_PROJECT_DATA[SQL_PROJECT_DATA.length - 1].split(",")[0]).append(" FROM projects ORDER BY project_nr");
+        String sql = STRING_BUILDER.toString();
         STRING_BUILDER = new StringBuilder();
 
-        try (var conn =  DB.connect();
-             var stmt = conn.createStatement()) {
+        try (Connection conn =  DB.connect();
+             Statement stmt = conn.createStatement()) {
 
-            var rs = stmt.executeQuery(sql);
+            ResultSet rs = stmt.executeQuery(sql);
 
             while (rs.next()) {
                 String data = rs.getString("data");
@@ -448,7 +443,7 @@ public class Controller {
 
                 ProjectData projectData = new ProjectData(map);
 
-                var project = new Project(
+                Project project = new Project(
                         rs.getInt("project_nr"),
                         rs.getInt("version"),
                         rs.getString("address"),
@@ -579,52 +574,52 @@ public class Controller {
      * @param howMany set how many projects should be created.
      */
     private void addRandomProjects(int howMany) {
-        var rand = new Random(123);
+        Random rand = new Random(123);
         int j = 1;
         for (int i = 0; i<howMany; i++){
             int num = 10001 + i;
 
-            var pt = "Miete";
+            String pt = "Miete";
             if(i%2==0){
                 pt = "Stockwerkeigentum";
             }
 
-            var fassade = "AWD";
+            String fassade = "AWD";
             if(i%2==0){
                 fassade = "Hinterlüftet";
             }
 
-            var window = "Kunststoff";
+            String window = "Kunststoff";
             if(i%2==0){
                 window = "Holz";
             }
 
-            var dach = "Flachdach";
+            String dach = "Flachdach";
             if(i%2==0){
                 dach = "Steildach";
             }
 
-            var heizung = "Erdsonde";
+            String heizung = "Erdsonde";
             if(i%2==0){
                 heizung = "Pellet";
             }
 
-            var kühlung = "FreeCooling";
+            String kühlung = "FreeCooling";
             if(i%2==0){
                 kühlung = "keine";
             }
 
-            var lüftung = "KWL";
+            String lüftung = "KWL";
             if(i%2==0){
                 lüftung = "keine";
             }
 
-            var lüftungUG = "mechanisch";
+            String lüftungUG = "mechanisch";
             if(i%2==0){
                 lüftungUG = "natürlich";
             }
 
-            var cono = "Ja";
+            String cono = "Ja";
             if(i%2==0){
                 cono = "Nein";
             }

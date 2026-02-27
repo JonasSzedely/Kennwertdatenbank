@@ -11,6 +11,8 @@ import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import kennwertdatenbank.Controller;
 import kennwertdatenbank.Project;
+
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -22,12 +24,11 @@ public class ProjectInputWindow extends Application {
         MODIFY,
         NEXT
     }
-    private Controller controller;
-    private boolean modify = false;
+    private final Controller controller;
     private Project project;
     private Button addButton;
     private boolean addButtonUsed = false;
-    private Type type;
+    private final Type type;
     private HashMap<String, Form> forms;
     private ArrayList<FormListener> formListeners;
     private Stage stage;
@@ -51,16 +52,15 @@ public class ProjectInputWindow extends Application {
     public ProjectInputWindow(Controller controller, Project project, Type type){
         this.controller = controller;
         this.project = project;
-        this.modify = true;
         this.type = type;
     }
 
     @Override
-    public void start(Stage stage) throws Exception {
+    public void start(Stage stage) {
         this.stage = stage;
         stage.setTitle("Projekt Formular");
 
-        var outerPane = new VBox(10);
+        VBox outerPane = new VBox(10);
         outerPane.setPadding(new Insets(20));
         outerPane.setAlignment(Pos.CENTER);
         outerPane.setStyle("-fx-background-color: white");
@@ -73,17 +73,17 @@ public class ProjectInputWindow extends Application {
             case NEXT -> title.setText("Neue Version von Projekt Nr. " + project.getProjectNr() + " hinzufügen");
         }
 
-        var gridPane = new GridPane(10,10);
+        GridPane gridPane = new GridPane(10,10);
         gridPane.setPadding(new Insets(20,20,20,20));
         gridPane.setAlignment(Pos.CENTER);
         gridPane.getColumnConstraints().addAll(new ColumnConstraints(150), new ColumnConstraints(200), new ColumnConstraints(150), new ColumnConstraints(150), new ColumnConstraints(200), new ColumnConstraints(150));
 
-        /**
-         * Each element in the array represents an input field with a description.
-         * There are 3 types: number, text, dropdown
-         * Each element requires the following values (only type number requires the validation parameters)
-         * LABEL ; NAME ; EXAMPLE TEXT ; WARNING ; TYPE ; VALIDATION-PARAMETER MIN ; VALIDATION-PARAMETER MAX
-         */
+        /*
+        Each element in the array represents an input field with a description.
+        There are 3 types: number, text, dropdown
+        Each element requires the following values (only type number requires the validation parameters)
+        LABEL ; NAME ; EXAMPLE TEXT ; WARNING ; TYPE ; VALIDATION-PARAMETER MIN ; VALIDATION-PARAMETER MAX
+        */
         String[] formsArray = {
                 "projectNr;Projekt Nummer;10000;Keine gültige Zahl!;number;10000;99999",
                 "address;Adresse;Musterstrasse 5;Bitte Adresse eingeben!;text",
@@ -170,6 +170,7 @@ public class ProjectInputWindow extends Application {
                 });
             }
             case MODIFY -> {
+                //Modifying a Project in the DB
                 addButton.setText("Projekt anpassen");
                 fillFields();
                 forms.get("projectNr").getInputField().setDisable(true);
@@ -184,7 +185,7 @@ public class ProjectInputWindow extends Application {
                 });
             }
             case NEXT -> {
-                //Adding a new Project to the DB
+                //Adding a new version of the Project to the DB
                 addButton.setText("Neue Version hinzufügen");
                 fillFields();
                 forms.get("projectNr").getInputField().setDisable(true);
@@ -203,10 +204,10 @@ public class ProjectInputWindow extends Application {
         GridPane.setColumnSpan(addButton,5);
 
         outerPane.getChildren().addAll(title, gridPane);
-
         Scene scene = new Scene(outerPane);
 
-        var cssResource = getClass().getResource("/style.css");
+        //adding CSS to the Scene
+        URL cssResource = getClass().getResource("/style.css");
         if (cssResource != null) {
             scene.getStylesheets().add(cssResource.toExternalForm());
         } else {
@@ -280,7 +281,7 @@ public class ProjectInputWindow extends Application {
                 forms.get("ventilationTypeUG").getInput(),
                 forms.get("coNO").getInput(),
                 forms.get("special").getInput(),
-                forms.get("dataPath").getInput()
+                forms.get("dataPath").getInput().replaceAll("\"", "").trim()
         );
     }
 
@@ -321,7 +322,7 @@ public class ProjectInputWindow extends Application {
         for (FormListener formListener : formListeners) {
             formListener.validate();
             inputIsValid = formListener.isValid();
-            formListener.setInvalidLabel(inputIsValid);
+            formListener.setInvalidLabel(!inputIsValid);
         }
         return inputIsValid;
     }
@@ -335,5 +336,4 @@ public class ProjectInputWindow extends Application {
         addButtonUsed = true;
         stage.close();
     }
-
 }

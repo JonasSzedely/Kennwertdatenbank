@@ -1,10 +1,10 @@
 package userinterface;
-
 import database.DBConfig;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.PauseTransition;
 import javafx.animation.Timeline;
+import javafx.application.Platform;
 import javafx.collections.*;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
@@ -24,6 +24,9 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import kennwertdatenbank.Project;
 import org.controlsfx.control.ToggleSwitch;
+
+import java.io.IOException;
+import java.net.URL;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -33,10 +36,11 @@ public class UI extends Application {
     private Controller controller;
     private final TreeMap<Integer, Project> treeMap = new TreeMap<>();
     private final ObservableMap<Integer, Project> data = FXCollections.observableMap(treeMap);
-    private ObservableList<Project> projectList = FXCollections.observableArrayList(data.values());
-    private FilteredList<Project> filteredProjects = new FilteredList<>(projectList);
-    private SortedList<Project> sortedProjects = new SortedList<>(filteredProjects);
-    private final Locale swissLocale = new Locale("de", "CH");
+    private final ObservableList<Project> projectList = FXCollections.observableArrayList(data.values());
+    private final FilteredList<Project> filteredProjects = new FilteredList<>(projectList);
+    private final SortedList<Project> sortedProjects = new SortedList<>(filteredProjects);
+    private final LinkedHashMap<Integer, VBox> cellCache = new LinkedHashMap<>();
+    private final Locale swissLocale = Locale.of("de", "CH");
     private RangeFilter sumFilter;
     private RangeFilter apartmentNrFilter;
     private RangeFilter volumeFilter;
@@ -46,14 +50,15 @@ public class UI extends Application {
     private final double CELL_WIDTH = 150;
     private final double CELL_HEIGHT = 30;
     private final double CELL_GAP = 0;
-    private final int SCROLLBAR_WIDTH = 15;
-    private final LinkedHashMap<Integer, VBox> cellCache = new LinkedHashMap<>();
     private static final int MAX_CACHE_SIZE = 50;
-    private final int TOOL_TIP_TIME = 500;
-
+    private final int TOOL_TIP_TIME = 200;
+    private final double BUTTON_SIZE = CELL_HEIGHT * 0.66;
+    private final int SCROLLBAR_WIDTH = 15;
 
     @Override
     public void start(Stage primaryStage) {
+
+        StageFactory.setIcon(primaryStage);
         controller = new Controller();
 
         VBox outerPane = new VBox();
@@ -67,16 +72,14 @@ public class UI extends Application {
         outerPane.getChildren().addAll(topPane, middlePane, bottomPane);
 
         Scene scene = new Scene(outerPane, 1000,600);
-        var cssResource = getClass().getResource("/style.css");
+
+        URL cssResource = getClass().getResource("/style.css");
         if (cssResource != null) {
             scene.getStylesheets().add(cssResource.toExternalForm());
         } else {
             System.out.println("CSS-Datei nicht gefunden!");
         }
         primaryStage.setScene(scene);
-
-        //Height bind to scene height
-        //bottomPane.prefHeightProperty().bind(scene.heightProperty().multiply(0.05));
 
         primaryStage.setMaximized(true);
         primaryStage.show();
@@ -95,7 +98,7 @@ public class UI extends Application {
         warning.setHeaderText("Keine Datenbankverbindung");
         warning.setContentText(
                 "Die Anwendung konnte keine Verbindung zur Datenbank herstellen.\n" +
-                        "Das Programm läuft im Offline-Modus mit eingeschränkter Funktionalität.\n\n" +
+                        "Das Programm läuft im Offline-Modus mit eingeschränkter Funktionalität.\n" +
                         "Bitte prüfen Sie:\n" +
                         "- Ist die Datenbank gestartet?\n" +
                         "- Sind die Zugangsdaten in den Einstellungen korrekt?\n" +
@@ -140,19 +143,19 @@ public class UI extends Application {
         buttonBox.setAlignment(Pos.CENTER);
         buttonBox.getColumnConstraints().add(new ColumnConstraints(100));
 
-        Button exportButton = new Button("Exportieren");
-        exportButton.setMaxWidth(Double.MAX_VALUE);
         Button pdfButton = new Button("PDF erstellen");
         pdfButton.setMaxWidth(Double.MAX_VALUE);
-        Button addOptionsButton = new Button("Einstellungen");
-        addOptionsButton.setMaxWidth(Double.MAX_VALUE);
+        Button exportButton = new Button("Exportieren");
+        exportButton.setMaxWidth(Double.MAX_VALUE);
+        Button optionsButton = new Button("Einstellungen");
+        optionsButton.setMaxWidth(Double.MAX_VALUE);
         Button addProjectButton = new Button("Neues Projekt");
         addProjectButton.setMaxWidth(Double.MAX_VALUE);
 
-        buttonBox.add(exportButton,1,0);
         buttonBox.add(pdfButton,0,0);
+        buttonBox.add(exportButton,1,0);
         buttonBox.add(addProjectButton,0,1);
-        buttonBox.add(addOptionsButton,1,1);
+        buttonBox.add(optionsButton,1,1);
 
         //Event-Handler for pdfButton
         pdfButton.setOnAction(event ->{
@@ -162,7 +165,7 @@ public class UI extends Application {
             }
             CreatePDF newPDF = new CreatePDF(sortedProjects);
             try {
-                Stage newStage = new Stage();
+                Stage newStage = StageFactory.createStage("PDF erstellen");
                 newPDF.start(newStage);
             } catch (Exception e) {
                 Alert error = new Alert(Alert.AlertType.ERROR);
@@ -173,15 +176,55 @@ public class UI extends Application {
             }
         });
 
+        //Event-Handler for exportButton
+        exportButton.setOnAction(event -> {
+            if (!controller.isDatabaseAvailable()) {
+                noDBConnection();
+                return;
+            }
+            TextInputDialog dialog = new TextInputDialog();
+            dialog.setTitle("Daten exportieren");
+            dialog.setHeaderText("Daten exportieren");
+            dialog.setContentText("Zielordner für Expor eingeben:");
+            dialog.getEditor().setPromptText("C:\\Users\\Name\\Downloads");
+            Platform.runLater(() -> dialog.getDialogPane().requestFocus()); //von claude.ai (needed because focus is set after the dialog is rendered
+            Optional<String> result = dialog.showAndWait();
+
+            if (result.isPresent()) {
+                String path = dialog.getEditor().getText().replaceAll("\"", "");
+                System.out.println(path);
+                CreateExcel newExcel = new CreateExcel(projectList, path);
+                try {
+                    newExcel.export();
+
+                    Hyperlink textLink = new Hyperlink("Ordner öffnen.");
+                    textLink.setOnAction(newEvent -> getHostServices().showDocument(path));
+
+                    Label label = new Label("Daten erfolgreich exportiert. ");
+
+                    HBox content = new HBox(label, textLink);
+                    content.setAlignment(Pos.CENTER_LEFT);
+
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                    alert.setTitle("Daten exportieren");
+                    alert.setHeaderText(null);
+                    alert.getDialogPane().setContent(content);
+                    alert.showAndWait();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+
         //Event-Handler for addProjectButton
         addProjectButton.setOnAction(event -> {
             if (!controller.isDatabaseAvailable()) {
                 noDBConnection();
                 return;
             }
-            var addProject = new ProjectInputWindow(controller, ProjectInputWindow.Type.NEW);
+            ProjectInputWindow addProject = new ProjectInputWindow(controller, ProjectInputWindow.Type.NEW);
             try {
-                Stage newStage = new Stage();
+                Stage newStage = StageFactory.createStage("Neues Projekt");
                 addProject.start(newStage);
                 if(addProject.getAddButtonStatus()) {
                     refreshProjectList();
@@ -195,8 +238,8 @@ public class UI extends Application {
             }
         });
 
-        //Event-Handler for addOptionsButton
-        addOptionsButton.setOnAction(event -> {
+        //Event-Handler for optionsButton
+        optionsButton.setOnAction(event -> {
             TextInputDialog settingsPW = new TextInputDialog();
             settingsPW.setTitle("Einstellung");
             settingsPW.setHeaderText("Bitte Passwort eingeben");
@@ -219,14 +262,14 @@ public class UI extends Application {
             });
             Optional<String> result = settingsPW.showAndWait();
 
-            if(!result.isPresent()){
+            if(result.isEmpty()){
                 return;
             }
 
             if (result.get().equals("IMAG")){
-                var options = new Settings(controller);
+                Settings options = new Settings(controller);
                 try {
-                    Stage newStage = new Stage();
+                    Stage newStage = StageFactory.createStage("Einstellungen");
                     options.start(newStage);
                     if(options.isSetButtonUsed()) {
                         DBConfig.loadProperties(); // Lade neue Properties
@@ -256,8 +299,8 @@ public class UI extends Application {
             wrongPW.setHeaderText("Falsches Passwort");
             wrongPW.setContentText("Noch einmal versuchen?");
             Optional<ButtonType> clicked = wrongPW.showAndWait();
-            if (clicked.get() == ButtonType.OK){
-                addOptionsButton.fire();
+            if (clicked.isPresent() && clicked.get() == ButtonType.OK){
+                optionsButton.fire();
             } else {
                 wrongPW.close();
             }
@@ -322,17 +365,13 @@ public class UI extends Application {
         leftScroll.vvalueProperty().bindBidirectional(rightScroll.vvalueProperty());
 
         //update cells while scrolling right (code from claude.ai)
-        rightScroll.hvalueProperty().addListener((obs, oldVal, newVal) -> {
-            updateVisibleCells();
-        });
+        rightScroll.hvalueProperty().addListener(observable -> updateVisibleCells());
 
         //update cells while scrolling left (code from claude.ai)
-        rightScroll.widthProperty().addListener((obs, oldVal, newVal) -> {
-            updateVisibleCells();
-        });
+        rightScroll.widthProperty().addListener(observable -> updateVisibleCells());
 
         //update cells when projects get updated (code from claude.ai)
-        sortedProjects.addListener((ListChangeListener<Project>) c -> {
+        sortedProjects.addListener((ListChangeListener<Project>) change -> {
             double totalWidth = sortedProjects.size() * (CELL_WIDTH + CELL_GAP);
             totalWidthSpacer.setPrefWidth(totalWidth);
             totalWidthSpacer.setMinWidth(totalWidth);
@@ -376,9 +415,7 @@ public class UI extends Application {
 
         // Timeline für automatische Aktualisierung jede Sekunde
         Timeline timeline = new Timeline(
-                new KeyFrame(Duration.seconds(1), event -> {
-                    dateTimeLabel.setText(ZonedDateTime.now().format(formatter));
-                })
+                new KeyFrame(Duration.seconds(1), event -> dateTimeLabel.setText(ZonedDateTime.now().format(formatter)))
         );
         timeline.setCycleCount(Animation.INDEFINITE);
         timeline.play();
@@ -515,15 +552,12 @@ public class UI extends Application {
         apartmentNrFilter.setOnFilterChanged(() -> updateFilter(filterProjectNr, versionFilter, constructionTypeFilter,projectTypeFilter));
         volumeFilter.setOnFilterChanged(() -> updateFilter(filterProjectNr, versionFilter, constructionTypeFilter,projectTypeFilter));
 
-        filterProjectNr.setOnAction(e -> updateFilter(filterProjectNr, versionFilter, constructionTypeFilter,projectTypeFilter));
+        filterProjectNr.setOnAction(event -> updateFilter(filterProjectNr, versionFilter, constructionTypeFilter,projectTypeFilter));
 
-        projectList.addListener(new ListChangeListener<Project>() {
-            @Override
-            public void onChanged(Change<? extends Project> c) {
+        projectList.addListener((ListChangeListener<Project>) change ->  {
                 sumFilter.setRange();
                 apartmentNrFilter.setRange();
                 volumeFilter.setRange();
-            }
         });
 
         versionFilter.selectedProperty().addListener((obs, oldValue, newValue) -> {
@@ -535,9 +569,9 @@ public class UI extends Application {
             updateFilter(filterProjectNr, versionFilter, constructionTypeFilter,projectTypeFilter);
         });
 
-        constructionTypeFilter.setOnAction(e -> updateFilter(filterProjectNr, versionFilter, constructionTypeFilter,projectTypeFilter));
+        constructionTypeFilter.setOnAction(event -> updateFilter(filterProjectNr, versionFilter, constructionTypeFilter,projectTypeFilter));
 
-        projectTypeFilter.setOnAction(e -> updateFilter(filterProjectNr, versionFilter, constructionTypeFilter,projectTypeFilter));
+        projectTypeFilter.setOnAction(event -> updateFilter(filterProjectNr, versionFilter, constructionTypeFilter,projectTypeFilter));
 
         outerPane.getChildren().addAll(filterBox);
         return outerPane;
@@ -545,16 +579,15 @@ public class UI extends Application {
 
     /**
      * used to update the projects
-     * @param filterProjectNr
-     * @param versionFilter
-     * @param constructionTypeFilter
+     * @param filterProjectNr input filter for project number
+     * @param versionFilter input filter for version
+     * @param constructionTypeFilter input filter for construction type
+     * @param projectTypeFilter input filter for project type
      */
     private void updateFilter(TextField filterProjectNr,
                               ToggleSwitch versionFilter,
                               ComboBox<String> constructionTypeFilter,
                               ComboBox<String> projectTypeFilter) {
-
-        if (filteredProjects == null) return;
 
         //predicate methode von claude.ai
         filteredProjects.setPredicate(project -> {
@@ -574,14 +607,13 @@ public class UI extends Application {
             }
 
             boolean matchProjectNrFilter = isEmpty(filterProjectNr) || String.valueOf(project.getProjectNr()).contains(filterProjectNr.getText().toLowerCase());
-
-            boolean matchVersionFilter = true;
-            if( versionFilter.isSelected() && data.containsKey((project.getProjectNr()*100) + (project.getVersion()+1))){
-                matchVersionFilter = false;
-            }
-
             boolean matchConstructionType = selectedConstructionType == null || selectedConstructionType.equals("Alle Bauvorhaben") || String.valueOf(project.getConstructionType()).contains(selectedConstructionType);
             boolean matchProjectType = selectedProjectType == null || selectedProjectType.equals("Alle Gebäudenutzer") || String.valueOf(project.getPropertyType()).contains(selectedProjectType);
+
+
+            int baseKey = project.getProjectNr() * 100;
+            int currentKey = baseKey + project.getVersion();
+            boolean matchVersionFilter = !versionFilter.isSelected() || treeMap.subMap(currentKey + 1, baseKey + 100).isEmpty();
 
             return matchProjectNrFilter && matchVersionFilter && matchVolumeFilter && matchConstructionType && matchProjectType && matchSumFilter && matchApartmentFilter;
         });
@@ -590,9 +622,7 @@ public class UI extends Application {
     private VBox displayRowLabels(){
         rowLabels = new VBox();
 
-        projectList.addListener(new ListChangeListener<Project>() {
-            @Override
-            public void onChanged(Change<? extends Project> c) {
+        projectList.addListener((ListChangeListener<Project>) change -> {
                 rowLabels.getChildren().clear();
                 rowLabels.getChildren().addAll(
                         projectLabel("Projekt-Nr."),
@@ -630,7 +660,6 @@ public class UI extends Application {
                     rowLabels.getChildren().add(projectLabel(projectList.getFirst().getCalculations().get(i).getName()));
                 }
                 rowLabels.getChildren().add(noScroll);
-            }
         });
 
         return rowLabels;
@@ -692,7 +721,7 @@ public class UI extends Application {
         modifyProjectButton.setOnAction(event -> {
             ProjectInputWindow modify = new ProjectInputWindow(controller, project, ProjectInputWindow.Type.MODIFY);
             try {
-                Stage newStage = new Stage();
+                Stage newStage = StageFactory.createStage("Projekt bearbeiten");
                 modify.start(newStage);
                 if (modify.getAddButtonStatus()) {
                     refreshProjectList();
@@ -702,10 +731,10 @@ public class UI extends Application {
             }
         });
         modifyProjectButton.setTooltip(new Tooltip("Projekt bearbeiten"));
-        modifyProjectButton.getTooltip().setShowDelay(Duration.millis(100));
-        modifyProjectButton.setMinSize(CELL_HEIGHT*0.66, CELL_HEIGHT*0.66);
-        modifyProjectButton.setMaxSize(CELL_HEIGHT*0.66, CELL_HEIGHT*0.66);
-        modifyProjectButton.setPrefSize(CELL_HEIGHT*0.66, CELL_HEIGHT*0.66);
+        modifyProjectButton.getTooltip().setShowDelay(Duration.millis(TOOL_TIP_TIME));
+        modifyProjectButton.setMinSize(BUTTON_SIZE, BUTTON_SIZE);
+        modifyProjectButton.setMaxSize(BUTTON_SIZE, BUTTON_SIZE);
+        modifyProjectButton.setPrefSize(BUTTON_SIZE, BUTTON_SIZE);
         modifyProjectButton.setPadding(new Insets(0));
 
         //Delete-Project-Button, delete the project from the database
@@ -728,10 +757,10 @@ public class UI extends Application {
             }
         });
         deletProjectButton.setTooltip(new Tooltip("Projekt löschen"));
-        deletProjectButton.getTooltip().setShowDelay(Duration.millis(100));
-        deletProjectButton.setMinSize(CELL_HEIGHT*0.66, CELL_HEIGHT*0.66);
-        deletProjectButton.setMaxSize(CELL_HEIGHT*0.66, CELL_HEIGHT*0.66);
-        deletProjectButton.setPrefSize(CELL_HEIGHT*0.66, CELL_HEIGHT*0.66);
+        deletProjectButton.getTooltip().setShowDelay(Duration.millis(TOOL_TIP_TIME));
+        deletProjectButton.setMinSize(BUTTON_SIZE, BUTTON_SIZE);
+        deletProjectButton.setMaxSize(BUTTON_SIZE, BUTTON_SIZE);
+        deletProjectButton.setPrefSize(BUTTON_SIZE, BUTTON_SIZE);
         deletProjectButton.setPadding(new Insets(0));
 
         Region spacerHead = new Region();
@@ -752,7 +781,7 @@ public class UI extends Application {
         nextVersionButton.setOnAction(event -> {
             ProjectInputWindow nextVersion = new ProjectInputWindow(controller, project, ProjectInputWindow.Type.NEXT);
             try {
-                Stage newStage = new Stage();
+                Stage newStage = StageFactory.createStage("Neue Version");
                 nextVersion.start(newStage);
                 if (nextVersion.getAddButtonStatus()) {
                     refreshProjectList();
@@ -762,26 +791,26 @@ public class UI extends Application {
             }
         });
         nextVersionButton.setTooltip(new Tooltip("Neue Version erstellen"));
-        nextVersionButton.getTooltip().setShowDelay(Duration.millis(100));
-        nextVersionButton.setMinSize(CELL_HEIGHT*0.66, CELL_HEIGHT*0.66);
-        nextVersionButton.setMaxSize(CELL_HEIGHT*0.66, CELL_HEIGHT*0.66);
-        nextVersionButton.setPrefSize(CELL_HEIGHT*0.66, CELL_HEIGHT*0.66);
+        nextVersionButton.getTooltip().setShowDelay(Duration.millis(TOOL_TIP_TIME));
+        nextVersionButton.setMinSize(BUTTON_SIZE, BUTTON_SIZE);
+        nextVersionButton.setMaxSize(BUTTON_SIZE, BUTTON_SIZE);
+        nextVersionButton.setPrefSize(BUTTON_SIZE, BUTTON_SIZE);
 
         //focus checkbox, sets the project to be focused and sorted first
         CheckBox focus = new CheckBox();
         focus.setTooltip(new Tooltip("Projekt als erstes anzeigen"));
-        focus.getTooltip().setShowDelay(Duration.millis(100));
+        focus.getTooltip().setShowDelay(Duration.millis(TOOL_TIP_TIME));
         focus.selectedProperty().bindBidirectional(project.pinnedProperty()); //code from claude.ai
         focus.setPadding(new Insets(0));
 
         HBox focusContainer = new HBox(focus);
         focusContainer.setAlignment(Pos.CENTER);
-        focusContainer.setMinSize(CELL_HEIGHT*0.66, CELL_HEIGHT*0.66);
-        focusContainer.setMaxSize(CELL_HEIGHT*0.66, CELL_HEIGHT*0.66);
-        focusContainer.setPrefSize(CELL_HEIGHT*0.66, CELL_HEIGHT*0.66);
+        focusContainer.setMinSize(BUTTON_SIZE, BUTTON_SIZE);
+        focusContainer.setMaxSize(BUTTON_SIZE, BUTTON_SIZE);
+        focusContainer.setPrefSize(BUTTON_SIZE, BUTTON_SIZE);
 
         // Update sorting when the pinned property changes (from claude.ai)
-        project.pinnedProperty().addListener((obs, oldVal, newVal) -> {
+        project.pinnedProperty().addListener(observable -> {
             PauseTransition pause = new PauseTransition(Duration.millis(500));
             pause.setOnFinished(event -> updateSorting());
             pause.play();
@@ -803,7 +832,7 @@ public class UI extends Application {
                 projectHead,
                 projectVersion,
                 projectLabel(project.getAddress()),
-                projectLabel(project.getPlz()),
+                projectLabel(String.valueOf(project.getPlz())),
                 projectLabel(project.getLocation()),
                 projectLabel(project.getOwner()),
                 projectLabel(project.getPropertyType()),
@@ -893,12 +922,9 @@ public class UI extends Application {
         grid.add(averageWindowRatio,0,3);
         grid.add(averageWindowRatioValue,1,3);
 
-        projectList.addListener(new ListChangeListener<Project>() {
-            @Override
-            public void onChanged(Change<? extends Project> c) {
+        projectList.addListener((ListChangeListener<Project>) change ->  {
                 nrOfProjectsValue.setText(String.valueOf(projectList.size()));
                 averageRatioUGValue.setText(String.format("%.2f", controller.getAverageRatioUG()));
-            }
         });
 
         outerPane.getChildren().add(grid);
