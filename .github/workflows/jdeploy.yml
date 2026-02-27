@@ -18,6 +18,7 @@ jobs:
   build:
     permissions:
       contents: write
+      id-token: write      # Für OIDC mit npm
     runs-on: ubuntu-latest
 
     steps:
@@ -35,3 +36,4 @@ jobs:
         uses: shannah/jdeploy@master
         with:
           github_token: ${{ github.token }}
+          npm_token: ${{ secrets.NPM_TOKEN }}
