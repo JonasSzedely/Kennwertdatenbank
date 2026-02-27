@@ -3,6 +3,9 @@
 <ins>Description</ins>  
 This Programm can be used to import projects from "Messerli Bauadministration" and compare them with each other. Features...
 
+<ins>Version</ins>  
+1.0.0
+
 <ins>Installation</ins>  
 1. Install your PostgreSQL18 Server.
 2. Create a database on your server.
@@ -30,7 +33,7 @@ Proprietary
 <ins>Sources</ins>  
 These are the sources used for this project. You can find more information in each class, where sources were used.
 - PostgreSQL JDBC tutorial by neon.com https://neon.com/postgresql/tutorial
+- JavaFX Alert tutorial by code.makery.ch https://code.makery.ch/blog/javafx-dialogs-official/
 - Claude AI for code snippets or as a search instrument for information on functionalities, technologies and procedures. https://www.claude.ai
 - stackoverflow for patterns and tipps https://stackoverflow.com
-- JavaFX Alert tutorial by code.makery.ch https://code.makery.ch/blog/javafx-dialogs-official/
 
