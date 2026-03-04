@@ -1,11 +1,7 @@
 package kennwertdatenbank;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import database.DB;
-
 import java.sql.*;
 import java.util.*;
 
@@ -14,8 +10,6 @@ public class Controller {
     private TreeMap<Integer, Project> PROJECTS;
     private boolean dbAvailable = false;
     private StringBuilder STRING_BUILDER = new StringBuilder();
-    private final Locale swissLocale = Locale.of("de", "CH");
-    Object[] values;
     private final String[] SQL_PROJECT_DATA = {
             "project_nr,int",
             "version,int",
@@ -92,7 +86,7 @@ public class Controller {
                     break;
             }
         }
-        STRING_BUILDER.append("CHECK (project_nr > 9999), PRIMARY KEY(project_nr, version))");
+        STRING_BUILDER.append("active BOOLEAN NOT NULL DEFAULT true, CHECK (project_nr > 9999), PRIMARY KEY(project_nr, version))");
 
         String sql = STRING_BUILDER.toString();
         STRING_BUILDER = new StringBuilder();
@@ -122,267 +116,31 @@ public class Controller {
     }
 
     /**
-     * This method inserts a new row into the products table.
-     * code from https://neon.com/postgresql/postgresql-jdbc/insert
+     * Add a new Project to the DB.
+     * @param project an object of type Project is needed
      */
-    public String addProject(
-            int project_nr,
-            String address,
-            int plz,
-            String location,
-            String owner,
-            String property_type,
-            String construction_type,
-            int document_phase,
-            int calculation_phase,
-            int apartments_nr,
-            int bathroom_nr,
-            int hnf,
-            int gf,
-            int volume_underground,
-            int volume_above_ground,
-            int facadearea,
-            int windowarea,
-            String facade_type,
-            String window_type,
-            String roof_type,
-            String heating_type,
-            String cooling_type,
-            String ventilation_type_apartments,
-            String ventilation_type_ug,
-            String co_no,
-            String special,
-            String dataPath) {
-
-        if (!isDatabaseAvailable()) {
+    public String addProject(Project project){
+        if (isDatabaseAvailable()) {
+            return AddProject.add(project, SQL_PROJECT_DATA);
+        } else {
             return "Keine Datenbankverbindung verfügbar. Projekte können nicht hinzugefügt werden.";
         }
-        //Versionsabfrage von der DB
-        int version = 1;
-        try (Connection conn = DB.connect();
-            PreparedStatement pstmt = conn.prepareStatement("SELECT MAX(version) FROM projects WHERE project_nr = ?")) {
-
-            pstmt.setInt(1, project_nr);
-            ResultSet rs = pstmt.executeQuery();
-
-            //if the same project exists, the highest version will be set. (1,3,4 -> 5)
-            if (rs.next()) {
-                int maxVersion = rs.getInt(1);
-                if (!rs.wasNull()) {
-                    version = maxVersion + 1;
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        ProjectData data = new ProjectData(dataPath);
-        String jacksonData;
-        try {
-            jacksonData = OBJECT_MAPPER.writeValueAsString(data.getData());
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            return e.toString();
-        }
-
-        //input elemente in Array lesen für dynamisches einlesen in DB
-        values = new Object[] {
-                project_nr,
-                version,
-                address,
-                plz,
-                location,
-                owner,
-                property_type,
-                construction_type,
-                document_phase,
-                calculation_phase,
-                apartments_nr,
-                bathroom_nr,
-                hnf,
-                gf,
-                volume_underground,
-                volume_above_ground,
-                facadearea,
-                windowarea,
-                facade_type,
-                window_type,
-                roof_type,
-                heating_type,
-                cooling_type,
-                ventilation_type_apartments,
-                ventilation_type_ug,
-                co_no,
-                special,
-                jacksonData
-        };
-
-        //Initialize an INSERT statement.
-        //The question mark (?) is a placeholder that will be replaced by the actual values later.
-        STRING_BUILDER.append("INSERT INTO projects(");
-        for (int i = 0; i < SQL_PROJECT_DATA.length-1; i++){
-            STRING_BUILDER.append(SQL_PROJECT_DATA[i].split(",")[0]).append(",");
-        }
-        STRING_BUILDER.append(SQL_PROJECT_DATA[SQL_PROJECT_DATA.length-1].split(",")[0]);
-
-        STRING_BUILDER.append(") VALUES(");
-
-        for (int i = 0; i < SQL_PROJECT_DATA.length - 1; i++) {
-            STRING_BUILDER.append("?,");
-        }
-        STRING_BUILDER.append("?)");
-
-        String sql = STRING_BUILDER.toString();
-        STRING_BUILDER = new StringBuilder();
-
-        try (Connection conn =  DB.connect();
-             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            for (int i = 0; i < SQL_PROJECT_DATA.length; i++) {
-                String[] parts = SQL_PROJECT_DATA[i].split(",", 2);
-                String type = parts[1];
-
-                switch (type) {
-                    case "int":
-                        pstmt.setInt(i + 1, (int) values[i]);
-                        break;
-                    case "string":
-                        pstmt.setString(i + 1, (String) values[i]);
-                        break;
-                    case "json":
-                        pstmt.setObject(i + 1, (String) values[i], Types.OTHER);
-                        break;
-                }
-            }
-
-            // execute the INSERT statement and get the inserted id
-            int insertedRow = pstmt.executeUpdate();
-            if (insertedRow > 0) {
-                ResultSet rs = pstmt.getGeneratedKeys();
-                if (rs.next()) {
-                    return "Projekt Nr. " + rs.getInt(1) + " Version " + rs.getInt(2) + " wurde hinzugefügt.";
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return e.toString();
-        }
-        return "Projekt konnte nicht hinzugefügt werden";
     }
 
     /**
-     * This method does modify a project in the DB.
-     * code from https://neon.com/postgresql/postgresql-jdbc/update
+     * Modify an existing Project in the DB.
+     * @param project an object of type Project is needed
      */
-    public String modifyProject(
-            int project_nr,
-            int version,
-            String address,
-            int plz,
-            String location,
-            String owner,
-            String property_type,
-            String construction_type,
-            int document_phase,
-            int calculation_phase,
-            int apartments_nr,
-            int bathroom_nr,
-            int hnf,
-            int gf,
-            int volume_underground,
-            int volume_above_ground,
-            int facadearea,
-            int windowarea,
-            String facade_type,
-            String window_type,
-            String roof_type,
-            String heating_type,
-            String cooling_type,
-            String ventilation_type_apartments,
-            String ventilation_type_ug,
-            String co_no,
-            String special){
-        if (!isDatabaseAvailable()) {
+    public String modifyProjects(Project project){
+        if (isDatabaseAvailable()) {
+            return ModifyProject.modify(project);
+        } else {
             return "Keine Datenbankverbindung verfügbar. Projekte kann nicht geändert werden.";
         }
-        //Initialize an INSERT statement.
-        //The question mark (?) is a placeholder that will be replaced by the actual values later.
-        String sql = (
-                "UPDATE projects SET " +
-                        "address = ?," +
-                        "plz = ?," +
-                        "location = ?," +
-                        "owner = ?," +
-                        "property_type = ?," +
-                        "construction_type = ?," +
-                        "document_phase = ?," +
-                        "calculation_phase = ?," +
-                        "apartments_nr = ?," +
-                        "bathroom_nr = ?," +
-                        "hnf = ?," +
-                        "gf = ?," +
-                        "volume_underground = ?," +
-                        "volume_above_ground = ?," +
-                        "facadearea = ?," +
-                        "windowarea = ?," +
-                        "facade_type = ?," +
-                        "window_type = ?," +
-                        "roof_type = ?," +
-                        "heating_type = ?," +
-                        "cooling_type = ?," +
-                        "ventilation_type_apartments = ?," +
-                        "ventilation_type_ug = ?," +
-                        "co_no = ?," +
-                        "special = ?" +
-                        " WHERE project_nr = ? AND version = ?");
-
-
-        try (Connection conn =  DB.connect(); PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            // bind the values
-            pstmt.setString(1, address);
-            pstmt.setInt(2, plz);
-            pstmt.setString(3, location);
-            pstmt.setString(4, owner);
-            pstmt.setString(5, property_type);
-            pstmt.setString(6, construction_type);
-            pstmt.setInt(7, document_phase);
-            pstmt.setInt(8, calculation_phase);
-            pstmt.setInt(9, apartments_nr);
-            pstmt.setInt(10, bathroom_nr);
-            pstmt.setInt(11, hnf);
-            pstmt.setInt(12, gf);
-            pstmt.setInt(13, volume_underground);
-            pstmt.setInt(14, volume_above_ground);
-            pstmt.setInt(15, facadearea);
-            pstmt.setInt(16, windowarea);
-            pstmt.setString(17, facade_type);
-            pstmt.setString(18, window_type);
-            pstmt.setString(19, roof_type);
-            pstmt.setString(20, heating_type);
-            pstmt.setString(21, cooling_type);
-            pstmt.setString(22, ventilation_type_apartments);
-            pstmt.setString(23, ventilation_type_ug);
-            pstmt.setString(24, co_no);
-            pstmt.setString(25, special);
-
-            pstmt.setInt(26,project_nr);
-            pstmt.setInt(27,version);
-
-            // execute the INSERT statement and get the inserted id
-            int editedRow = pstmt.executeUpdate();
-            if (editedRow > 0) {
-                ResultSet rs = pstmt.getGeneratedKeys();
-                if (rs.next()) {
-                    return "Projekt Nr. " + project_nr + " Version " + version + " wurde angepasst.";
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return "Projekt konnte nicht angepasst werden";
     }
 
     /**
      * This method does delete a project in the DB. This cannot be undone.
-     * code from https://neon.com/postgresql/postgresql-jdbc/delete
      * @param projectNr the project number of the project to be deleted.
      * @param version the version number of the project to be deleted.
      * @return if the project was deleted.
@@ -391,7 +149,7 @@ public class Controller {
         if (!isDatabaseAvailable()) {
             return "Keine Datenbankverbindung verfügbar. Projekte kann nicht gelöscht werden.";
         }
-        String sql = ("DELETE FROM projects WHERE project_nr = ? AND version = ?");
+        String sql = ("UPDATE projects SET active = false WHERE project_nr = ? AND version = ?");
         try (Connection conn =  DB.connect(); PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setInt(1, projectNr);
             pstmt.setInt(2, version);
@@ -404,87 +162,24 @@ public class Controller {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+            return "Projekt konnte nicht entfernt werden";
         }
         return "Projekt konnte nicht entfernt werden";
     }
 
     /**
-     * This method gets all projects from the PostgreSQL Database.
-     * It returns them as a TreeMap of Projects.
-     * The key is made from project number * 100 + version number.
-     * code from https://neon.com/postgresql/postgresql-jdbc/insert
+     * Returns the project list as TreeMap
+     * Key = project number * 100 + version number.
      */
-    public TreeMap<Integer, Project> getProjects(){
+    public TreeMap<Integer, Project> getProjects() {
         if (!isDatabaseAvailable()) {
             return PROJECTS;
         }
         PROJECTS = new TreeMap<>();
-
-        STRING_BUILDER.append("SELECT ");
-        for(int i = 0; i < SQL_PROJECT_DATA.length-1; i++){
-            STRING_BUILDER.append(SQL_PROJECT_DATA[i].split(",")[0]).append(", ");
-        }
-        STRING_BUILDER.append(SQL_PROJECT_DATA[SQL_PROJECT_DATA.length - 1].split(",")[0]).append(" FROM projects ORDER BY project_nr");
-        String sql = STRING_BUILDER.toString();
-        STRING_BUILDER = new StringBuilder();
-
-        try (Connection conn =  DB.connect();
-             Statement stmt = conn.createStatement()) {
-
-            ResultSet rs = stmt.executeQuery(sql);
-
-            while (rs.next()) {
-                String data = rs.getString("data");
-
-                Map<String, Integer> jsonMap = OBJECT_MAPPER.readValue(data, new TypeReference<Map<String, Integer>>() {});
-
-                TreeMap<Integer, Integer> map = new TreeMap<>(new BKPComparator());
-                jsonMap.forEach((k, v) -> map.put(Integer.parseInt(k), v));
-
-                ProjectData projectData = new ProjectData(map);
-
-                Project project = new Project(
-                        rs.getInt("project_nr"),
-                        rs.getInt("version"),
-                        rs.getString("address"),
-                        rs.getInt("plz"),
-                        rs.getString("location"),
-                        rs.getString("owner"),
-                        rs.getString("property_type"),
-                        rs.getString("construction_type"),
-                        rs.getInt("document_phase"),
-                        rs.getInt("calculation_phase"),
-                        rs.getInt("apartments_nr"),
-                        rs.getInt("bathroom_nr"),
-                        rs.getInt("hnf"),
-                        rs.getInt("gf"),
-                        rs.getInt("volume_underground"),
-                        rs.getInt("volume_above_ground"),
-                        rs.getInt("facadearea"),
-                        rs.getInt("windowarea"),
-                        rs.getString("facade_type"),
-                        rs.getString("window_type"),
-                        rs.getString("roof_type"),
-                        rs.getString("heating_type"),
-                        rs.getString("cooling_type"),
-                        rs.getString("ventilation_type_apartments"),
-                        rs.getString("ventilation_type_ug"),
-                        rs.getString("co_no"),
-                        rs.getString("special"),
-                        projectData,
-                        swissLocale
-                );
-                PROJECTS.put((project.getProjectNr()*100)+project.getVersion(), project);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        } catch (JsonMappingException e) {
-            throw new RuntimeException(e);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+        PROJECTS = GetProjects.get(SQL_PROJECT_DATA);
         return PROJECTS;
     }
+
 
     public void calculate(){
         minTotalCost = Integer.MAX_VALUE;
@@ -496,21 +191,28 @@ public class Controller {
         minVolume = Integer.MAX_VALUE;
         maxVolume = 0;
 
-        for (Project project : PROJECTS.values()){
+        if (PROJECTS == null || PROJECTS.isEmpty()) {
+            System.out.println("Keine Projekte zum Berechnen vorhanden");
+            return;
+        }
+
+
+        for (Project project : PROJECTS.values()) {
             int cost = project.getData().getTotalCost();
             int apartments = project.getApartmentsNr();
             int volume = project.getVolume();
-            averageRatioUG  += (double) ((project.getVolumeUnderground()*100) / project.getVolumeAboveGround());
+            averageRatioUG += (double) ((project.getVolumeUnderground() * 100) / project.getVolumeAboveGround());
             minTotalCost = Math.min(cost, minTotalCost);
             maxTotalCost = Math.max(cost, maxTotalCost);
-            minApartments = Math.min(apartments,minApartments);
+            minApartments = Math.min(apartments, minApartments);
             maxApartments = Math.max(apartments, maxApartments);
-            averageWindowRatio += (int) (((double) project.getWindowArea() / (double) project.getFacadeArea())*100);
+            averageWindowRatio += (int) (((double) project.getWindowArea() / (double) project.getFacadeArea()) * 100);
             minVolume = Math.min(volume, minVolume);
             maxVolume = Math.max(volume, maxVolume);
         }
         averageRatioUG /= PROJECTS.size();
         averageWindowRatio /= PROJECTS.size();
+
     }
 
     /**
@@ -633,11 +335,11 @@ public class Controller {
                 j++;
             }
 
-            System.out.println(addProject(num,"Projektstrasse " + num, 8001 + i, "Zürich", "Besitzer"+i,
+            System.out.println(addProject(new Project(num,1,"Projektstrasse " + num, 8001 + i, "Zürich", "Besitzer"+i,
                     pt, "Neubau",31, 41, w, (int)(w*1.8), s, (int)(s*1.2), (int)((s*2.8)*0.4),
                     (int)((s*2.8)*0.6), (int) (s*0.8), (int)(s*0.3),fassade, window, dach,
                     heizung, kühlung, lüftung,lüftungUG, cono,
-                    "nichts spezielles","C:\\Users\\Jonas\\Nextcloud\\Jonas\\07_Programmieren\\Java\\Kennwertdatenbank\\src\\main\\resources\\kv" + j + ".csv"));
+                    "nichts spezielles",new ProjectData("C:\\Users\\Jonas\\Nextcloud\\Jonas\\07_Programmieren\\Java\\Kennwertdatenbank\\src\\main\\resources\\kv" + j + ".csv"))));
         }
     }
 }

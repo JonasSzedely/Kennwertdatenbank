@@ -208,7 +208,7 @@ public class CreatePDF extends Application {
 
 
 
-//starting from this line, everything is "vibecoded" 100% produced with claude.ai and DeepSeek
+//starting from this line, everything is "vibecoded" 100% produced with claude.ai
 //ToDo rework the code where necessary
 
 
@@ -224,7 +224,7 @@ public class CreatePDF extends Application {
      */
     private String createPDF(SortedList<Project> sortedProjects, String title, String dirPath) {
         // Use landscape orientation for more columns
-        Document document = new Document(PageSize.A4.rotate());
+        Document document = new Document(PageSize.A3);
 
         // Set margins: left, right, top, bottom
         document.setMargins(20, 20, HEADER_HEIGHT+20, 40);
@@ -344,13 +344,13 @@ public class CreatePDF extends Application {
         Font headerFont = new Font(Font.HELVETICA, 7, Font.BOLD);
         Font cellFont = new Font(Font.HELVETICA, 7, Font.NORMAL);
 
-        // First header row: project numbers - WICHTIG: Diese wird auf jeder Seite wiederholt
+        // First header row: project numbers
         addLabelCell(table, "Projekt Nummer", labelFont);
         for (Project project : projects) {
             addHeaderCell(table, String.valueOf(project.getProjectNr()), headerFont);
         }
 
-        // Add project attribute rows with German labels
+        // Add project attribute rows
         addAttributeRow(table, "Version", projects, labelFont, cellFont,
                 p -> String.valueOf(p.getVersion()));
         addAttributeRow(table, "Adresse", projects, labelFont, cellFont,
@@ -408,8 +408,6 @@ public class CreatePDF extends Application {
         addAttributeRowWithSpecialHeight(table, "Besonderes", projects, labelFont, cellFont,
                 p -> p.getSpecial());
 
-        addAttributeRow(table, "Baukosten Total", projects, labelFont, cellFont,
-                p -> String.valueOf(p.getData().getTotalCost()));
 
         // Add calculation rows
         if (!projects.isEmpty()) {
@@ -421,7 +419,6 @@ public class CreatePDF extends Application {
                         p -> p.getCalculations().get(index).getCalculation());
             }
         }
-
         return table;
     }
 

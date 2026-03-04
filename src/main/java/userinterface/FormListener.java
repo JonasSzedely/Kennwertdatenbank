@@ -50,24 +50,6 @@ public class FormListener {
     }
 
     /**
-     * creates a form listener for text
-     * @param form needs an object of InputForm
-     * @param name the name of the listener
-     */
-    public FormListener(InputForm form, String name){
-        this.name = name;
-        this.form = form;
-        this.max = Integer.MAX_VALUE;
-        this.format = "";
-        this.type ="text";
-        this.form.getInputField().focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
-            if (wasFocused && !isNowFocused){
-                validate();
-            }
-        });
-    }
-
-    /**
      * creates a form listener for text with maximum length
      * @param form needs an object of InputForm
      * @param name the name of the listener
@@ -111,20 +93,16 @@ public class FormListener {
     public void validate() {
         switch(type){
             case "number"-> {
-                double number = 0;
+                int number = 0;
                 try {
-                    number = Double.parseDouble(form.getInput());
+                    number = Integer.parseInt(form.getInput());
+                    isValid = number >= min && number <= max;
                 } catch (NumberFormatException e) {
                     isValid = false;
-                    return;
                 }
-                isValid = number >= min && number <= max;
             }
             case "dropdown" -> {
                 isValid = form.getInput() != null;
-            }
-            case "text" -> {
-                isValid = !(form.getInput().isEmpty());
             }
             case"textMax" -> {
                 isValid = !(form.getInput().isEmpty()) && form.getInput().length() <= max;

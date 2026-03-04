@@ -3,8 +3,6 @@
 <ins>Description</ins>  
 This Programm can be used to import projects from "Messerli Bauadministration" and compare them with each other. Features...
 
-<ins>Version</ins>  
-1.0.0
 
 <ins>Installation</ins>  
 1. Install your PostgreSQL18 Server.

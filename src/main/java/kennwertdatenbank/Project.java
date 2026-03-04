@@ -6,36 +6,36 @@ import java.util.Locale;
 import java.util.TreeMap;
 
 public class Project {
-    private final int projectNr;
-    private final int version;
-    private final String address;
-    private final int plz;
-    private final String location;
-    private final String owner;
-    private final String propertyType;
-    private final String constructionType;
-    private final int documentPhase;
-    private final int calculationPhase;
-    private final int apartmentsNr;
-    private final int bathroomNr;
-    private final int hnf;
-    private final int gf;
-    private final int volumeUnderground;
-    private final int volumeAboveGround;
-    private final int facadeArea;
-    private final int windowArea;
-    private final String facadeType;
-    private final String windowType;
-    private final String roofType;
-    private final String heatingType;
-    private final String coolingType;
-    private final String ventilationTypeApartments;
-    private final String ventilationTypeUg;
-    private final String coNo;
-    private final String special;
-    private final ProjectData data;
-    private final TreeMap<Integer, Calculation> calculations;
-    private final Locale swissLocale;
+    private int projectNr;
+    private int version;
+    private String address;
+    private int plz;
+    private String location;
+    private String owner;
+    private String propertyType;
+    private String constructionType;
+    private int documentPhase;
+    private int calculationPhase;
+    private int apartmentsNr;
+    private int bathroomNr;
+    private int hnf;
+    private int gf;
+    private int volumeUnderground;
+    private int volumeAboveGround;
+    private int facadeArea;
+    private int windowArea;
+    private String facadeType;
+    private String windowType;
+    private String roofType;
+    private String heatingType;
+    private String coolingType;
+    private String ventilationTypeApartments;
+    private String ventilationTypeUg;
+    private String coNo;
+    private String special;
+    private ProjectData data;
+    private TreeMap<Integer, Calculation> calculations;
+    private Locale swissLocale = Locale.of("de", "CH");
     private BooleanProperty pinned = new SimpleBooleanProperty(false); //code from claude.ai
 
     public Project(int projectNr, int version, String address, int plz, String location, String owner, String propertyType,
@@ -43,7 +43,7 @@ public class Project {
                    int hnf, int gf, int volumeUnderground, int volumeAboveGround, int facadeArea, int windowArea,
                    String facadeType, String windowType, String roofType, String heatingType, String coolingType,
                    String ventilationTypeApartments, String ventilationTypeUg, String coNo, String special,
-                   ProjectData projectData, Locale swissLocale)
+                   ProjectData projectData)
     {
         this.projectNr = projectNr;
         this.version = version;
@@ -73,8 +73,8 @@ public class Project {
         this.coNo = coNo;
         this.special = special;
         this.data = projectData;
-        this.swissLocale = swissLocale;
         this.calculations = calculations();
+
     }
 
     public TreeMap<Integer, Calculation> calculations(){
@@ -183,6 +183,10 @@ public class Project {
         return projectNr;
     }
 
+    public int getVersion() {
+        return version;
+    }
+
     public String getAddress(){
         return address;
     }
@@ -217,10 +221,6 @@ public class Project {
 
     public TreeMap<Integer, Calculation> getCalculations() {
         return calculations;
-    }
-
-    public int getVersion() {
-        return version;
     }
 
     public int getDocumentPhase() {
@@ -298,4 +298,93 @@ public class Project {
     public String getSpecial() {
         return special;
     }
+
+    public Object[] getAttributes(){
+        return new Object[]{
+        projectNr,
+        version,
+        address,
+        plz,
+        location,
+        owner,
+        propertyType,
+        constructionType,
+        documentPhase,
+        calculationPhase,
+        apartmentsNr,
+        bathroomNr,
+        hnf,
+        gf,
+        volumeUnderground,
+        volumeAboveGround,
+        facadeArea,
+        windowArea,
+        facadeType,
+        windowType,
+        roofType,
+        heatingType,
+        coolingType,
+        ventilationTypeApartments,
+        ventilationTypeUg,
+        coNo,
+        special,
+        data
+        };
+    }
+
+    public void setVersion(int version){
+        this.version = version;
+    }
+
+    public void setAddress(String address) { this.address = address; }
+
+    public void setPlz(int plz) { this.plz = plz; }
+
+    public void setLocation(String location) { this.location = location; }
+
+    public void setOwner(String owner) { this.owner = owner; }
+
+    public void setPropertyType(String propertyType) { this.propertyType = propertyType; }
+
+    public void setConstructionType(String constructionType) { this.constructionType = constructionType; }
+
+    public void setDocumentPhase(int documentPhase) { this.documentPhase = documentPhase; }
+
+    public void setCalculationPhase(int calculationPhase) { this.calculationPhase = calculationPhase; }
+
+    public void setApartmentsNr(int apartmentsNr) { this.apartmentsNr = apartmentsNr; }
+
+    public void setBathroomNr(int bathroomNr) { this.bathroomNr = bathroomNr; }
+
+    public void setHnf(int hnf) { this.hnf = hnf; }
+
+    public void setGf(int gf) { this.gf = gf; }
+
+    public void setVolumeUnderground(int volumeUnderground) { this.volumeUnderground = volumeUnderground; }
+
+    public void setVolumeAboveGround(int volumeAboveGround) { this.volumeAboveGround = volumeAboveGround; }
+
+    public void setFacadeArea(int facadeArea) { this.facadeArea = facadeArea; }
+
+    public void setWindowArea(int windowArea) { this.windowArea = windowArea; }
+
+    public void setFacadeType(String facadeType) { this.facadeType = facadeType; }
+
+    public void setWindowType(String windowType) { this.windowType = windowType; }
+
+    public void setRoofType(String roofType) { this.roofType = roofType; }
+
+    public void setHeatingType(String heatingType) { this.heatingType = heatingType; }
+
+    public void setCoolingType(String coolingType) { this.coolingType = coolingType; }
+
+    public void setVentilationTypeApartments(String ventilationTypeApartments) { this.ventilationTypeApartments = ventilationTypeApartments; }
+
+    public void setVentilationTypeUg(String ventilationTypeUg) { this.ventilationTypeUg = ventilationTypeUg; }
+
+    public void setCoNo(String coNo) { this.coNo = coNo; }
+
+    public void setSpecial(String special) { this.special = special; }
+
+    public void setData(ProjectData data) { this.data = data; }
 }

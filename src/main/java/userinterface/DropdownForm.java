@@ -27,7 +27,6 @@ public class DropdownForm implements Form{
 
         String[] parts = optionsList.split("\\|");
 
-        //Code Abschnitt von claude.ai
         ObservableList<String> options = FXCollections.observableArrayList(parts);
         comboBox.setItems(options);
         comboBox.setPromptText("Bitte wählen");

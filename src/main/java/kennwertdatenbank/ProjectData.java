@@ -5,21 +5,23 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.TreeMap;
 
-/**
- * Projekt BKPs einlesen
- * 1. Im Messerli BauAD mit der Vorlage "Datenbank" exportieren
- * 2. Excel als >> CSV (durch Trennzeichen getrennt) (*.csv) << abspeichern.
- * 3. Dateipfad der neuen .csv Datei kopieren und im Programm einfügen.
- * code used from: https://www.w3schools.com/java/java_bufferedreader.asp
- */
+
 
 public class ProjectData {
     private TreeMap<Integer, Integer> map = new TreeMap<>(new BKPComparator());
 
+    /**
+     * Imports Project BKP numbers from a CSV
+     * Formatting: BKP-number;valueInCHF
+     */
     public ProjectData (String filePath) {
         loadFromCsv(filePath);
     }
 
+    /**
+     * Imports Project BKP numbers from a TreeMap<Integer, Integer>
+     * Formatting: BKP-number;valueInCHF
+     */
     public ProjectData(TreeMap<Integer,Integer> map){
         this.map = map;
     }
@@ -48,11 +50,18 @@ public class ProjectData {
         }
     }
 
+    /**
+     * @return Project BKP numbers as a TreeMap<Integer, Integer>
+     *     Formatting: BKP-number;valueInCHF
+     */
     public TreeMap<Integer,Integer> getData(){
         return map;
     }
 
-
+    /**
+     *
+     * @return returns the total cost in CHF for the project, only counts single-digit BKP figures
+     */
     public int getTotalCost() {
         int total = 0;
         for (int i = 0; i < 10; i++){
@@ -63,6 +72,12 @@ public class ProjectData {
         return total;
     }
 
+    /**
+     * calculates the cost for all BKP figures between two BKP numbers
+     * @param bkpStart first BKP (included)
+     * @param bkpEnd last BKP (included)
+     * @return total cost in CHF
+     */
     public int getRange(int bkpStart, int bkpEnd){
         int sum = 0;
         for(int val : map.subMap(bkpStart, true, bkpEnd, true).values()){
@@ -71,6 +86,11 @@ public class ProjectData {
         return sum;
     }
 
+    /**
+     * returns the cost for a specific BKP number
+     * @param bkp the BKP number
+     * @return cost in CHF
+     */
     public int getBKP(int bkp){
         if(map.containsKey(bkp)){
             return map.get(bkp);
