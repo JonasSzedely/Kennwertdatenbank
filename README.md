@@ -38,6 +38,8 @@ These are the sources used for this project. You can find more information in ea
 <ins>Info for development</ins>  
 New version:
 - change pom.xml version
+- git add .
+- git commit -m "..."
 - git push origin master
 - git tag v1.0.0 (the new version nr)
 - git push origin v1.1.1
