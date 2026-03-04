@@ -35,3 +35,8 @@ These are the sources used for this project. You can find more information in ea
 - Claude AI for code snippets or as a search instrument for information on functionalities, technologies and procedures. https://www.claude.ai
 - stackoverflow for patterns and tipps https://stackoverflow.com
 
+<ins>Info for development</ins>  
+New version:
+- change pom.xml version
+- git tag v1.0.0 (the new version nr)
+- git push origin v1.1.1

@@ -141,7 +141,7 @@
                                     </excludes>
                                 </filter>
                             </filters>
-                            <finalName>Kennwertdatenbank-1.1.1</finalName>
+                            <finalName>Kennwertdatenbank</finalName>
                         </configuration>
                     </execution>
                 </executions>
