@@ -1,6 +1,7 @@
 package kennwertdatenbank;
 
 import database.DB;
+import database.DBConfig;
 
 import java.sql.*;
 import java.util.Random;
@@ -122,6 +123,10 @@ public class Controller {
 
     public boolean testDBConnection() {
         return DB.isConnectionAvailable();
+    }
+
+    public void reloadDatabaseConfig() {
+        DBConfig.reloadProperties();
     }
 
     /**

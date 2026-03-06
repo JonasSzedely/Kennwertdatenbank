@@ -48,6 +48,7 @@ public class Settings {
             boolean dbPath = setValue(path, "db.url", dbURLInput.getText());
             boolean dbUser = setValue(path, "db.username", dbUsernameInput.getText());
             boolean dbPass = setValue(path, "db.password", dbPasswordInput.getText());
+            controller.reloadDatabaseConfig();
             Alert settingsSetConfirmation = new Alert(Alert.AlertType.INFORMATION);
             settingsSetConfirmation.setTitle("Einstellungen");
             settingsSetConfirmation.setHeaderText(null);
@@ -66,6 +67,7 @@ public class Settings {
             boolean dbPath = setValue(path, "db.url", dbURLInput.getText());
             boolean dbUser = setValue(path, "db.username", dbUsernameInput.getText());
             boolean dbPass = setValue(path, "db.password", dbPasswordInput.getText());
+            controller.reloadDatabaseConfig();
             if (dbPath && dbUser && dbPass && controller.testDBConnection()) {
                 tryDBConnectionButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white;");
                 tryDBConnectionButton.setText("Verbindung erfolgreich");
