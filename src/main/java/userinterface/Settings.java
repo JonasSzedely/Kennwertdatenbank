@@ -11,17 +11,14 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import kennwertdatenbank.Controller;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class Settings {
     private final Controller controller;
     private boolean setButtonUsed = false;
-
-    public Settings(Controller controller) {
+    public Settings(Controller controller){
         this.controller = controller;
     }
 
@@ -42,17 +39,19 @@ public class Settings {
         PasswordField dbPasswordInput = new PasswordField();
         String dbPassword = getValue(path, "db.password");
         dbPasswordInput.setText(dbPassword);
+        AtomicReference<String> newPassword = new AtomicReference<>(dbPassword);
+
+        dbPasswordInput.textProperty().addListener((observable, oldValue, newValue) -> newPassword.set(newValue));
 
         Button setSettingsButton = new Button("Einstellungen speichern");
         setSettingsButton.setOnAction(event -> {
             boolean dbPath = setValue(path, "db.url", dbURLInput.getText());
             boolean dbUser = setValue(path, "db.username", dbUsernameInput.getText());
-            boolean dbPass = setValue(path, "db.password", dbPasswordInput.getText());
-            controller.reloadDatabaseConfig();
+            boolean dbPass = setValue(path, "db.password", String.valueOf(newPassword));
             Alert settingsSetConfirmation = new Alert(Alert.AlertType.INFORMATION);
             settingsSetConfirmation.setTitle("Einstellungen");
             settingsSetConfirmation.setHeaderText(null);
-            if (dbPath && dbUser && dbPass) {
+            if(dbPath && dbUser && dbPass){
                 settingsSetConfirmation.setContentText("Erfolgreich angepasst.");
             } else {
                 settingsSetConfirmation.setContentText("Einstellungen konnten nicht angepasst werden.");
@@ -66,8 +65,7 @@ public class Settings {
         tryDBConnectionButton.setOnAction(event -> {
             boolean dbPath = setValue(path, "db.url", dbURLInput.getText());
             boolean dbUser = setValue(path, "db.username", dbUsernameInput.getText());
-            boolean dbPass = setValue(path, "db.password", dbPasswordInput.getText());
-            controller.reloadDatabaseConfig();
+            boolean dbPass = setValue(path, "db.password", String.valueOf(newPassword));
             if (dbPath && dbUser && dbPass && controller.testDBConnection()) {
                 tryDBConnectionButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white;");
                 tryDBConnectionButton.setText("Verbindung erfolgreich");
@@ -77,24 +75,24 @@ public class Settings {
             }
         });
 
-        GridPane gridPane = new GridPane(10, 10);
-        gridPane.setPadding(new Insets(20, 20, 20, 20));
+        GridPane gridPane = new GridPane(10,10);
+        gridPane.setPadding(new Insets(20,20,20,20));
         gridPane.setAlignment(Pos.CENTER);
 
-        gridPane.add(dbURLLabel, 0, 0);
-        gridPane.add(dbURLInput, 1, 0);
-        gridPane.add(dbUsernameLabel, 0, 1);
-        gridPane.add(dbUsernameInput, 1, 1);
-        gridPane.add(dbPasswordLabel, 0, 2);
-        gridPane.add(dbPasswordInput, 1, 2);
+        gridPane.add(dbURLLabel,0,0);
+        gridPane.add(dbURLInput,1,0);
+        gridPane.add(dbUsernameLabel,0,1);
+        gridPane.add(dbUsernameInput,1,1);
+        gridPane.add(dbPasswordLabel,0,2);
+        gridPane.add(dbPasswordInput,1,2);
 
         tryDBConnectionButton.prefWidthProperty().bind(gridPane.widthProperty());
-        gridPane.add(tryDBConnectionButton, 0, 3);
-        GridPane.setColumnSpan(tryDBConnectionButton, 2);
+        gridPane.add(tryDBConnectionButton,0,3);
+        GridPane.setColumnSpan(tryDBConnectionButton,2);
 
         setSettingsButton.prefWidthProperty().bind(gridPane.widthProperty());
-        gridPane.add(setSettingsButton, 0, 4);
-        GridPane.setColumnSpan(setSettingsButton, 2);
+        gridPane.add(setSettingsButton,0,4);
+        GridPane.setColumnSpan(setSettingsButton,2);
 
         gridPane.getColumnConstraints().addAll(new ColumnConstraints(100), new ColumnConstraints(200));
 
@@ -119,7 +117,7 @@ public class Settings {
                 value = prop.getProperty(key);
             }
         } catch (Exception e) {
-            return ("Einstellungen konnten nicht geladen werden.");
+            return("Einstellungen konnten nicht geladen werden.");
         }
         return value;
     }
@@ -142,7 +140,9 @@ public class Settings {
         }
     }
 
-    public boolean isSetButtonUsed() {
+    public boolean isSetButtonUsed(){
         return setButtonUsed;
     }
+
+
 }

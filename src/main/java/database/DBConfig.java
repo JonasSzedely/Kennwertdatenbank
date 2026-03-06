@@ -6,18 +6,26 @@ import java.util.Properties;
 /**
  * The DatabaseConfig class is responsible for loading database configuration from the db.properties file.
  * The DatabaseConfig has three static methods that expose the database configuration:
- * getDbUrl() – Return the database URL.
- * getDbUsername() – Return the username.
- * getDbPassword() – Return the password.
+ *     getDbUrl() – Return the database URL.
+ *     getDbUsername() – Return the username.
+ *     getDbPassword() – Return the password.
  * A db.properties file in the src directory of the project is needed with
- * db.url=Database URL
- * db.username=Your Username
- * db.password=Your Password
+ *     db.url=Database URL
+ *     db.username=Your Username
+ *     db.password=Your Password
+ * code from: https://neon.com/postgresql/postgresql-jdbc/connecting-to-postgresql-database
  */
 public class DBConfig {
     private static final Properties properties = new Properties();
     private static final String PROPERTIES_PATH = System.getProperty("user.dir") + "/db.properties";
-    private static boolean loaded = false;
+
+    private static String getPropertiesFilePath() {
+        File exePath = new File(System.getProperty("user.dir") + "/db.properties");
+        if (exePath.exists()) {
+            return exePath.getAbsolutePath();
+        }
+        return "src/main/resources/db.properties";
+    }
 
     private static void createDefaultProperties(File file) throws IOException {
         file.getParentFile().mkdirs();
@@ -31,12 +39,10 @@ public class DBConfig {
     }
 
     public static void loadProperties() {
-        if (loaded) return;
-
         File file = new File(PROPERTIES_PATH);
         if (!file.exists()) {
             try {
-                createDefaultProperties(file);
+                createDefaultProperties(file); // NEU: Standardwerte beim ersten Start
             } catch (IOException e) {
                 System.err.println("Konnte db.properties nicht erstellen: " + e.getMessage());
             }
@@ -45,11 +51,10 @@ public class DBConfig {
             FileInputStream fileInput = new FileInputStream(PROPERTIES_PATH);
             properties.load(fileInput);
             fileInput.close();
-            loaded = true;
         } catch (IOException e) {
             try (InputStream input = DBConfig.class.getClassLoader().getResourceAsStream("db.properties")) {
                 if (input == null) {
-                    System.out.println("Konnte db.properties nicht finden");
+                    System.out.println("Sorry, unable to find db.properties");
                     return;
                 }
                 properties.load(input);
@@ -73,10 +78,5 @@ public class DBConfig {
 
     public static String getPropertiesPath() {
         return PROPERTIES_PATH;
-    }
-
-    public static void reloadProperties() {
-        loaded = false;
-        loadProperties();
     }
 }

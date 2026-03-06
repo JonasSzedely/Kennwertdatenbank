@@ -152,8 +152,12 @@ public class MiddlePane {
             HBox noScroll = new HBox();
             noScroll.setMinHeight(15);
 
-            for (int i = 0; i < ProjectList.getProjectList().getFirst().getCalculations().size(); i++) {
-                rowLabels.getChildren().add(rowLabel(ProjectList.getProjectList().getFirst().getCalculations().get(i).getName()));
+            try {
+                for (int i = 0; i < ProjectList.getProjectList().getFirst().getCalculations().size(); i++) {
+                    rowLabels.getChildren().add(rowLabel(ProjectList.getProjectList().getFirst().getCalculations().get(i).getName()));
+                }
+            } catch (NoSuchElementException e){
+                NewWarning.show(e.toString());
             }
             rowLabels.getChildren().add(noScroll);
         });

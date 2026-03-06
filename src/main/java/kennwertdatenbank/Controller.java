@@ -125,10 +125,6 @@ public class Controller {
         return DB.isConnectionAvailable();
     }
 
-    public void reloadDatabaseConfig() {
-        DBConfig.reloadProperties();
-    }
-
     /**
      * Add a new Project to the DB.
      *

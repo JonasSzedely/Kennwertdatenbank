@@ -197,7 +197,6 @@ public class TopPane {
                     Stage newStage = StageFactory.createStage("Einstellungen");
                     options.start(newStage);
                     if (options.isSetButtonUsed()) {
-                        DBConfig.reloadProperties();
                         if (controller.initializeDatabase()) {
                             ProjectList.refreshProjectList();
                             Alert success = new Alert(Alert.AlertType.INFORMATION);
