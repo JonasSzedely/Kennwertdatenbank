@@ -5,14 +5,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import database.DB;
 
 import java.sql.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AddProject {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     /**
      * This method inserts a new row into the products table.
-     * @param project an object of type Project
+     *
+     * @param project          an object of type Project
      * @param SQL_PROJECT_DATA the list of project data definied in the controller
      */
     public static String add(Project project, String[] SQL_PROJECT_DATA) {

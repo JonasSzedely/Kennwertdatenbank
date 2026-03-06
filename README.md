@@ -35,3 +35,11 @@ These are the sources used for this project. You can find more information in ea
 - Claude AI for code snippets or as a search instrument for information on functionalities, technologies and procedures. https://www.claude.ai
 - stackoverflow for patterns and tipps https://stackoverflow.com
 
+<ins>Info for development</ins>  
+new version:
+- change version number in "package.json -> version"
+- git add .
+- git commit -m "..."
+- git push origin master
+- git tag v1.0.0 (the new version nr) (löschen: git tag -d tagname)
+- git push origin v1.0.0

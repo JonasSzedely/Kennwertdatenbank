@@ -38,34 +38,34 @@ Verify the project structure:
 **Maven (using maven-dependency-plugin):**
 ```xml
 <plugin>
-   <groupId>org.apache.maven.plugins</groupId>
-   <artifactId>maven-dependency-plugin</artifactId>
-   <version>3.2.0</version>
-   <executions>
-      <execution>
-         <id>copy-dependencies</id>
-         <phase>package</phase>
-         <goals>
-            <goal>copy-dependencies</goal>
-         </goals>
-         <configuration>
-            <outputDirectory>${project.build.directory}/lib</outputDirectory>
-         </configuration>
-      </execution>
-   </executions>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-dependency-plugin</artifactId>
+    <version>3.2.0</version>
+    <executions>
+        <execution>
+            <id>copy-dependencies</id>
+            <phase>package</phase>
+            <goals>
+                <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+                <outputDirectory>${project.build.directory}/lib</outputDirectory>
+            </configuration>
+        </execution>
+    </executions>
 </plugin>
 <plugin>
 <groupId>org.apache.maven.plugins</groupId>
 <artifactId>maven-jar-plugin</artifactId>
 <version>3.2.2</version>
 <configuration>
-   <archive>
-      <manifest>
-         <addClasspath>true</addClasspath>
-         <classpathPrefix>lib/</classpathPrefix>
-         <mainClass>com.example.MainClass</mainClass>
-      </manifest>
-   </archive>
+    <archive>
+        <manifest>
+            <addClasspath>true</addClasspath>
+            <classpathPrefix>lib/</classpathPrefix>
+            <mainClass>com.example.MainClass</mainClass>
+        </manifest>
+    </archive>
 </configuration>
 </plugin>
 ```
@@ -145,11 +145,11 @@ public class Main {
             // Show GUI fallback (see Section 6)
             javax.swing.SwingUtilities.invokeLater(() -> {
                 javax.swing.JOptionPane.showMessageDialog(
-                    null,
-                    "MyApp v1.0\n\nThis is a background service.\n"
-                        + "Use 'myapp-server service start' to start the service.",
-                    "About MyApp",
-                    javax.swing.JOptionPane.INFORMATION_MESSAGE
+                        null,
+                        "MyApp v1.0\n\nThis is a background service.\n"
+                                + "Use 'myapp-server service start' to start the service.",
+                        "About MyApp",
+                        javax.swing.JOptionPane.INFORMATION_MESSAGE
                 );
                 System.exit(0);
             });
@@ -304,31 +304,31 @@ Create or modify `package.json` in the project root.
 
 ```json
 {
-   "bin": {"{{ appName }}": "jdeploy-bundle/jdeploy.js"},
-   "author": "",
-   "description": "",
-   "main": "index.js",
-   "preferGlobal": true,
-   "repository": "",
-   "version": "1.0.0",
-   "jdeploy": {
-      "jdk": false,
-      "javaVersion": "21",
-      "jar": "target/myapp-1.0.jar",
-      "javafx": false,
-      "title": "My Application"
-   },
-   "dependencies": {
-      "command-exists-promise": "^2.0.2",
-      "node-fetch": "2.6.7",
-      "tar": "^4.4.8",
-      "yauzl": "^2.10.0",
-      "shelljs": "^0.8.4"
-   },
-   "license": "ISC",
-   "name": "{{ appName }}",
-   "files": ["jdeploy-bundle"],
-   "scripts": {"test": "echo \"Error: no test specified\" && exit 1"}
+  "bin": {"{{ appName }}": "jdeploy-bundle/jdeploy.js"},
+  "author": "",
+  "description": "",
+  "main": "index.js",
+  "preferGlobal": true,
+  "repository": "",
+  "version": "1.0.0",
+  "jdeploy": {
+    "jdk": false,
+    "javaVersion": "21",
+    "jar": "target/myapp-1.0.jar",
+    "javafx": false,
+    "title": "My Application"
+  },
+  "dependencies": {
+    "command-exists-promise": "^2.0.2",
+    "node-fetch": "2.6.7",
+    "tar": "^4.4.8",
+    "yauzl": "^2.10.0",
+    "shelljs": "^0.8.4"
+  },
+  "license": "ISC",
+  "name": "{{ appName }}",
+  "files": ["jdeploy-bundle"],
+  "scripts": {"test": "echo \"Error: no test specified\" && exit 1"}
 }
 ```
 
@@ -371,14 +371,14 @@ When a command is invoked, jDeploy launches the app's JAR with the system proper
 
 ```json
 "jdeploy": {
-  "jar": "target/myapp-1.0.jar",
-  "javaVersion": "21",
-  "title": "My App",
-  "commands": {
-    "myapp-cmd": {
-      "description": "Run My App from the command line"
-    }
-  }
+"jar": "target/myapp-1.0.jar",
+"javaVersion": "21",
+"title": "My App",
+"commands": {
+"myapp-cmd": {
+"description": "Run My App from the command line"
+}
+}
 }
 ```
 
@@ -392,16 +392,16 @@ If the app runs as a service (long-lived background process), the command must i
 
 ```json
 "jdeploy": {
-  "jar": "target/myservice-1.0.jar",
-  "javaVersion": "21",
-  "title": "My Service",
-  "commands": {
-    "myservice": {
-      "description": "My background service",
-      "args": ["-Dapp.role=server"],
-      "implements": ["service_controller"]
-    }
-  }
+"jar": "target/myservice-1.0.jar",
+"javaVersion": "21",
+"title": "My Service",
+"commands": {
+"myservice": {
+"description": "My background service",
+"args": ["-Dapp.role=server"],
+"implements": ["service_controller"]
+}
+}
 }
 ```
 
@@ -509,10 +509,10 @@ public static void main(String[] args) {
         // Show a simple About dialog when launched as a desktop app
         javax.swing.SwingUtilities.invokeLater(() -> {
             javax.swing.JOptionPane.showMessageDialog(
-                null,
-                "MyApp v1.0\n\nThis is a command-line tool.\nRun 'myapp --help' in a terminal for usage.",
-                "About MyApp",
-                javax.swing.JOptionPane.INFORMATION_MESSAGE
+                    null,
+                    "MyApp v1.0\n\nThis is a command-line tool.\nRun 'myapp --help' in a terminal for usage.",
+                    "About MyApp",
+                    javax.swing.JOptionPane.INFORMATION_MESSAGE
             );
             System.exit(0);
         });
@@ -544,72 +544,72 @@ Create `.github/workflows/jdeploy.yml`:
 name: jDeploy CI
 
 on:
-   push:
-      branches:
-         - '*-snapshot'
-      tags:
-         - 'v*'
+  push:
+    branches:
+      - '*-snapshot'
+    tags:
+      - 'v*'
 
 concurrency:
-   group: jdeploy-release-${{ github.repository }}
-   cancel-in-progress: false
+  group: jdeploy-release-${{ github.repository }}
+  cancel-in-progress: false
 
 jobs:
-   build:
-      permissions:
-         contents: write
-      runs-on: ubuntu-latest
+  build:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
 
-      steps:
-         - uses: actions/checkout@v3
-         - name: Set up JDK
-           uses: actions/setup-java@v3
-           with:
-              java-version: '21'  # Match to project's Java version
-              distribution: 'temurin'
-         - name: Make gradlew executable
-           run: chmod +x ./gradlew
-         - name: Build with Gradle
-           uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
-           with:
-              arguments: build
-         - name: Build App Installer Bundles
-           uses: shannah/jdeploy@master
-           with:
-              github_token: ${{ secrets.GITHUB_TOKEN }}
-         - name: Upload Build Artifacts for DMG Action
-           if: ${{ vars.JDEPLOY_CREATE_DMG == 'true' }}
-           uses: actions/upload-artifact@v4
-           with:
-              name: build-target
-              path: ./build
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'  # Match to project's Java version
+          distribution: 'temurin'
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+      - name: Build with Gradle
+        uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
+        with:
+          arguments: build
+      - name: Build App Installer Bundles
+        uses: shannah/jdeploy@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload Build Artifacts for DMG Action
+        if: ${{ vars.JDEPLOY_CREATE_DMG == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-target
+          path: ./build
 
-   create_and_upload_dmg:
-      if: ${{ vars.JDEPLOY_CREATE_DMG == 'true' }}
-      name: Create and upload DMG
-      permissions:
-         contents: write
-      runs-on: macos-latest
-      needs: build
-      steps:
-         - name: Set up Git
-           run: |
-              git config --global user.email "${{ github.actor }}@users.noreply.github.com"
-              git config --global user.name "${{ github.actor }}"
-         - uses: actions/checkout@v3
-         - name: Download Build Artifacts
-           uses: actions/download-artifact@v4
-           with:
-              name: build-target
-              path: ./build
-         - name: Create DMG and Upload to Release
-           uses: shannah/jdeploy-action-dmg@main
-           with:
-              github_token: ${{ secrets.GITHUB_TOKEN }}
-              developer_id: ${{ secrets.MAC_DEVELOPER_ID }}
-              developer_certificate_p12_base64: ${{ secrets.MAC_DEVELOPER_CERTIFICATE_P12_BASE64 }}
-              developer_certificate_password: ${{ secrets.MAC_DEVELOPER_CERTIFICATE_PASSWORD }}
-              notarization_password: ${{ secrets.MAC_NOTARIZATION_PASSWORD }}
+  create_and_upload_dmg:
+    if: ${{ vars.JDEPLOY_CREATE_DMG == 'true' }}
+    name: Create and upload DMG
+    permissions:
+      contents: write
+    runs-on: macos-latest
+    needs: build
+    steps:
+      - name: Set up Git
+        run: |
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+          git config --global user.name "${{ github.actor }}"
+      - uses: actions/checkout@v3
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-target
+          path: ./build
+      - name: Create DMG and Upload to Release
+        uses: shannah/jdeploy-action-dmg@main
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          developer_id: ${{ secrets.MAC_DEVELOPER_ID }}
+          developer_certificate_p12_base64: ${{ secrets.MAC_DEVELOPER_CERTIFICATE_P12_BASE64 }}
+          developer_certificate_password: ${{ secrets.MAC_DEVELOPER_CERTIFICATE_PASSWORD }}
+          notarization_password: ${{ secrets.MAC_NOTARIZATION_PASSWORD }}
 ```
 
 <!-- /section:github-workflows -->
@@ -624,8 +624,8 @@ jobs:
    **IMPORTANT**: Do NOT upgrade the project's Java or Gradle version. Use the project's existing versions in `jdeploy.javaVersion` and the GitHub workflow. Let the project's wrapper (`./gradlew` or `./mvnw`) handle tool versions.
 
 2. **Build the project:**
-   - Maven: `mvn clean package`
-   - Gradle: `./gradlew build`
+    - Maven: `mvn clean package`
+    - Gradle: `./gradlew build`
 
 3. **Verify JAR is executable:**
    ```bash
@@ -876,7 +876,7 @@ Cross-platform JARs will be ~90MB+ due to native libraries for all platforms. Th
 In `package.json`:
 ```json
 "jdeploy": {
-  "platformBundlesEnabled": true
+"platformBundlesEnabled": true
 }
 ```
 

@@ -57,7 +57,7 @@ public class CreateExcel {
         String fileName = "Kennwertdatenbank_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy_HH-mm-ss")) + ".xlsx";
         Path path = Paths.get(filePath).resolve(fileName);
         try (OutputStream output = Files.newOutputStream(path);
-            Workbook wb = new Workbook(output, "Kennwertdatenbank", "1.0")) {
+             Workbook wb = new Workbook(output, "Kennwertdatenbank", "1.0")) {
             Worksheet ws = wb.newWorksheet("Projekte");
 
 
@@ -77,32 +77,32 @@ public class CreateExcel {
                     Project project = projects.get(col);
                     row = 0;
 
-                    ws.value(row++, col+1, project.getProjectNr());
-                    ws.value(row++, col+1, project.getVersion());
-                    ws.value(row++, col+1, project.getAddress());
-                    ws.value(row++, col+1, project.getPlz());
-                    ws.value(row++, col+1, project.getLocation());
-                    ws.value(row++, col+1, project.getOwner());
-                    ws.value(row++, col+1, project.getPropertyType());
-                    ws.value(row++, col+1, project.getConstructionType());
-                    ws.value(row++, col+1, project.getDocumentPhase());
-                    ws.value(row++, col+1, project.getCalculationPhase() + " - 5");
-                    ws.value(row++, col+1, project.getApartmentsNr() == 0 ? "" : String.format(SWISS_LOCALE, "%,d", project.getApartmentsNr()));
-                    ws.value(row++, col+1, project.getHnf());
-                    ws.value(row++, col+1, project.getGf());
-                    ws.value(row++, col+1, project.getVolume());
-                    ws.value(row++, col+1, project.getFacadeType());
-                    ws.value(row++, col+1, project.getWindowType());
-                    ws.value(row++, col+1, project.getRoofType());
-                    ws.value(row++, col+1, project.getHeatingType());
-                    ws.value(row++, col+1, project.getCoolingType());
-                    ws.value(row++, col+1, project.getVentilationTypeApartments());
-                    ws.value(row++, col+1, project.getVentilationTypeUg());
-                    ws.value(row++, col+1, project.getCoNo());
-                    ws.value(row++, col+1, project.getSpecial());
+                    ws.value(row++, col + 1, project.getProjectNr());
+                    ws.value(row++, col + 1, project.getVersion());
+                    ws.value(row++, col + 1, project.getAddress());
+                    ws.value(row++, col + 1, project.getPlz());
+                    ws.value(row++, col + 1, project.getLocation());
+                    ws.value(row++, col + 1, project.getOwner());
+                    ws.value(row++, col + 1, project.getPropertyType());
+                    ws.value(row++, col + 1, project.getConstructionType());
+                    ws.value(row++, col + 1, project.getDocumentPhase());
+                    ws.value(row++, col + 1, project.getCalculationPhase() + " - 5");
+                    ws.value(row++, col + 1, project.getApartmentsNr() == 0 ? "" : String.format(SWISS_LOCALE, "%,d", project.getApartmentsNr()));
+                    ws.value(row++, col + 1, project.getHnf());
+                    ws.value(row++, col + 1, project.getGf());
+                    ws.value(row++, col + 1, project.getVolume());
+                    ws.value(row++, col + 1, project.getFacadeType());
+                    ws.value(row++, col + 1, project.getWindowType());
+                    ws.value(row++, col + 1, project.getRoofType());
+                    ws.value(row++, col + 1, project.getHeatingType());
+                    ws.value(row++, col + 1, project.getCoolingType());
+                    ws.value(row++, col + 1, project.getVentilationTypeApartments());
+                    ws.value(row++, col + 1, project.getVentilationTypeUg());
+                    ws.value(row++, col + 1, project.getCoNo());
+                    ws.value(row++, col + 1, project.getSpecial());
 
                     for (Calculation calc : project.getCalculations().values()) {
-                        ws.value(row++, col+1, calc.getCalculation());
+                        ws.value(row++, col + 1, calc.getCalculation());
                     }
                 }
             }

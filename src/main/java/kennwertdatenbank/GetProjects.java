@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import database.DB;
 
-import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -15,27 +14,27 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public class GetProjects {
-    private static StringBuilder STRING_BUILDER = new StringBuilder();
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static StringBuilder STRING_BUILDER = new StringBuilder();
 
     /**
      * This method gets all projects from the PostgreSQL Database.
      * It returns them as a TreeMap of Projects.
      * The key is made from project number * 100 + version number.
      */
-    public static TreeMap<Integer, Project> get(String[] SQL_PROJECT_DATA){
+    public static TreeMap<Integer, Project> get(String[] SQL_PROJECT_DATA) {
 
         TreeMap<Integer, Project> PROJECTS = new TreeMap<>();
 
         STRING_BUILDER.append("SELECT ");
-        for(int i = 0; i < SQL_PROJECT_DATA.length-1; i++){
+        for (int i = 0; i < SQL_PROJECT_DATA.length - 1; i++) {
             STRING_BUILDER.append(SQL_PROJECT_DATA[i].split(",")[0]).append(", ");
         }
         STRING_BUILDER.append(SQL_PROJECT_DATA[SQL_PROJECT_DATA.length - 1].split(",")[0]).append(" FROM projects WHERE active = true ORDER BY project_nr");
         String sql = STRING_BUILDER.toString();
         STRING_BUILDER = new StringBuilder();
 
-        try (Connection conn =  DB.connect();
+        try (Connection conn = DB.connect();
              Statement stmt = conn.createStatement()) {
 
             ResultSet rs = stmt.executeQuery(sql);
@@ -43,7 +42,8 @@ public class GetProjects {
             while (rs.next()) {
                 String data = rs.getString("data");
 
-                Map<String, Integer> jsonMap = OBJECT_MAPPER.readValue(data, new TypeReference<Map<String, Integer>>() {});
+                Map<String, Integer> jsonMap = OBJECT_MAPPER.readValue(data, new TypeReference<Map<String, Integer>>() {
+                });
 
                 TreeMap<Integer, Integer> map = new TreeMap<>(new BKPComparator());
                 jsonMap.forEach((k, v) -> map.put(Integer.parseInt(k), v));
@@ -80,7 +80,7 @@ public class GetProjects {
                         rs.getString("special"),
                         projectData
                 );
-                PROJECTS.put((project.getProjectNr()*100)+project.getVersion(), project);
+                PROJECTS.put((project.getProjectNr() * 100) + project.getVersion(), project);
             }
         } catch (SQLException e) {
             e.printStackTrace();

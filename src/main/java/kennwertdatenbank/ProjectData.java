@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.util.TreeMap;
 
 
-
 public class ProjectData {
     private TreeMap<Integer, Integer> map = new TreeMap<>(new BKPComparator());
 
@@ -14,15 +13,15 @@ public class ProjectData {
      * Imports Project BKP numbers from a CSV
      * Formatting: BKP-number;valueInCHF
      */
-    public ProjectData (String filePath) {
-        loadFromCsv(filePath);
+    public ProjectData(String filePath) throws Exception{
+        loadFromCsv(filePath.replaceAll("\""));
     }
 
     /**
      * Imports Project BKP numbers from a TreeMap<Integer, Integer>
      * Formatting: BKP-number;valueInCHF
      */
-    public ProjectData(TreeMap<Integer,Integer> map){
+    public ProjectData(TreeMap<Integer, Integer> map) {
         this.map = map;
     }
 
@@ -79,9 +78,9 @@ public class ProjectData {
 
     /**
      * @return Project BKP numbers as a TreeMap<Integer, Integer>
-     *     Formatting: BKP-number;valueInCHF
+     * Formatting: BKP-number;valueInCHF
      */
-    public TreeMap<Integer,Integer> getData(){
+    public TreeMap<Integer, Integer> getData() {
         return map;
     }
 
@@ -91,8 +90,8 @@ public class ProjectData {
      */
     public int getTotalCost() {
         int total = 0;
-        for (int i = 0; i < 10; i++){
-            if(map.containsKey(i)){
+        for (int i = 0; i < 10; i++) {
+            if (map.containsKey(i)) {
                 total += map.get(i);
             }
         }
@@ -101,13 +100,14 @@ public class ProjectData {
 
     /**
      * calculates the cost for all BKP figures between two BKP numbers
+     *
      * @param bkpStart first BKP (included)
-     * @param bkpEnd last BKP (included)
+     * @param bkpEnd   last BKP (included)
      * @return total cost in CHF
      */
-    public int getRange(int bkpStart, int bkpEnd){
+    public int getRange(int bkpStart, int bkpEnd) {
         int sum = 0;
-        for(int val : map.subMap(bkpStart, true, bkpEnd, true).values()){
+        for (int val : map.subMap(bkpStart, true, bkpEnd, true).values()) {
             sum += val;
         }
         return sum;
@@ -115,11 +115,12 @@ public class ProjectData {
 
     /**
      * returns the cost for a specific BKP number
+     *
      * @param bkp the BKP number
      * @return cost in CHF
      */
-    public int getBKP(int bkp){
-        if(map.containsKey(bkp)){
+    public int getBKP(int bkp) {
+        if (map.containsKey(bkp)) {
             return map.get(bkp);
         }
         return 0;

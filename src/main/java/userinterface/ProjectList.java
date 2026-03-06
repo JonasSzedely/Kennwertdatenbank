@@ -23,8 +23,8 @@ public class ProjectList {
     private static Controller controller = null;
 
 
-    public ProjectList(Controller controller){
-        this.controller = controller;
+    public ProjectList(Controller controller) {
+        ProjectList.controller = controller;
         refreshProjectList();
     }
 
@@ -39,15 +39,15 @@ public class ProjectList {
         projectList.setAll(data.values());
     }
 
-    public static TreeMap<Integer, Project> getTreeMap(){
+    public static TreeMap<Integer, Project> getTreeMap() {
         return treeMap;
     }
 
-    public static ObservableList<Project> getProjectList(){
+    public static ObservableList<Project> getProjectList() {
         return projectList;
     }
 
-    public static FilteredList<Project> getFilteredProjects(){
+    public static FilteredList<Project> getFilteredProjects() {
         return filteredProjects;
     }
 
@@ -55,7 +55,7 @@ public class ProjectList {
         return sortedProjects;
     }
 
-    public static void setPredicate(Predicate<Project> predicate){
+    public static void setPredicate(Predicate<Project> predicate) {
         filteredProjects.setPredicate(predicate);
     }
 }

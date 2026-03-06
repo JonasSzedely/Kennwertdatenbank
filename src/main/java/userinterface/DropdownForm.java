@@ -9,7 +9,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.paint.Color;
 
 
-public class DropdownForm implements Form{
+public class DropdownForm implements Form {
     private final String name;
     private final String validateText;
     private final Label label;
@@ -17,7 +17,7 @@ public class DropdownForm implements Form{
     private final Label invalid;
     private final TextField input;
 
-    public DropdownForm(String name, String optionsList, String validateText){
+    public DropdownForm(String name, String optionsList, String validateText) {
         this.name = name;
         this.validateText = validateText;
         this.label = new Label(this.name);
@@ -50,17 +50,17 @@ public class DropdownForm implements Form{
     }
 
     @Override
-    public Label getLabel(){
+    public Label getLabel() {
         return label;
     }
 
     @Override
-    public Control getInputField(){
+    public Control getInputField() {
         return comboBox;
     }
 
     @Override
-    public Label getInvalidLabel(){
+    public Label getInvalidLabel() {
         return invalid;
     }
 

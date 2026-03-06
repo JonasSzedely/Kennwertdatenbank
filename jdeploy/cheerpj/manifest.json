@@ -1,0 +1,13 @@
+{
+    "background_color": "#fff",
+    "display": "standalone",
+    "name": "Kennwertdatenbank",
+    "start_url": ".",
+    "description": "Kennwertdatenbank Java Application",
+    "short_name": "Kennwertdatenbank",
+    "icons": [{
+        "sizes": "512x512",
+        "src": "icon.png",
+        "type": "image/png"
+    }]
+}

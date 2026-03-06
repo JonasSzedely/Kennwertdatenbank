@@ -18,29 +18,30 @@ import kennwertdatenbank.Project;
 import java.util.*;
 
 public class MiddlePane {
+    private static final int MAX_CACHE_SIZE = 50;
     private final Controller controller;
     private final LinkedHashMap<Integer, VBox> cellCache = new LinkedHashMap<>();
     private final Locale swissLocale = Locale.of("de", "CH");
-    private ScrollPane rightScroll;
-    private HBox projectsContainer;
-    private VBox rowLabels;
     private final double CELL_WIDTH = 150;
     private final double CELL_HEIGHT = 30;
     private final double CELL_GAP = 0;
     private final int TOOL_TIP_TIME = 200;
     private final double BUTTON_SIZE = CELL_HEIGHT * 0.66;
     private final int SCROLLBAR_WIDTH = 15;
-    private static final int MAX_CACHE_SIZE = 50;
+    private ScrollPane rightScroll;
+    private HBox projectsContainer;
+    private VBox rowLabels;
 
-    public MiddlePane(Controller controller){
+    public MiddlePane(Controller controller) {
         this.controller = controller;
     }
 
     /**
      * creates the middle pane
+     *
      * @return HBox
      */
-    public HBox get(){
+    public HBox get() {
         HBox middlePane = new HBox();
         VBox.setVgrow(middlePane, Priority.ALWAYS);
         middlePane.setId("middle-pane");
@@ -109,12 +110,12 @@ public class MiddlePane {
         middleRightPane.getChildren().add(statistics());
         middleRightPane.setStyle("-fx-border-color: lightgray; -fx-border-width: 1 1 1 1;");
 
-        middlePane.getChildren().addAll(leftScroll,rightScroll, middleRightPane);
+        middlePane.getChildren().addAll(leftScroll, rightScroll, middleRightPane);
         ProjectList.refreshProjectList();
         return middlePane;
     }
 
-    private VBox displayRowLabels(){
+    private VBox displayRowLabels() {
         rowLabels = new VBox();
 
         ProjectList.getProjectList().addListener((ListChangeListener<Project>) change -> {
@@ -151,8 +152,12 @@ public class MiddlePane {
             HBox noScroll = new HBox();
             noScroll.setMinHeight(15);
 
-            for (int i = 0; i < ProjectList.getProjectList().getFirst().getCalculations().size(); i++) {
-                rowLabels.getChildren().add(rowLabel(ProjectList.getProjectList().getFirst().getCalculations().get(i).getName()));
+            try {
+                for (int i = 0; i < ProjectList.getProjectList().getFirst().getCalculations().size(); i++) {
+                    rowLabels.getChildren().add(rowLabel(ProjectList.getProjectList().getFirst().getCalculations().get(i).getName()));
+                }
+            } catch (NoSuchElementException e){
+                NewWarning.show(e.toString());
             }
             rowLabels.getChildren().add(noScroll);
         });
@@ -160,7 +165,7 @@ public class MiddlePane {
         return rowLabels;
     }
 
-    private HBox statistics(){
+    private HBox statistics() {
         HBox outerPane = new HBox(10);
         outerPane.setPadding(new Insets(10));
         GridPane grid = new GridPane(10, 10);
@@ -176,17 +181,17 @@ public class MiddlePane {
         Label averageRatioUG = new Label("⌀ Verhältnis UG/OG:");
         Label averageRatioUGValue = new Label(String.format("%.2f", controller.getAverageRatioUG()));
         Label averageWindowRatio = new Label("⌀ Anteil Fenster/Fassade:");
-        Label averageWindowRatioValue = new Label(String.valueOf(controller.getAverageWindowRatio()) + " %");
+        Label averageWindowRatioValue = new Label(controller.getAverageWindowRatio() + " %");
 
-        grid.add(statisticsTitel,0,0);
-        grid.add(nrOfProjects,0,1);
-        grid.add(nrOfProjectsValue, 1,1);
-        grid.add(averageRatioUG,0,2);
-        grid.add(averageRatioUGValue,1,2);
-        grid.add(averageWindowRatio,0,3);
-        grid.add(averageWindowRatioValue,1,3);
+        grid.add(statisticsTitel, 0, 0);
+        grid.add(nrOfProjects, 0, 1);
+        grid.add(nrOfProjectsValue, 1, 1);
+        grid.add(averageRatioUG, 0, 2);
+        grid.add(averageRatioUGValue, 1, 2);
+        grid.add(averageWindowRatio, 0, 3);
+        grid.add(averageWindowRatioValue, 1, 3);
 
-        ProjectList.getProjectList().addListener((ListChangeListener<Project>) change ->  {
+        ProjectList.getProjectList().addListener((ListChangeListener<Project>) change -> {
             nrOfProjectsValue.setText(String.valueOf(ProjectList.getProjectList().size()));
             averageRatioUGValue.setText(String.format("%.2f", controller.getAverageRatioUG()));
         });
@@ -236,6 +241,7 @@ public class MiddlePane {
 
     /**
      * creates the visual elements for a project
+     *
      * @param project the project to get rendered
      * @return project as VBox
      */
@@ -418,7 +424,7 @@ public class MiddlePane {
 
     private Label rowLabel(String text) {
         Label label = new Label(text);
-        label.setPadding(new Insets(0,0,0,10));
+        label.setPadding(new Insets(0, 0, 0, 10));
         label.setMinHeight(CELL_HEIGHT);
         label.setMaxHeight(CELL_HEIGHT);
         label.setPrefHeight(CELL_HEIGHT);
@@ -426,13 +432,14 @@ public class MiddlePane {
         label.setStyle("-fx-border-color: #cccccc; -fx-border-width: 0 0 1 0;");
         return label;
     }
+
     private TextFlow rowLabelSpez(String text) {
         Text newText = new Text(text);
         TextFlow label = new TextFlow(newText);
-        label.setPadding(new Insets(5,10,0,10));
-        label.setMinHeight(CELL_HEIGHT*2);
-        label.setMaxHeight(CELL_HEIGHT*2);
-        label.setPrefHeight(CELL_HEIGHT*2);
+        label.setPadding(new Insets(5, 10, 0, 10));
+        label.setMinHeight(CELL_HEIGHT * 2);
+        label.setMaxHeight(CELL_HEIGHT * 2);
+        label.setPrefHeight(CELL_HEIGHT * 2);
         label.setMaxWidth(Double.MAX_VALUE);
         label.setTextAlignment(TextAlignment.LEFT);
         label.setStyle("-fx-border-color: #cccccc; -fx-border-width: 0 0 1 0;");
@@ -441,7 +448,7 @@ public class MiddlePane {
 
     private Label projectLabel(String text) {
         Label label = new Label(text);
-        label.setPadding(new Insets(5,10,0,10));
+        label.setPadding(new Insets(5, 10, 0, 10));
         label.setMinHeight(CELL_HEIGHT);
         label.setMaxHeight(CELL_HEIGHT);
         label.setPrefHeight(CELL_HEIGHT);
@@ -454,10 +461,10 @@ public class MiddlePane {
     private TextFlow projectLabelSpez(String text) {
         Text newText = new Text(text);
         TextFlow label = new TextFlow(newText);
-        label.setPadding(new Insets(5,10,0,10));
-        label.setMinHeight(CELL_HEIGHT*2);
-        label.setMaxHeight(CELL_HEIGHT*2);
-        label.setPrefHeight(CELL_HEIGHT*2);
+        label.setPadding(new Insets(5, 10, 0, 10));
+        label.setMinHeight(CELL_HEIGHT * 2);
+        label.setMaxHeight(CELL_HEIGHT * 2);
+        label.setPrefHeight(CELL_HEIGHT * 2);
         label.setMaxWidth(Double.MAX_VALUE);
         label.setTextAlignment(TextAlignment.RIGHT);
         label.setStyle("-fx-border-color: #cccccc; -fx-border-width: 0 0 1 0;");
@@ -465,15 +472,15 @@ public class MiddlePane {
     }
 
     private Label projectLabel(int number) {
-        Label label = new Label(String.format(swissLocale, "%,d",number));
-        label.setPadding(new Insets(5,10,0,10));
+        Label label = new Label(String.format(swissLocale, "%,d", number));
+        label.setPadding(new Insets(5, 10, 0, 10));
         label.setMinHeight(CELL_HEIGHT);
         label.setMaxHeight(CELL_HEIGHT);
         label.setPrefHeight(CELL_HEIGHT);
         label.setMaxWidth(Double.MAX_VALUE);
         label.setAlignment(Pos.CENTER_RIGHT);
         label.setStyle("-fx-border-color: #cccccc; -fx-border-width: 0 0 1 0;");
-        if(number == 0){
+        if (number == 0) {
             label.setText("");
         }
         return label;
@@ -481,7 +488,7 @@ public class MiddlePane {
 
     private Label projectLabelNoBorder(String text) {
         Label label = new Label(text);
-        label.setPadding(new Insets(5,10,0,10));
+        label.setPadding(new Insets(5, 10, 0, 10));
         label.setMinHeight(CELL_HEIGHT);
         label.setMaxHeight(CELL_HEIGHT);
         label.setPrefHeight(CELL_HEIGHT);
