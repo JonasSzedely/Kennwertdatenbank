@@ -2,14 +2,17 @@ package kennwertdatenbank;
 
 import database.DB;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 public class ModifyProject {
 
     /**
      * This method does modify a project in the DB.
      */
-    public static String modify(Project project){
+    public static String modify(Project project) {
         //Initialize an INSERT statement.
         //The question mark (?) is a placeholder that will be replaced by the actual values later.
         String sql = (
@@ -42,7 +45,7 @@ public class ModifyProject {
                         " WHERE project_nr = ? AND version = ?");
 
 
-        try (Connection conn =  DB.connect(); PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection conn = DB.connect(); PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             // bind the values
             pstmt.setString(1, project.getAddress());
             pstmt.setInt(2, project.getPlz());

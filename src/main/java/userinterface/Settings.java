@@ -16,7 +16,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class Settings {
     private final Controller controller;
@@ -43,15 +42,12 @@ public class Settings {
         PasswordField dbPasswordInput = new PasswordField();
         String dbPassword = getValue(path, "db.password");
         dbPasswordInput.setText(dbPassword);
-        AtomicReference<String> newPassword = new AtomicReference<>(dbPassword);
-
-        dbPasswordInput.textProperty().addListener((observable, oldValue, newValue) -> newPassword.set(newValue));
 
         Button setSettingsButton = new Button("Einstellungen speichern");
         setSettingsButton.setOnAction(event -> {
             boolean dbPath = setValue(path, "db.url", dbURLInput.getText());
             boolean dbUser = setValue(path, "db.username", dbUsernameInput.getText());
-            boolean dbPass = setValue(path, "db.password", String.valueOf(newPassword));
+            boolean dbPass = setValue(path, "db.password", dbPasswordInput.getText());
             Alert settingsSetConfirmation = new Alert(Alert.AlertType.INFORMATION);
             settingsSetConfirmation.setTitle("Einstellungen");
             settingsSetConfirmation.setHeaderText(null);
@@ -69,7 +65,7 @@ public class Settings {
         tryDBConnectionButton.setOnAction(event -> {
             boolean dbPath = setValue(path, "db.url", dbURLInput.getText());
             boolean dbUser = setValue(path, "db.username", dbUsernameInput.getText());
-            boolean dbPass = setValue(path, "db.password", String.valueOf(newPassword));
+            boolean dbPass = setValue(path, "db.password", dbPasswordInput.getText());
             if (dbPath && dbUser && dbPass && controller.testDBConnection()) {
                 tryDBConnectionButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white;");
                 tryDBConnectionButton.setText("Verbindung erfolgreich");

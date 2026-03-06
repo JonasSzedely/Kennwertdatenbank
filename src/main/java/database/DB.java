@@ -29,7 +29,7 @@ public class DB {
             connectionAvailable = true; // Verbindung erfolgreich
             return conn;
 
-        } catch (SQLException  e) {
+        } catch (SQLException e) {
             System.err.println("DB-Verbindungsfehler: " + e.getMessage());
             connectionAvailable = false;
             throw e;
@@ -55,6 +55,7 @@ public class DB {
 
     /**
      * will not test the connection.
+     *
      * @return returns last known connection status.
      */
     public static boolean wasLastConnectionSuccessful() {

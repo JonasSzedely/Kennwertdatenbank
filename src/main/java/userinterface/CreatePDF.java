@@ -16,8 +16,12 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import kennwertdatenbank.Project;
 import org.openpdf.text.*;
+import org.openpdf.text.Font;
+import org.openpdf.text.Image;
+import org.openpdf.text.Rectangle;
 import org.openpdf.text.pdf.*;
-import java.awt.Color;
+
+import java.awt.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -37,45 +41,56 @@ import java.util.List;
  */
 public class CreatePDF extends Application {
 
-    /** Sorted list of projects to display in the PDF */
+    /**
+     * Sorted list of projects to display in the PDF
+     */
     private final SortedList<Project> sortedProjects;
-
-    /** Form elements mapping */
-    private HashMap<String, Form> forms;
-
-    /** Form validation listeners */
-    private ArrayList<FormListener> formListeners;
-
-    /** Flag indicating if the add button was used */
-    private boolean addButtonUsed = false;
-
-    /** Header background color (blue) */
+    /**
+     * Header background color (blue)
+     */
     private final Color HEADER_COLOR = Color.decode("#052048");
-
-    /** Header height in points */
+    /**
+     * Header height in points
+     */
     private final float HEADER_HEIGHT = 60f;
-
-    /** Logo dimensions */
+    /**
+     * Logo dimensions
+     */
     private final int LOGO_HEIGHT = (int) (HEADER_HEIGHT * 0.8);
-    private final int LOGO_WIDTH = LOGO_HEIGHT*2;
-
-    /** Fixed column width in points (200px ≈ 150 points) */
+    private final int LOGO_WIDTH = LOGO_HEIGHT * 2;
+    /**
+     * Fixed column width in points (200px ≈ 150 points)
+     */
     private final float COLUMN_WIDTH = 89f;
-
-    /** Normal cell height */
+    /**
+     * Normal cell height
+     */
     private final float CELL_HEIGHT = 20f;
-
-    /** Special cell height for column to fit 65 characters */
+    /**
+     * Special cell height for column to fit 65 characters
+     */
     private final float SPECIAL_CELL_HEIGHT = 30f;
-
-    /** Maximum projects to export */
-    private int MAX_PROJECTS_TO_EXPORT = 8;
-
-    private String title;
-    private Image logo;
     private final float PADDING = 20f;
     private final float TITLE_HEIGHT = 14f;
     private final float TITLE_OFFSET = 0.3f;
+    /**
+     * Form elements mapping
+     */
+    private HashMap<String, Form> forms;
+    /**
+     * Form validation listeners
+     */
+    private ArrayList<FormListener> formListeners;
+    /**
+     * Flag indicating if the add button was used
+     */
+    private boolean addButtonUsed = false;
+    /**
+     * Maximum projects to export
+     */
+    private int MAX_PROJECTS_TO_EXPORT = 8;
+    private String title;
+    private Image logo;
 
     /**
      * Constructor initializing the PDF creator with project data.
@@ -146,17 +161,17 @@ public class CreatePDF extends Application {
         String infoTextDefault = "Die Projektdatei wir nach der Projektnummer in der Überschrift benannt.\nEs werden die ersten 1-8 gefilterten Projekte als PDF exportiert.";
         Label infoText = new Label(infoTextDefault);
         forms.get("nOfProj").getInputField().focusedProperty().addListener(((observable, oldValue, newValue) -> {
-            if(formListeners.get(2).isValid()){
+            if (formListeners.get(2).isValid()) {
                 infoText.setText("Die Projektdatei wir nach der Projektnummer in der Überschrift benannt.\nEs werden die ersten " + forms.get("nOfProj").getInput() + " Projekte als PDF exportiert.");
             } else {
                 infoText.setText(infoTextDefault);
             }
         }));
-        gridPane.add(infoText,0, i);
-        GridPane.setColumnSpan(infoText,3);
+        gridPane.add(infoText, 0, i);
+        GridPane.setColumnSpan(infoText, 3);
 
         Button addButton = new Button("PDF erstellen");
-        gridPane.add(addButton, 0, formsArray.length+1);
+        gridPane.add(addButton, 0, formsArray.length + 1);
         addButton.prefWidthProperty().bind(gridPane.widthProperty());
         GridPane.setColumnSpan(addButton, 2);
 
@@ -207,10 +222,8 @@ public class CreatePDF extends Application {
     }
 
 
-
 //starting from this line, everything is "vibecoded" 100% produced with claude.ai
 //ToDo rework the code where necessary
-
 
 
     /**
@@ -218,8 +231,8 @@ public class CreatePDF extends Application {
      * Only exports the first MAX_PROJECTS_TO_EXPORT projects.
      *
      * @param sortedProjects projects to include in the table
-     * @param title document title for header
-     * @param dirPath directory path to save the PDF
+     * @param title          document title for header
+     * @param dirPath        directory path to save the PDF
      * @return status message about creation result
      */
     private String createPDF(SortedList<Project> sortedProjects, String title, String dirPath) {
@@ -227,7 +240,7 @@ public class CreatePDF extends Application {
         Document document = new Document(PageSize.A3);
 
         // Set margins: left, right, top, bottom
-        document.setMargins(20, 20, HEADER_HEIGHT+20, 40);
+        document.setMargins(20, 20, HEADER_HEIGHT + 20, 40);
 
         this.title = title;
 
@@ -425,7 +438,7 @@ public class CreatePDF extends Application {
     /**
      * Sets fixed column widths for all columns.
      *
-     * @param table table to configure
+     * @param table        table to configure
      * @param projectCount number of projects (data columns)
      */
     private void setFixedColumnWidths(PdfPTable table, int projectCount) {
@@ -447,11 +460,11 @@ public class CreatePDF extends Application {
     /**
      * Adds an attribute row to the table for all projects.
      *
-     * @param table table to add row to
-     * @param label row label
-     * @param projects projects to get values from
+     * @param table     table to add row to
+     * @param label     row label
+     * @param projects  projects to get values from
      * @param labelFont font for label cell
-     * @param cellFont font for data cells
+     * @param cellFont  font for data cells
      * @param extractor function to extract value from project
      */
     private void addAttributeRow(PdfPTable table, String label, List<Project> projects,
@@ -467,11 +480,11 @@ public class CreatePDF extends Application {
      * Adds an attribute row with special height for "Besonderes" column.
      * Fixed height ensures 65 characters can fit with text wrapping.
      *
-     * @param table table to add row to
-     * @param label row label
-     * @param projects projects to get values from
+     * @param table     table to add row to
+     * @param label     row label
+     * @param projects  projects to get values from
      * @param labelFont font for label cell
-     * @param cellFont font for data cells
+     * @param cellFont  font for data cells
      * @param extractor function to extract value from project
      */
     private void addAttributeRowWithSpecialHeight(PdfPTable table, String label, List<Project> projects,
@@ -484,25 +497,11 @@ public class CreatePDF extends Application {
     }
 
     /**
-     * Functional interface for extracting values from Project objects.
-     */
-    @FunctionalInterface
-    interface ProjectValueExtractor {
-        /**
-         * Extracts a string value from a Project.
-         *
-         * @param project project to extract value from
-         * @return extracted value as string
-         */
-        String getValue(Project project);
-    }
-
-    /**
      * Adds a label cell to the table (left column with gray background).
      *
      * @param table table to add cell to
-     * @param text cell text
-     * @param font cell font
+     * @param text  cell text
+     * @param font  cell font
      */
     private void addLabelCell(PdfPTable table, String text, Font font) {
         PdfPCell cell = new PdfPCell(new Phrase(text, font));
@@ -518,8 +517,8 @@ public class CreatePDF extends Application {
      * Adds a header cell to the table (project number headers).
      *
      * @param table table to add cell to
-     * @param text cell text
-     * @param font cell font
+     * @param text  cell text
+     * @param font  cell font
      */
     private void addHeaderCell(PdfPTable table, String text, Font font) {
         PdfPCell cell = new PdfPCell(new Phrase(text, font));
@@ -535,8 +534,8 @@ public class CreatePDF extends Application {
      * Adds a data cell to the table (project attribute values).
      *
      * @param table table to add cell to
-     * @param text cell text
-     * @param font cell font
+     * @param text  cell text
+     * @param font  cell font
      */
     private void addDataCell(PdfPTable table, String text, Font font) {
         PdfPCell cell = new PdfPCell(new Phrase(text != null ? text : "", font));
@@ -552,8 +551,8 @@ public class CreatePDF extends Application {
      * Specifically for "Besonderes" column to fit 65 characters.
      *
      * @param table table to add cell to
-     * @param text cell text
-     * @param font cell font
+     * @param text  cell text
+     * @param font  cell font
      */
     private void addSpecialDataCell(PdfPTable table, String text, Font font) {
         PdfPCell cell = new PdfPCell(new Phrase(text != null ? text : "", font));
@@ -566,6 +565,44 @@ public class CreatePDF extends Application {
         cell.setFixedHeight(SPECIAL_CELL_HEIGHT); // Fixed height for 65 characters
 
         table.addCell(cell);
+    }
+
+    /**
+     * Validates all form inputs.
+     *
+     * @return true if all inputs are valid, false otherwise
+     */
+    private boolean validate() {
+        boolean inputIsValid = false;
+        for (FormListener formListener : formListeners) {
+            formListener.validate();
+            inputIsValid = formListener.isValid();
+            formListener.setInvalidLabel(!inputIsValid);
+        }
+        return inputIsValid;
+    }
+
+    /**
+     * Returns whether the add button was used.
+     *
+     * @return true if PDF was created, false otherwise
+     */
+    public boolean getAddButtonStatus() {
+        return addButtonUsed;
+    }
+
+    /**
+     * Functional interface for extracting values from Project objects.
+     */
+    @FunctionalInterface
+    interface ProjectValueExtractor {
+        /**
+         * Extracts a string value from a Project.
+         *
+         * @param project project to extract value from
+         * @return extracted value as string
+         */
+        String getValue(Project project);
     }
 
     /**
@@ -600,7 +637,7 @@ public class CreatePDF extends Application {
         /**
          * Called at the end of each page to draw header and footer.
          *
-         * @param writer PDF writer
+         * @param writer   PDF writer
          * @param document PDF document
          */
         @Override
@@ -635,7 +672,7 @@ public class CreatePDF extends Application {
                         Element.ALIGN_LEFT,
                         line1,
                         PADDING,
-                        headerCenterY + TITLE_HEIGHT/2 - (TITLE_HEIGHT * TITLE_OFFSET),
+                        headerCenterY + TITLE_HEIGHT / 2 - (TITLE_HEIGHT * TITLE_OFFSET),
                         0
                 );
 
@@ -645,7 +682,7 @@ public class CreatePDF extends Application {
                         Element.ALIGN_LEFT,
                         line2,
                         PADDING,
-                        headerCenterY - TITLE_HEIGHT/2 - (TITLE_HEIGHT * TITLE_OFFSET),
+                        headerCenterY - TITLE_HEIGHT / 2 - (TITLE_HEIGHT * TITLE_OFFSET),
                         0
                 );
 
@@ -712,29 +749,5 @@ public class CreatePDF extends Application {
                 e.printStackTrace();
             }
         }
-    }
-
-    /**
-     * Validates all form inputs.
-     *
-     * @return true if all inputs are valid, false otherwise
-     */
-    private boolean validate() {
-        boolean inputIsValid = false;
-        for (FormListener formListener : formListeners) {
-            formListener.validate();
-            inputIsValid = formListener.isValid();
-            formListener.setInvalidLabel(!inputIsValid);
-        }
-        return inputIsValid;
-    }
-
-    /**
-     * Returns whether the add button was used.
-     *
-     * @return true if PDF was created, false otherwise
-     */
-    public boolean getAddButtonStatus() {
-        return addButtonUsed;
     }
 }

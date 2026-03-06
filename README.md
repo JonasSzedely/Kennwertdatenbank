@@ -36,10 +36,10 @@ These are the sources used for this project. You can find more information in ea
 - stackoverflow for patterns and tipps https://stackoverflow.com
 
 <ins>Info for development</ins>  
-New version:
-- change pom.xml version
+new version:
+- change version number in "package.json -> version"
 - git add .
 - git commit -m "..."
 - git push origin master
 - git tag v1.0.0 (the new version nr)
-- git push origin v1.1.1
+- git push origin v1.0.0

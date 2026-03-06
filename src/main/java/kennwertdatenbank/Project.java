@@ -2,11 +2,12 @@ package kennwertdatenbank;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+
 import java.util.Locale;
 import java.util.TreeMap;
 
 public class Project {
-    private int projectNr;
+    private final int projectNr;
     private int version;
     private String address;
     private int plz;
@@ -34,17 +35,16 @@ public class Project {
     private String coNo;
     private String special;
     private ProjectData data;
-    private TreeMap<Integer, Calculation> calculations;
-    private Locale swissLocale = Locale.of("de", "CH");
-    private BooleanProperty pinned = new SimpleBooleanProperty(false); //code from claude.ai
+    private final TreeMap<Integer, Calculation> calculations;
+    private final Locale swissLocale = Locale.of("de", "CH");
+    private final BooleanProperty pinned = new SimpleBooleanProperty(false); //code from claude.ai
 
     public Project(int projectNr, int version, String address, int plz, String location, String owner, String propertyType,
                    String constructionType, int document_phase, int calculationPhase, int apartmentsNr, int bathroomNr,
                    int hnf, int gf, int volumeUnderground, int volumeAboveGround, int facadeArea, int windowArea,
                    String facadeType, String windowType, String roofType, String heatingType, String coolingType,
                    String ventilationTypeApartments, String ventilationTypeUg, String coNo, String special,
-                   ProjectData projectData)
-    {
+                   ProjectData projectData) {
         this.projectNr = projectNr;
         this.version = version;
         this.address = address;
@@ -74,10 +74,9 @@ public class Project {
         this.special = special;
         this.data = projectData;
         this.calculations = calculations();
-
     }
 
-    public TreeMap<Integer, Calculation> calculations(){
+    public TreeMap<Integer, Calculation> calculations() {
         TreeMap<Integer, Calculation> map = new TreeMap<>();
 
         String[] titel = {
@@ -122,12 +121,12 @@ public class Project {
                 String.format(swissLocale, "%,d", getData().getTotalCost()) + " Fr.",
                 String.format(swissLocale, "%,d", data.getBKP(2)) + " Fr.",
                 String.format(swissLocale, "%,d", data.getBKP(211) + data.getBKP(212)) + " Fr.",
-                String.format(swissLocale, "%,d",data.getBKP(23) - data.getBKP(2331) - data.getBKP(2332)) + " Fr.",
-                String.format(swissLocale, "%,d",data.getBKP(241) + data.getBKP(242)) + " Fr.",
-                String.format(swissLocale, "%,d",data.getBKP(244)) + " Fr.",
-                String.format(swissLocale, "%,d",data.getBKP(25) - data.getBKP(258) - data.getBKP(259)) + " Fr.",
-                String.format(swissLocale, "%,d",data.getBKP(27)) + " Fr.",
-                String.format(swissLocale, "%,d",data.getBKP(28)-data.getBKP(289)) + " Fr.",
+                String.format(swissLocale, "%,d", data.getBKP(23) - data.getBKP(2331) - data.getBKP(2332)) + " Fr.",
+                String.format(swissLocale, "%,d", data.getBKP(241) + data.getBKP(242)) + " Fr.",
+                String.format(swissLocale, "%,d", data.getBKP(244)) + " Fr.",
+                String.format(swissLocale, "%,d", data.getBKP(25) - data.getBKP(258) - data.getBKP(259)) + " Fr.",
+                String.format(swissLocale, "%,d", data.getBKP(27)) + " Fr.",
+                String.format(swissLocale, "%,d", data.getBKP(28) - data.getBKP(289)) + " Fr.",
                 "",
                 String.format(swissLocale, "%,d", (getData().getTotalCost() / (volumeUnderground + volumeAboveGround))),
                 String.format(swissLocale, "%,d", (getData().getTotalCost() / hnf)),
@@ -143,19 +142,19 @@ public class Project {
                 String.format(swissLocale, "%,d", (data.getBKP(230) / hnf)),
                 String.format(swissLocale, "%,d", (data.getBKP(242) / hnf)),
                 String.format(swissLocale, "%,d", (data.getBKP(244) / hnf)),
-                String.format(swissLocale, "%,d", (data.getRange(250,25799) / hnf)),
+                String.format(swissLocale, "%,d", (data.getRange(250, 25799) / hnf)),
                 "",
                 String.format(swissLocale, "%,d", (data.getBKP(27) / hnf)),
                 String.format(swissLocale, "%,d", (data.getBKP(28) / hnf)),
                 String.format(swissLocale, "%,d", ((data.getBKP(27) + data.getBKP(28)) / hnf)),
                 "",
-                String.format(swissLocale, "%,d",hnf / apartmentsNr) + " m²",
-                String.format("%.2f", (double) ((volumeUnderground*100) / volumeAboveGround)),
-                String.valueOf((int) (((double) windowArea / (double) facadeArea)*100)) + " %"
+                String.format(swissLocale, "%,d", hnf / apartmentsNr) + " m²",
+                String.format("%.2f", (double) ((volumeUnderground * 100) / volumeAboveGround)),
+                (int) (((double) windowArea / (double) facadeArea) * 100) + " %"
         };
 
-        if (titel.length == numbers.length){
-            for (int i = 0; i < titel.length; i++){
+        if (titel.length == numbers.length) {
+            for (int i = 0; i < titel.length; i++) {
                 map.put(i, new Calculation(titel[i], numbers[i]));
             }
         } else {
@@ -179,7 +178,7 @@ public class Project {
         this.pinned.set(pinned);
     }
 
-    public int getProjectNr(){
+    public int getProjectNr() {
         return projectNr;
     }
 
@@ -187,36 +186,72 @@ public class Project {
         return version;
     }
 
-    public String getAddress(){
+    public void setVersion(int version) {
+        this.version = version;
+    }
+
+    public String getAddress() {
         return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 
     public int getPlz() {
         return plz;
     }
 
-    public String getLocation(){
+    public void setPlz(int plz) {
+        this.plz = plz;
+    }
+
+    public String getLocation() {
         return location;
     }
 
-    public String getOwner(){
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    public String getOwner() {
         return owner;
+    }
+
+    public void setOwner(String owner) {
+        this.owner = owner;
     }
 
     public String getPropertyType() {
         return propertyType;
     }
 
-    public int getBathroomNr(){
+    public void setPropertyType(String propertyType) {
+        this.propertyType = propertyType;
+    }
+
+    public int getBathroomNr() {
         return bathroomNr;
     }
 
-    public int getApartmentsNr(){
+    public void setBathroomNr(int bathroomNr) {
+        this.bathroomNr = bathroomNr;
+    }
+
+    public int getApartmentsNr() {
         return apartmentsNr;
     }
 
-    public ProjectData getData(){
+    public void setApartmentsNr(int apartmentsNr) {
+        this.apartmentsNr = apartmentsNr;
+    }
+
+    public ProjectData getData() {
         return data;
+    }
+
+    public void setData(ProjectData data) {
+        this.data = data;
     }
 
     public TreeMap<Integer, Calculation> getCalculations() {
@@ -227,27 +262,51 @@ public class Project {
         return documentPhase;
     }
 
+    public void setDocumentPhase(int documentPhase) {
+        this.documentPhase = documentPhase;
+    }
+
     public int getCalculationPhase() {
         return calculationPhase;
+    }
+
+    public void setCalculationPhase(int calculationPhase) {
+        this.calculationPhase = calculationPhase;
     }
 
     public int getHnf() {
         return hnf;
     }
 
+    public void setHnf(int hnf) {
+        this.hnf = hnf;
+    }
+
     public int getGf() {
         return gf;
+    }
+
+    public void setGf(int gf) {
+        this.gf = gf;
     }
 
     public int getVolumeUnderground() {
         return volumeUnderground;
     }
 
+    public void setVolumeUnderground(int volumeUnderground) {
+        this.volumeUnderground = volumeUnderground;
+    }
+
     public int getVolumeAboveGround() {
         return volumeAboveGround;
     }
 
-    public int getVolume(){
+    public void setVolumeAboveGround(int volumeAboveGround) {
+        this.volumeAboveGround = volumeAboveGround;
+    }
+
+    public int getVolume() {
         return volumeAboveGround + volumeUnderground;
     }
 
@@ -255,136 +314,128 @@ public class Project {
         return facadeArea;
     }
 
+    public void setFacadeArea(int facadeArea) {
+        this.facadeArea = facadeArea;
+    }
+
     public int getWindowArea() {
         return windowArea;
+    }
+
+    public void setWindowArea(int windowArea) {
+        this.windowArea = windowArea;
     }
 
     public String getFacadeType() {
         return facadeType;
     }
 
+    public void setFacadeType(String facadeType) {
+        this.facadeType = facadeType;
+    }
+
     public String getWindowType() {
         return windowType;
+    }
+
+    public void setWindowType(String windowType) {
+        this.windowType = windowType;
     }
 
     public String getRoofType() {
         return roofType;
     }
 
+    public void setRoofType(String roofType) {
+        this.roofType = roofType;
+    }
+
     public String getConstructionType() {
         return constructionType;
+    }
+
+    public void setConstructionType(String constructionType) {
+        this.constructionType = constructionType;
     }
 
     public String getHeatingType() {
         return heatingType;
     }
 
+    public void setHeatingType(String heatingType) {
+        this.heatingType = heatingType;
+    }
+
     public String getCoolingType() {
         return coolingType;
+    }
+
+    public void setCoolingType(String coolingType) {
+        this.coolingType = coolingType;
     }
 
     public String getVentilationTypeApartments() {
         return ventilationTypeApartments;
     }
 
+    public void setVentilationTypeApartments(String ventilationTypeApartments) {
+        this.ventilationTypeApartments = ventilationTypeApartments;
+    }
+
     public String getVentilationTypeUg() {
         return ventilationTypeUg;
+    }
+
+    public void setVentilationTypeUg(String ventilationTypeUg) {
+        this.ventilationTypeUg = ventilationTypeUg;
     }
 
     public String getCoNo() {
         return coNo;
     }
 
+    public void setCoNo(String coNo) {
+        this.coNo = coNo;
+    }
+
     public String getSpecial() {
         return special;
     }
 
-    public Object[] getAttributes(){
+    public void setSpecial(String special) {
+        this.special = special;
+    }
+
+    public Object[] getAttributes() {
         return new Object[]{
-        projectNr,
-        version,
-        address,
-        plz,
-        location,
-        owner,
-        propertyType,
-        constructionType,
-        documentPhase,
-        calculationPhase,
-        apartmentsNr,
-        bathroomNr,
-        hnf,
-        gf,
-        volumeUnderground,
-        volumeAboveGround,
-        facadeArea,
-        windowArea,
-        facadeType,
-        windowType,
-        roofType,
-        heatingType,
-        coolingType,
-        ventilationTypeApartments,
-        ventilationTypeUg,
-        coNo,
-        special,
-        data
+                projectNr,
+                version,
+                address,
+                plz,
+                location,
+                owner,
+                propertyType,
+                constructionType,
+                documentPhase,
+                calculationPhase,
+                apartmentsNr,
+                bathroomNr,
+                hnf,
+                gf,
+                volumeUnderground,
+                volumeAboveGround,
+                facadeArea,
+                windowArea,
+                facadeType,
+                windowType,
+                roofType,
+                heatingType,
+                coolingType,
+                ventilationTypeApartments,
+                ventilationTypeUg,
+                coNo,
+                special,
+                data
         };
     }
-
-    public void setVersion(int version){
-        this.version = version;
-    }
-
-    public void setAddress(String address) { this.address = address; }
-
-    public void setPlz(int plz) { this.plz = plz; }
-
-    public void setLocation(String location) { this.location = location; }
-
-    public void setOwner(String owner) { this.owner = owner; }
-
-    public void setPropertyType(String propertyType) { this.propertyType = propertyType; }
-
-    public void setConstructionType(String constructionType) { this.constructionType = constructionType; }
-
-    public void setDocumentPhase(int documentPhase) { this.documentPhase = documentPhase; }
-
-    public void setCalculationPhase(int calculationPhase) { this.calculationPhase = calculationPhase; }
-
-    public void setApartmentsNr(int apartmentsNr) { this.apartmentsNr = apartmentsNr; }
-
-    public void setBathroomNr(int bathroomNr) { this.bathroomNr = bathroomNr; }
-
-    public void setHnf(int hnf) { this.hnf = hnf; }
-
-    public void setGf(int gf) { this.gf = gf; }
-
-    public void setVolumeUnderground(int volumeUnderground) { this.volumeUnderground = volumeUnderground; }
-
-    public void setVolumeAboveGround(int volumeAboveGround) { this.volumeAboveGround = volumeAboveGround; }
-
-    public void setFacadeArea(int facadeArea) { this.facadeArea = facadeArea; }
-
-    public void setWindowArea(int windowArea) { this.windowArea = windowArea; }
-
-    public void setFacadeType(String facadeType) { this.facadeType = facadeType; }
-
-    public void setWindowType(String windowType) { this.windowType = windowType; }
-
-    public void setRoofType(String roofType) { this.roofType = roofType; }
-
-    public void setHeatingType(String heatingType) { this.heatingType = heatingType; }
-
-    public void setCoolingType(String coolingType) { this.coolingType = coolingType; }
-
-    public void setVentilationTypeApartments(String ventilationTypeApartments) { this.ventilationTypeApartments = ventilationTypeApartments; }
-
-    public void setVentilationTypeUg(String ventilationTypeUg) { this.ventilationTypeUg = ventilationTypeUg; }
-
-    public void setCoNo(String coNo) { this.coNo = coNo; }
-
-    public void setSpecial(String special) { this.special = special; }
-
-    public void setData(ProjectData data) { this.data = data; }
 }

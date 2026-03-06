@@ -2,6 +2,7 @@ package userinterface;
 
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
+
 import java.util.Objects;
 
 public class StageFactory {
