@@ -37,7 +37,7 @@ These are the sources used for this project. You can find more information in ea
 
 <ins>Info for development</ins>  
 New version:
-- change pom.xml version
+- change package.json -> version
 - git add .
 - git commit -m "..."
 - git push origin master

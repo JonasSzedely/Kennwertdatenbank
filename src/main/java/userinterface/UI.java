@@ -93,7 +93,7 @@ public class UI extends Application {
         bottomPane.setId("bottom-pane");
         bottomPane.setStyle("-fx-border-color: lightgray; -fx-border-width: 0 1 1 1;");
 
-        Label version = new Label("Version: 1.1.1");
+        Label version = new Label(softwareVersion.get());
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 

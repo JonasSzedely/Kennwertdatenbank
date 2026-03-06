@@ -17,28 +17,13 @@ public class AddProject {
      */
     public static String add(Project project, String[] SQL_PROJECT_DATA) {
 
-        // input elemente in Array lesen für dynamisches einlesen in DB
         ArrayList<Object> values = new ArrayList<>(List.of(project.getAttributes()));
 
         if (values.size() != SQL_PROJECT_DATA.length) {
             return "Projekt konnte nicht hinzugefügt werden. Datenfehler, bitte Support kontaktieren.";
         }
-
-        // Version ermitteln und setzen
-        try (Connection conn = DB.connect();
-             PreparedStatement pstmt = conn.prepareStatement("SELECT MAX(version) FROM projects WHERE project_nr = ?")) {
-
-            pstmt.setInt(1, project.getProjectNr());
-            ResultSet rs = pstmt.executeQuery();
-
-            if (rs.next()) {
-                int maxVersion = rs.getInt(1); // if no project exists it will be 0
-                values.set(1, maxVersion + 1);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return "Fehler bei Versionsermittlung: " + e.getMessage();
-        }
+        // set the latest version
+        values.set(1,ProjectVersion.get(project.getProjectNr()));
 
         // prepare SQL-Statement
         StringBuilder sqlBuilder = new StringBuilder("INSERT INTO projects(");
@@ -50,7 +35,6 @@ public class AddProject {
         sqlBuilder.append(SQL_PROJECT_DATA[SQL_PROJECT_DATA.length - 1].split(",")[0]);
         sqlBuilder.append(") VALUES(");
 
-        // Platzhalter für PreparedStatement
         for (int i = 0; i < values.size() - 1; i++) {
             sqlBuilder.append("?,");
         }

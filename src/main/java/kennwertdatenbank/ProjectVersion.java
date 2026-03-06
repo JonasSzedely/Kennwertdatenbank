@@ -9,7 +9,7 @@ import java.sql.SQLException;
 
 public class ProjectVersion {
 
-    public int get(int projectNr){
+    public static int get(int projectNr){
         try (Connection conn = DB.connect();
              PreparedStatement pstmt = conn.prepareStatement("SELECT MAX(version) FROM projects WHERE project_nr = ?")) {
 
