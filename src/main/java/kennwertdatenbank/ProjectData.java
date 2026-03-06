@@ -26,27 +26,55 @@ public class ProjectData {
         this.map = map;
     }
 
-    private void loadFromCsv(String filePath) {
-        try {
-            BufferedReader reader = new BufferedReader(new FileReader(filePath));
+    private void loadFromCsv(String path) {
+        String filePath = path.replaceAll("\"", "");
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))){
             System.out.println("Reading File: " + filePath);
             String line = reader.readLine();
 
-            while (line != null) {
-                String[] components = line.split(";");
-                int key = Integer.parseInt(components[0].replaceAll("[,.]", ""));
-                int value = Integer.parseInt(components[1]);
+            while(line != null && !line.startsWith("\"1\"") && !line.startsWith("1")){
+                line = reader.readLine();
+            }
 
-                if (!map.containsKey(key)) {
-                    map.put(key, value);
-                } else if (!map.containsKey(key * 10) && key * 10 < 100_000) {
-                    map.put(key * 10, value);
+            while (line != null) {
+                if(!line.isEmpty() && !line.startsWith("\"\"")) {
+                    String[] components = line.split(";");
+                    String rawKey;
+                    String rawValue;
+
+                    if (components.length < 2) {
+                        line = reader.readLine();
+                        continue;
+                    } else {
+                        rawKey = components[0].replaceAll("[\",.']", "");
+                        rawValue = components[1].replaceAll("[\",.']", "");
+                    }
+
+                    if (rawKey.isBlank()) {
+                        line = reader.readLine();
+                        continue;
+                    } else if (rawValue.isBlank()) {
+                        rawValue = "0";
+                    }
+
+                    try {
+                        int key = Integer.parseInt(rawKey);
+                        int value = Integer.parseInt(rawValue);
+
+                        if (!map.containsKey(key)) {
+                            map.put(key, value);
+                        } else if (!map.containsKey(key * 10) && key * 10 < 100_000) {
+                            map.put(key * 10, value);
+                        }
+                    } catch (NumberFormatException e) {
+                        System.out.println("Zeile übersprungen: " + line);
+                    }
                 }
                 line = reader.readLine();
             }
-            reader.close();
-        } catch (IOException e) {
-            System.err.println("Failed to process file: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Fehler beim ladender csv Datei: " + e);
+            throw new RuntimeException(e);
         }
     }
 

@@ -41,5 +41,5 @@ New version:
 - git add .
 - git commit -m "..."
 - git push origin master
-- git tag v1.0.0 (the new version nr)
+- git tag v1.0.0 (the new version nr) (delete with -d v...)
 - git push origin v1.1.1
