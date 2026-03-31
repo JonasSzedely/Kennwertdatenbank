@@ -42,7 +42,7 @@ public class DBConfig {
         File file = new File(PROPERTIES_PATH);
         if (!file.exists()) {
             try {
-                createDefaultProperties(file); // NEU: Standardwerte beim ersten Start
+                createDefaultProperties(file);
             } catch (IOException e) {
                 System.err.println("Konnte db.properties nicht erstellen: " + e.getMessage());
             }
