@@ -326,79 +326,80 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', end
     <script>
 
         function setProgress(progress) {
-            document.querySelector('#progressinner').style.width=progress+'%';
+        document.querySelector('#progressinner').style.width=progress+'%';
         }
 
         function setLabel1(label) {
-            document.querySelector('#label1').textContent=label;
+        document.querySelector('#label1').textContent=label;
         }
 
         function setLabel2(label) {
-            document.querySelector('#label2').textContent=label;
+        document.querySelector('#label2').textContent=label;
         }
 
         function getClassPathPrefix() {
-            let path = window.location.pathname;  // Gets the path name from the current URL
+        let path = window.location.pathname; // Gets the path name from the current URL
 
-            // Remove file name from path (if present)
-            path = path.replace(/\/[^\/]+\.[^\/]+$/, '/');
+        // Remove file name from path (if present)
+        path = path.replace(/\/[^\/]+\.[^\/]+$/, '/');
 
-            // If the path does not end with '/', append '/'
-            if (!path.endsWith('/')) {
-                path += '/';
-            }
+        // If the path does not end with '/', append '/'
+        if (!path.endsWith('/')) {
+        path += '/';
+        }
 
-            return '/app' + path;
+        return '/app' + path;
         }
 
         function prefixClassPath(prefix, classPath) {
-            // Split the classPath string into an array of paths
-            let paths = classPath.split(':');
+        // Split the classPath string into an array of paths
+        let paths = classPath.split(':');
 
-            // Add the prefix to each path in the array
-            paths = paths.map(path => prefix + path);
+        // Add the prefix to each path in the array
+        paths = paths.map(path => prefix + path);
 
-            // Join the array back into a single string with ':' as the separator
-            classPath = paths.join(':');
+        // Join the array back into a single string with ':' as the separator
+        classPath = paths.join(':');
 
-            return classPath;
+        return classPath;
         }
 
         async function myInit() {
 
-            setLabel1("Loading Kennwertdatenbank");
-            setLabel2("Initializing CheerpJ Runtime...");
-            setProgress(10);
-            window.cj1 = await cheerpjInit();
-            setProgress(50);
-            window.cj2 = await cheerpjCreateDisplay(window.innerWidth, window.innerHeight);
-            setProgress(75);
-            setLabel2("Preparing application components...");
-            const cj = await cheerpjRunLibrary(prefixClassPath(getClassPathPrefix(), "Kennwertdatenbank-1.0-SNAPSHOT.jar:jdeploy-cheerpj.jar"));
-            setProgress(85);
-            const CheerpjSwingUtils = await cj.com.jdeploy.cheerpj.CheerpjSwingUtils;
-            async function onWindowResize() {
-                document.getElementById("cheerpjDisplay").style.height = '100%';
-                document.getElementById("cheerpjDisplay").style.width = '100%';
-                while (true) {
-                    try {
-                        await CheerpjSwingUtils.onResize();
-                        break;
-                    } catch (e) {
-                        console.log(e);
-                    }
-                }
-            }
-            window.addEventListener("resize", onWindowResize);
-            setProgress(90);
-            await CheerpjSwingUtils.launchNoArgs('userinterface.Main');
-            setProgress(95);
-            document.getElementById('cheerpjDisplay').classList.add('finished-loading');
-            await onWindowResize();
-            setProgress(100);
-            document.getElementById('content').style.display = 'none';
-            document.getElementById('icon-wrapper').style.display = 'none';
-            document.getElementById('app-title').style.display = 'none';
+        setLabel1("Loading Kennwertdatenbank");
+        setLabel2("Initializing CheerpJ Runtime...");
+        setProgress(10);
+        window.cj1 = await cheerpjInit();
+        setProgress(50);
+        window.cj2 = await cheerpjCreateDisplay(window.innerWidth, window.innerHeight);
+        setProgress(75);
+        setLabel2("Preparing application components...");
+        const cj = await cheerpjRunLibrary(prefixClassPath(getClassPathPrefix(),
+        "Kennwertdatenbank-1.0-SNAPSHOT.jar:jdeploy-cheerpj.jar"));
+        setProgress(85);
+        const CheerpjSwingUtils = await cj.com.jdeploy.cheerpj.CheerpjSwingUtils;
+        async function onWindowResize() {
+        document.getElementById("cheerpjDisplay").style.height = '100%';
+        document.getElementById("cheerpjDisplay").style.width = '100%';
+        while (true) {
+        try {
+        await CheerpjSwingUtils.onResize();
+        break;
+        } catch (e) {
+        console.log(e);
+        }
+        }
+        }
+        window.addEventListener("resize", onWindowResize);
+        setProgress(90);
+        await CheerpjSwingUtils.launchNoArgs('view.Main');
+        setProgress(95);
+        document.getElementById('cheerpjDisplay').classList.add('finished-loading');
+        await onWindowResize();
+        setProgress(100);
+        document.getElementById('content').style.display = 'none';
+        document.getElementById('icon-wrapper').style.display = 'none';
+        document.getElementById('app-title').style.display = 'none';
 
         }
     </script>
