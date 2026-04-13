@@ -6,9 +6,6 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.scene.text.Text;
-import javafx.scene.text.TextAlignment;
-import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import model.Calculation;
@@ -20,7 +17,6 @@ import java.util.*;
 class MiddlePane {
     private final Controller controller;
     private final LinkedHashMap<Integer, VBox> cellCache = new LinkedHashMap<>();
-    private final Locale swissLocale = Locale.of("de", "CH");
     private ScrollPane rightScroll;
     private HBox projectsContainer;
     private VBox rowLabels;
@@ -31,9 +27,11 @@ class MiddlePane {
     private final double BUTTON_SIZE = CELL_HEIGHT * 0.66;
     private final int SCROLLBAR_WIDTH = 15;
     private static final int MAX_CACHE_SIZE = 50;
+    private final LabelFactory labelFactory;
 
     MiddlePane(Controller controller){
         this.controller = controller;
+        this.labelFactory = new LabelFactory(CELL_HEIGHT, CELL_WIDTH);
     }
 
     /**
@@ -58,7 +56,7 @@ class MiddlePane {
         leftScroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         leftScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 
-        VBox rowLabels = displayRowLabels();
+        VBox rowLabels = rowLabels();
         rowLabels.setNodeOrientation(javafx.geometry.NodeOrientation.LEFT_TO_RIGHT);
         rowLabels.prefWidthProperty().bind(leftScroll.widthProperty());
         leftScroll.setContent(rowLabels);
@@ -114,45 +112,47 @@ class MiddlePane {
         return middlePane;
     }
 
-    private VBox displayRowLabels(){
+    private VBox rowLabels(){
         rowLabels = new VBox();
 
         ProjectList.getProjectList().addListener((ListChangeListener<Project>) change -> {
             rowLabels.getChildren().clear();
             rowLabels.getChildren().addAll(
-                    rowLabel("Projekt-Nr."),
-                    rowLabel("Version"),
-                    rowLabel("Adresse"),
-                    rowLabel("PLZ"),
-                    rowLabel("Ort"),
-                    rowLabel("Bauherr"),
-                    rowLabel("Gebäudenutzungen"),
-                    rowLabel("Art des Bauvorhaben"),
-                    rowLabel("Planstand"),
-                    rowLabel("Gerechnete Phasen"),
-                    rowLabel("Anzahl Wohnungen"),
+                    labelFactory.getLabel("Projekt-Nr.", LabelFactory.LabelType.TEXT, true, false),
+                    labelFactory.getLabel("Version", LabelFactory.LabelType.TEXT, true, false),
+                    labelFactory.getLabel("Adresse", LabelFactory.LabelType.TEXT, true, false),
+                    labelFactory.getLabel("PLZ", LabelFactory.LabelType.TEXT, true, false),
+                    labelFactory.getLabel("Ort", LabelFactory.LabelType.TEXT, true, false),
+                    labelFactory.getLabel("Bauherr", LabelFactory.LabelType.TEXT, true, false),
+                    labelFactory.getLabel("Gebäudenutzung", LabelFactory.LabelType.TEXT, true, false),
+                    labelFactory.getLabel("Art des Bauvorhaben", LabelFactory.LabelType.TEXT, true, false),
+                    labelFactory.getLabel("Planstand", LabelFactory.LabelType.TEXT, true, false),
+                    labelFactory.getLabel("Gerechnete Phasen", LabelFactory.LabelType.TEXT, true, false),
+                    labelFactory.getLabel("Anzahl Wohnungen", LabelFactory.LabelType.TEXT, true, false),
                     //rowLabel()("Anzahl Nasszellen"),
-                    rowLabel("HNF in m²"),
-                    rowLabel("GF in m²"),
-                    rowLabel("SIA m³"),
+                    labelFactory.getLabel("HNF in m²", LabelFactory.LabelType.TEXT, true, false),
+                    labelFactory.getLabel("GF in m²", LabelFactory.LabelType.TEXT, true, false),
+                    labelFactory.getLabel("SIA m³", LabelFactory.LabelType.TEXT, true, false),
                     //rowLabel()("unten"),
                     //rowLabel()("oben"),
-                    rowLabel("Fassaden-Typ"),
-                    rowLabel("Fenster-Typ"),
-                    rowLabel("Dach-Typ"),
-                    rowLabel("Heizungs-Typ"),
-                    rowLabel("Kühlungs-Typ"),
-                    rowLabel("Lüftungs-Typ Whg."),
-                    rowLabel("Lüftungs-Typ TG"),
-                    rowLabel("CO/NO-Anlage"),
-                    rowLabelSpez("Sepzielles"),
-                    rowLabel("")//,
+                    labelFactory.getLabel("SIA m³", LabelFactory.LabelType.TEXT, true, false),
+                    labelFactory.getLabel("Fassaden-Typ", LabelFactory.LabelType.TEXT, true, false),
+                    labelFactory.getLabel("Fenster-Typ", LabelFactory.LabelType.TEXT, true, false),
+                    labelFactory.getLabel("Dach-Art", LabelFactory.LabelType.TEXT, true, false),
+                    labelFactory.getLabel("Heizung", LabelFactory.LabelType.TEXT, true, false),
+                    labelFactory.getLabel("Kühlung", LabelFactory.LabelType.TEXT, true, false),
+                    labelFactory.getLabel("Lüftung WHG", LabelFactory.LabelType.TEXT, true, false),
+                    labelFactory.getLabel("Lüftung TG", LabelFactory.LabelType.TEXT, true, false),
+                    labelFactory.getLabel("CO/NO Anlage", LabelFactory.LabelType.TEXT, true, false),
+                    labelFactory.getLabel("Spezielles", LabelFactory.LabelType.TEXT, true, false),
+                    labelFactory.getLabel("", LabelFactory.LabelType.TEXT, true, false)
             );
             HBox noScroll = new HBox();
             noScroll.setMinHeight(15);
 
             for (int i = 0; i < ProjectList.getProjectList().getFirst().getCalculations().size(); i++) {
-                rowLabels.getChildren().add(rowLabel(ProjectList.getProjectList().getFirst().getCalculations().get(i).getName()));
+                String labelName = ProjectList.getProjectList().getFirst().getCalculations().get(i).getName();
+                rowLabels.getChildren().add(labelFactory.getLabel(labelName, LabelFactory.LabelType.TEXT, true, false));
             }
             rowLabels.getChildren().add(noScroll);
         });
@@ -195,7 +195,6 @@ class MiddlePane {
         return outerPane;
     }
 
-    //methode von claude.ai generiert
     private void updateVisibleCells() {
         if (rightScroll == null || projectsContainer == null) return;
 
@@ -226,7 +225,7 @@ class MiddlePane {
         for (int i = firstVisible; i <= lastVisible; i++) {
             VBox cell = cellCache.get(i);
             if (cell == null) {
-                cell = createProjectCell(ProjectList.getSortedProjects().get(i));
+                cell = projectCells(ProjectList.getSortedProjects().get(i));
                 cellCache.put(i, cell);
                 evictCacheIfNeeded();
             }
@@ -239,105 +238,12 @@ class MiddlePane {
      * @param project the project to get rendered
      * @return project as VBox
      */
-    private VBox createProjectCell(Project project) {
+    private VBox projectCells(Project project) {
         VBox projectBox = new VBox();
         projectBox.setMinWidth(CELL_WIDTH);
         projectBox.setPrefWidth(CELL_WIDTH);
         projectBox.setMaxWidth(CELL_WIDTH);
         projectBox.setStyle("-fx-border-color: lightgray; -fx-border-width: 0 1 0 0;");
-
-        //Modify-Project-Button, opens a new ProjectInputWindow
-        Button modifyProjectButton = new Button("⟲");
-        modifyProjectButton.setOnAction(event -> {
-            ProjectInputWindow modify = new ProjectInputWindow(controller, project, ProjectInputWindow.Type.MODIFY);
-            try {
-                Stage newStage = StageFactory.createStage("Projekt bearbeiten");
-                modify.start(newStage);
-                if (modify.getAddButtonStatus()) {
-                    ProjectList.refreshProjectList();
-                }
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
-        modifyProjectButton.setTooltip(new Tooltip("Projekt bearbeiten"));
-        modifyProjectButton.getTooltip().setShowDelay(Duration.millis(TOOL_TIP_TIME));
-        modifyProjectButton.setMinSize(BUTTON_SIZE, BUTTON_SIZE);
-        modifyProjectButton.setMaxSize(BUTTON_SIZE, BUTTON_SIZE);
-        modifyProjectButton.setPrefSize(BUTTON_SIZE, BUTTON_SIZE);
-        modifyProjectButton.setPadding(new Insets(0));
-
-        //Delete-Project-Button, delete the project from the database
-        Button deletProjectButton = new Button("\uD83D\uDDD1");
-        deletProjectButton.setOnAction(event -> {
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle("Projekt löschen");
-            alert.setHeaderText("Bitte bestätigen:");
-            alert.setContentText("Löschen von Projekt Nr. " + project.getProjectNr() + " Version " + project.getVersion() + "?");
-            Optional<ButtonType> buttonType = alert.showAndWait();
-            if (buttonType.isPresent() && buttonType.get().equals(ButtonType.OK)) {
-                String message = controller.deleteProject(project.getProjectNr(), project.getVersion());
-                ProjectList.refreshProjectList();
-
-                Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
-                confirmAlert.setTitle("Projekt löschen");
-                confirmAlert.setHeaderText("Rückmeldung");
-                confirmAlert.setContentText(message);
-                confirmAlert.showAndWait();
-            }
-        });
-        deletProjectButton.setTooltip(new Tooltip("Projekt löschen"));
-        deletProjectButton.getTooltip().setShowDelay(Duration.millis(TOOL_TIP_TIME));
-        deletProjectButton.setMinSize(BUTTON_SIZE, BUTTON_SIZE);
-        deletProjectButton.setMaxSize(BUTTON_SIZE, BUTTON_SIZE);
-        deletProjectButton.setPrefSize(BUTTON_SIZE, BUTTON_SIZE);
-        deletProjectButton.setPadding(new Insets(0));
-
-        Region spacerHead = new Region();
-        HBox.setHgrow(spacerHead, Priority.ALWAYS);
-
-        HBox projectHead = new HBox(10);
-        projectHead.setPadding(new Insets(0, 10, 0, 0));
-        projectHead.setMinHeight(CELL_HEIGHT);
-        projectHead.setMaxHeight(CELL_HEIGHT);
-        projectHead.setPrefHeight(CELL_HEIGHT);
-        projectHead.setAlignment(Pos.CENTER_LEFT);
-        projectHead.getChildren().addAll(projectLabelNoBorder(String.valueOf(project.getProjectNr())), spacerHead, modifyProjectButton, deletProjectButton);
-        projectHead.setStyle("-fx-border-color: #cccccc; -fx-border-width: 0 0 1 0;");
-
-        //adding next version of Project
-        Button nextVersionButton = new Button("+");
-        nextVersionButton.setPadding(new Insets(0));
-        nextVersionButton.setOnAction(event -> {
-            ProjectInputWindow nextVersion = new ProjectInputWindow(controller, project, ProjectInputWindow.Type.NEXT);
-            try {
-                Stage newStage = StageFactory.createStage("Neue Version");
-                nextVersion.start(newStage);
-                if (nextVersion.getAddButtonStatus()) {
-                    ProjectList.refreshProjectList();
-                }
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
-        nextVersionButton.setTooltip(new Tooltip("Neue Version erstellen"));
-        nextVersionButton.getTooltip().setShowDelay(Duration.millis(TOOL_TIP_TIME));
-        nextVersionButton.setMinSize(BUTTON_SIZE, BUTTON_SIZE);
-        nextVersionButton.setMaxSize(BUTTON_SIZE, BUTTON_SIZE);
-        nextVersionButton.setPrefSize(BUTTON_SIZE, BUTTON_SIZE);
-
-        //focus checkbox, sets the project to be focused and sorted first
-        CheckBox focus = new CheckBox();
-        focus.setTooltip(new Tooltip("Projekt als erstes anzeigen"));
-        focus.getTooltip().setShowDelay(Duration.millis(TOOL_TIP_TIME));
-        focus.selectedProperty().bindBidirectional(project.pinnedProperty()); //code from claude.ai
-        focus.setPadding(new Insets(0));
-
-        HBox focusContainer = new HBox(focus);
-        focusContainer.setAlignment(Pos.CENTER);
-        focusContainer.setMinSize(BUTTON_SIZE, BUTTON_SIZE);
-        focusContainer.setMaxSize(BUTTON_SIZE, BUTTON_SIZE);
-        focusContainer.setPrefSize(BUTTON_SIZE, BUTTON_SIZE);
 
         // Update sorting when the pinned property changes (from claude.ai)
         project.pinnedProperty().addListener(observable -> {
@@ -346,47 +252,35 @@ class MiddlePane {
             pause.play();
         });
 
-        Region spacerVersion = new Region();
-        HBox.setHgrow(spacerVersion, Priority.ALWAYS);
-
-        HBox projectVersion = new HBox(10);
-        projectVersion.setPadding(new Insets(0, 10, 0, 0));
-        projectVersion.setMinHeight(CELL_HEIGHT);
-        projectVersion.setMaxHeight(CELL_HEIGHT);
-        projectVersion.setPrefHeight(CELL_HEIGHT);
-        projectVersion.setAlignment(Pos.CENTER_LEFT);
-        projectVersion.getChildren().addAll(projectLabelNoBorder(String.valueOf(project.getVersion())), spacerVersion, nextVersionButton, focusContainer);
-        projectVersion.setStyle("-fx-border-color: #cccccc; -fx-border-width: 0 0 1 0;");
-
         projectBox.getChildren().addAll(
-                projectHead,
-                projectVersion,
-                projectLabel(project.getAddress()),
-                projectLabel(String.valueOf(project.getPlz())),
-                projectLabel(project.getLocation()),
-                projectLabel(project.getOwner()),
-                projectLabel(project.getPropertyType()),
-                projectLabel(project.getConstructionType()),
-                projectLabel(project.getDocumentPhase()),
-                projectLabel(project.getCalculationPhase() + " - 5"),
-                projectLabel(project.getApartmentsNr()),
-                projectLabel(project.getHnf()),
-                projectLabel(project.getGf()),
-                projectLabel(project.getVolume()),
-                projectLabel(project.getFacadeType()),
-                projectLabel(project.getWindowType()),
-                projectLabel(project.getRoofType()),
-                projectLabel(project.getHeatingType()),
-                projectLabel(project.getCoolingType()),
-                projectLabel(project.getVentilationTypeApartments()),
-                projectLabel(project.getVentilationTypeUg()),
-                projectLabel(project.getCoNo()),
-                projectLabelSpez(project.getSpecial()),
-                projectLabel("")
+                projectHead(project),
+                projectVersion(project),
+                labelFactory.getLabel(project.getAddress(), LabelFactory.LabelType.TEXT, true, true),
+                labelFactory.getLabel(String.valueOf(project.getPlz()), LabelFactory.LabelType.TEXT, true, true),
+                labelFactory.getLabel(project.getLocation(), LabelFactory.LabelType.TEXT, true, true),
+                labelFactory.getLabel(project.getOwner(), LabelFactory.LabelType.TEXT, true, true),
+                labelFactory.getLabel(project.getPropertyType(), LabelFactory.LabelType.TEXT, true, true),
+                labelFactory.getLabel(project.getConstructionType(), LabelFactory.LabelType.TEXT, true, true),
+                labelFactory.getLabel(project.getDocumentPhase(), LabelFactory.LabelType.TEXT, true, true),
+                labelFactory.getLabel(project.getCalculationPhase() + " - 5", LabelFactory.LabelType.TEXT, true, true),
+                labelFactory.getLabel(project.getApartmentsNr(), LabelFactory.LabelType.TEXT, true, true),
+                labelFactory.getLabel(project.getHnf(), LabelFactory.LabelType.NUMBER, true, true),
+                labelFactory.getLabel(project.getGf(), LabelFactory.LabelType.NUMBER, true, true),
+                labelFactory.getLabel(project.getVolume(), LabelFactory.LabelType.NUMBER, true, true),
+                labelFactory.getLabel(project.getFacadeType(), LabelFactory.LabelType.TEXT, true, true),
+                labelFactory.getLabel(project.getWindowType(), LabelFactory.LabelType.TEXT, true, true),
+                labelFactory.getLabel(project.getRoofType(), LabelFactory.LabelType.TEXT, true, true),
+                labelFactory.getLabel(project.getHeatingType(), LabelFactory.LabelType.TEXT, true, true),
+                labelFactory.getLabel(project.getCoolingType(), LabelFactory.LabelType.TEXT, true, true),
+                labelFactory.getLabel(project.getVentilationTypeApartments(), LabelFactory.LabelType.TEXT, true, true),
+                labelFactory.getLabel(project.getVentilationTypeUg(), LabelFactory.LabelType.TEXT, true, true),
+                labelFactory.getLabel(project.getCoNo(), LabelFactory.LabelType.TEXT, true, true),
+                labelFactory.getLabel(project.getSpecial(), LabelFactory.LabelType.TALL, true, true),
+                labelFactory.getLabel("", LabelFactory.LabelType.TEXT, true, true)
         );
 
         for (Calculation calc : project.getCalculations().values()) {
-            projectBox.getChildren().add(projectLabel(calc.getCalculation()));
+            projectBox.getChildren().add(labelFactory.getLabel(calc.getCalculation(), LabelFactory.LabelType.TEXT, true, true));
         }
 
         return projectBox;
@@ -416,77 +310,172 @@ class MiddlePane {
         );
     }
 
-    private Label rowLabel(String text) {
-        Label label = new Label(text);
-        label.setPadding(new Insets(0,0,0,10));
-        label.setMinHeight(CELL_HEIGHT);
-        label.setMaxHeight(CELL_HEIGHT);
-        label.setPrefHeight(CELL_HEIGHT);
-        label.setMaxWidth(Double.MAX_VALUE);
-        label.setStyle("-fx-border-color: #cccccc; -fx-border-width: 0 0 1 0;");
-        return label;
-    }
-    private TextFlow rowLabelSpez(String text) {
-        Text newText = new Text(text);
-        TextFlow label = new TextFlow(newText);
-        label.setPadding(new Insets(5,10,0,10));
-        label.setMinHeight(CELL_HEIGHT*2);
-        label.setMaxHeight(CELL_HEIGHT*2);
-        label.setPrefHeight(CELL_HEIGHT*2);
-        label.setMaxWidth(Double.MAX_VALUE);
-        label.setTextAlignment(TextAlignment.LEFT);
-        label.setStyle("-fx-border-color: #cccccc; -fx-border-width: 0 0 1 0;");
-        return label;
+    /**
+     * Creates a line for the project containing the version number, next version button and focus checkbox.
+     * @param project the project
+     * @return HBox
+     */
+    private HBox projectVersion(Project project) {
+        Region spacerVersion = new Region();
+        HBox.setHgrow(spacerVersion, Priority.ALWAYS);
+
+        HBox projectVersion = new HBox(10);
+        projectVersion.setPadding(new Insets(0, 10, 0, 0));
+        projectVersion.setMinHeight(CELL_HEIGHT);
+        projectVersion.setMaxHeight(CELL_HEIGHT);
+        projectVersion.setPrefHeight(CELL_HEIGHT);
+        projectVersion.setAlignment(Pos.CENTER_LEFT);
+        projectVersion.getChildren().addAll(labelFactory.getLabel(
+                project.getVersion(),
+                LabelFactory.LabelType.TEXT, false, true),
+                spacerVersion,
+                nextVersionButton(project),
+                focusContainer(project)
+        );
+        projectVersion.setStyle("-fx-border-color: #cccccc; -fx-border-width: 0 0 1 0;");
+
+        return projectVersion;
     }
 
-    private Label projectLabel(String text) {
-        Label label = new Label(text);
-        label.setPadding(new Insets(5,10,0,10));
-        label.setMinHeight(CELL_HEIGHT);
-        label.setMaxHeight(CELL_HEIGHT);
-        label.setPrefHeight(CELL_HEIGHT);
-        label.setMaxWidth(Double.MAX_VALUE);
-        label.setAlignment(Pos.CENTER_RIGHT);
-        label.setStyle("-fx-border-color: #cccccc; -fx-border-width: 0 0 1 0;");
-        return label;
+    /**
+     * Creates a button to create a new version of the project.
+     * @param project the project
+     * @return Button
+     */
+    private Button nextVersionButton(Project project){
+        //adding next version of Project
+        Button nextVersionButton = new Button("+");
+        nextVersionButton.setPadding(new Insets(0));
+        nextVersionButton.setOnAction(event -> {
+            ProjectInputWindow nextVersion = new ProjectInputWindow(controller, project, ProjectInputWindow.Type.NEXT);
+            try {
+                Stage newStage = StageFactory.createStage("Neue Version");
+                nextVersion.start(newStage);
+                if (nextVersion.getAddButtonStatus()) {
+                    ProjectList.refreshProjectList();
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+        nextVersionButton.setTooltip(new Tooltip("Neue Version erstellen"));
+        nextVersionButton.getTooltip().setShowDelay(Duration.millis(TOOL_TIP_TIME));
+        nextVersionButton.setMinSize(BUTTON_SIZE, BUTTON_SIZE);
+        nextVersionButton.setMaxSize(BUTTON_SIZE, BUTTON_SIZE);
+        nextVersionButton.setPrefSize(BUTTON_SIZE, BUTTON_SIZE);
+
+        return nextVersionButton;
     }
 
-    private TextFlow projectLabelSpez(String text) {
-        Text newText = new Text(text);
-        TextFlow label = new TextFlow(newText);
-        label.setPadding(new Insets(5,10,0,10));
-        label.setMinHeight(CELL_HEIGHT*2);
-        label.setMaxHeight(CELL_HEIGHT*2);
-        label.setPrefHeight(CELL_HEIGHT*2);
-        label.setMaxWidth(Double.MAX_VALUE);
-        label.setTextAlignment(TextAlignment.RIGHT);
-        label.setStyle("-fx-border-color: #cccccc; -fx-border-width: 0 0 1 0;");
-        return label;
+    /**
+     * Create a checkbox used to sort the project to the beginning.
+     * @param project the project
+     * @return HBox
+     */
+    private HBox focusContainer(Project project){
+        CheckBox focus = new CheckBox();
+        focus.setTooltip(new Tooltip("Projekt als erstes anzeigen"));
+        focus.getTooltip().setShowDelay(Duration.millis(TOOL_TIP_TIME));
+        focus.selectedProperty().bindBidirectional(project.pinnedProperty());
+        focus.setPadding(new Insets(0));
+
+        HBox focusContainer = new HBox(focus);
+        focusContainer.setAlignment(Pos.CENTER);
+        focusContainer.setMinSize(BUTTON_SIZE, BUTTON_SIZE);
+        focusContainer.setMaxSize(BUTTON_SIZE, BUTTON_SIZE);
+        focusContainer.setPrefSize(BUTTON_SIZE, BUTTON_SIZE);
+
+        return focusContainer;
     }
 
-    private Label projectLabel(int number) {
-        Label label = new Label(String.format(swissLocale, "%,d",number));
-        label.setPadding(new Insets(5,10,0,10));
-        label.setMinHeight(CELL_HEIGHT);
-        label.setMaxHeight(CELL_HEIGHT);
-        label.setPrefHeight(CELL_HEIGHT);
-        label.setMaxWidth(Double.MAX_VALUE);
-        label.setAlignment(Pos.CENTER_RIGHT);
-        label.setStyle("-fx-border-color: #cccccc; -fx-border-width: 0 0 1 0;");
-        if(number == 0){
-            label.setText("");
-        }
-        return label;
+    /**
+     * Creates a line for the project containing the project number, modify button and delete button.
+     * @param project the project
+     * @return HBox
+     */
+    private HBox projectHead(Project project){
+        Region spacerHead = new Region();
+        HBox.setHgrow(spacerHead, Priority.ALWAYS);
+
+        HBox projectHead = new HBox(10);
+        projectHead.setPadding(new Insets(0, 10, 0, 0));
+        projectHead.setMinHeight(CELL_HEIGHT);
+        projectHead.setMaxHeight(CELL_HEIGHT);
+        projectHead.setPrefHeight(CELL_HEIGHT);
+        projectHead.setAlignment(Pos.CENTER_LEFT);
+        projectHead.getChildren().addAll(
+                labelFactory.getLabel(project.getProjectNr(),
+                LabelFactory.LabelType.TEXT, false, true),
+                spacerHead,
+                modifyProjectButton(project),
+                deleteProjectButton(project)
+        );
+        projectHead.setStyle("-fx-border-color: #cccccc; -fx-border-width: 0 0 1 0;");
+
+        return projectHead;
     }
 
-    private Label projectLabelNoBorder(String text) {
-        Label label = new Label(text);
-        label.setPadding(new Insets(5,10,0,10));
-        label.setMinHeight(CELL_HEIGHT);
-        label.setMaxHeight(CELL_HEIGHT);
-        label.setPrefHeight(CELL_HEIGHT);
-        label.setMaxWidth(Double.MAX_VALUE);
-        label.setAlignment(Pos.CENTER_RIGHT);
-        return label;
+    /**
+     * Create a button to delete the project.
+     * @param project the project
+     * @return Button
+     */
+    private Button deleteProjectButton(Project project){
+        Button deleteProjectButton = new Button("\uD83D\uDDD1");
+        deleteProjectButton.setOnAction(event -> {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Projekt löschen");
+            alert.setHeaderText("Bitte bestätigen:");
+            alert.setContentText("Löschen von Projekt Nr. " + project.getProjectNr() + " Version " + project.getVersion() + "?");
+            Optional<ButtonType> buttonType = alert.showAndWait();
+            if (buttonType.isPresent() && buttonType.get().equals(ButtonType.OK)) {
+                String message = controller.deleteProject(project.getProjectNr(), project.getVersion());
+                ProjectList.refreshProjectList();
+
+                Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
+                confirmAlert.setTitle("Projekt löschen");
+                confirmAlert.setHeaderText("Rückmeldung");
+                confirmAlert.setContentText(message);
+                confirmAlert.showAndWait();
+            }
+        });
+        deleteProjectButton.setTooltip(new Tooltip("Projekt löschen"));
+        deleteProjectButton.getTooltip().setShowDelay(Duration.millis(TOOL_TIP_TIME));
+        deleteProjectButton.setMinSize(BUTTON_SIZE, BUTTON_SIZE);
+        deleteProjectButton.setMaxSize(BUTTON_SIZE, BUTTON_SIZE);
+        deleteProjectButton.setPrefSize(BUTTON_SIZE, BUTTON_SIZE);
+        deleteProjectButton.setPadding(new Insets(0));
+
+        return deleteProjectButton;
+    }
+
+    /**
+     * Create a button to modify the project.
+     * @param project the project
+     * @return Button
+     */
+    private Button modifyProjectButton(Project project){
+        //Modify-Project-Button, opens a new ProjectInputWindow
+        Button modifyProjectButton = new Button("⟲");
+        modifyProjectButton.setOnAction(event -> {
+            ProjectInputWindow modify = new ProjectInputWindow(controller, project, ProjectInputWindow.Type.MODIFY);
+            try {
+                Stage newStage = StageFactory.createStage("Projekt bearbeiten");
+                modify.start(newStage);
+                if (modify.getAddButtonStatus()) {
+                    ProjectList.refreshProjectList();
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+        modifyProjectButton.setTooltip(new Tooltip("Projekt bearbeiten"));
+        modifyProjectButton.getTooltip().setShowDelay(Duration.millis(TOOL_TIP_TIME));
+        modifyProjectButton.setMinSize(BUTTON_SIZE, BUTTON_SIZE);
+        modifyProjectButton.setMaxSize(BUTTON_SIZE, BUTTON_SIZE);
+        modifyProjectButton.setPrefSize(BUTTON_SIZE, BUTTON_SIZE);
+        modifyProjectButton.setPadding(new Insets(0));
+
+        return modifyProjectButton;
     }
 }
