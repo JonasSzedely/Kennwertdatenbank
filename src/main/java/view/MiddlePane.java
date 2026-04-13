@@ -12,7 +12,10 @@ import model.Calculation;
 import model.Controller;
 import model.Project;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Optional;
 
 class MiddlePane {
     private final Controller controller;
@@ -29,16 +32,17 @@ class MiddlePane {
     private static final int MAX_CACHE_SIZE = 50;
     private final LabelFactory labelFactory;
 
-    MiddlePane(Controller controller){
+    MiddlePane(Controller controller) {
         this.controller = controller;
         this.labelFactory = new LabelFactory(CELL_HEIGHT, CELL_WIDTH);
     }
 
     /**
      * creates the middle pane
+     *
      * @return HBox
      */
-    HBox get(){
+    HBox get() {
         HBox middlePane = new HBox();
         VBox.setVgrow(middlePane, Priority.ALWAYS);
         middlePane.setId("middle-pane");
@@ -107,12 +111,12 @@ class MiddlePane {
         middleRightPane.getChildren().add(statistics());
         middleRightPane.setStyle("-fx-border-color: lightgray; -fx-border-width: 1 1 1 1;");
 
-        middlePane.getChildren().addAll(leftScroll,rightScroll, middleRightPane);
+        middlePane.getChildren().addAll(leftScroll, rightScroll, middleRightPane);
         ProjectList.refreshProjectList();
         return middlePane;
     }
 
-    private VBox rowLabels(){
+    private VBox rowLabels() {
         rowLabels = new VBox();
 
         ProjectList.getProjectList().addListener((ListChangeListener<Project>) change -> {
@@ -160,7 +164,7 @@ class MiddlePane {
         return rowLabels;
     }
 
-    private HBox statistics(){
+    private HBox statistics() {
         HBox outerPane = new HBox(10);
         outerPane.setPadding(new Insets(10));
         GridPane grid = new GridPane(10, 10);
@@ -178,15 +182,15 @@ class MiddlePane {
         Label averageWindowRatio = new Label("⌀ Anteil Fenster/Fassade:");
         Label averageWindowRatioValue = new Label(String.valueOf(controller.getAverageWindowRatio()) + " %");
 
-        grid.add(statisticsTitel,0,0);
-        grid.add(nrOfProjects,0,1);
-        grid.add(nrOfProjectsValue, 1,1);
-        grid.add(averageRatioUG,0,2);
-        grid.add(averageRatioUGValue,1,2);
-        grid.add(averageWindowRatio,0,3);
-        grid.add(averageWindowRatioValue,1,3);
+        grid.add(statisticsTitel, 0, 0);
+        grid.add(nrOfProjects, 0, 1);
+        grid.add(nrOfProjectsValue, 1, 1);
+        grid.add(averageRatioUG, 0, 2);
+        grid.add(averageRatioUGValue, 1, 2);
+        grid.add(averageWindowRatio, 0, 3);
+        grid.add(averageWindowRatioValue, 1, 3);
 
-        ProjectList.getProjectList().addListener((ListChangeListener<Project>) change ->  {
+        ProjectList.getProjectList().addListener((ListChangeListener<Project>) change -> {
             nrOfProjectsValue.setText(String.valueOf(ProjectList.getProjectList().size()));
             averageRatioUGValue.setText(String.format("%.2f", controller.getAverageRatioUG()));
         });
@@ -235,6 +239,7 @@ class MiddlePane {
 
     /**
      * creates the visual elements for a project
+     *
      * @param project the project to get rendered
      * @return project as VBox
      */
@@ -312,6 +317,7 @@ class MiddlePane {
 
     /**
      * Creates a line for the project containing the version number, next version button and focus checkbox.
+     *
      * @param project the project
      * @return HBox
      */
@@ -326,8 +332,8 @@ class MiddlePane {
         projectVersion.setPrefHeight(CELL_HEIGHT);
         projectVersion.setAlignment(Pos.CENTER_LEFT);
         projectVersion.getChildren().addAll(labelFactory.getLabel(
-                project.getVersion(),
-                LabelFactory.LabelType.TEXT, false, true),
+                        project.getVersion(),
+                        LabelFactory.LabelType.TEXT, false, true),
                 spacerVersion,
                 nextVersionButton(project),
                 focusContainer(project)
@@ -339,10 +345,11 @@ class MiddlePane {
 
     /**
      * Creates a button to create a new version of the project.
+     *
      * @param project the project
      * @return Button
      */
-    private Button nextVersionButton(Project project){
+    private Button nextVersionButton(Project project) {
         //adding next version of Project
         Button nextVersionButton = new Button("+");
         nextVersionButton.setPadding(new Insets(0));
@@ -369,10 +376,11 @@ class MiddlePane {
 
     /**
      * Create a checkbox used to sort the project to the beginning.
+     *
      * @param project the project
      * @return HBox
      */
-    private HBox focusContainer(Project project){
+    private HBox focusContainer(Project project) {
         CheckBox focus = new CheckBox();
         focus.setTooltip(new Tooltip("Projekt als erstes anzeigen"));
         focus.getTooltip().setShowDelay(Duration.millis(TOOL_TIP_TIME));
@@ -390,10 +398,11 @@ class MiddlePane {
 
     /**
      * Creates a line for the project containing the project number, modify button and delete button.
+     *
      * @param project the project
      * @return HBox
      */
-    private HBox projectHead(Project project){
+    private HBox projectHead(Project project) {
         Region spacerHead = new Region();
         HBox.setHgrow(spacerHead, Priority.ALWAYS);
 
@@ -405,7 +414,7 @@ class MiddlePane {
         projectHead.setAlignment(Pos.CENTER_LEFT);
         projectHead.getChildren().addAll(
                 labelFactory.getLabel(project.getProjectNr(),
-                LabelFactory.LabelType.TEXT, false, true),
+                        LabelFactory.LabelType.TEXT, false, true),
                 spacerHead,
                 modifyProjectButton(project),
                 deleteProjectButton(project)
@@ -417,10 +426,11 @@ class MiddlePane {
 
     /**
      * Create a button to delete the project.
+     *
      * @param project the project
      * @return Button
      */
-    private Button deleteProjectButton(Project project){
+    private Button deleteProjectButton(Project project) {
         Button deleteProjectButton = new Button("\uD83D\uDDD1");
         deleteProjectButton.setOnAction(event -> {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -451,10 +461,11 @@ class MiddlePane {
 
     /**
      * Create a button to modify the project.
+     *
      * @param project the project
      * @return Button
      */
-    private Button modifyProjectButton(Project project){
+    private Button modifyProjectButton(Project project) {
         //Modify-Project-Button, opens a new ProjectInputWindow
         Button modifyProjectButton = new Button("⟲");
         modifyProjectButton.setOnAction(event -> {

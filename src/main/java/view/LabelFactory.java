@@ -3,16 +3,13 @@ package view;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
-import javafx.scene.layout.Region;
-import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
-import javafx.scene.text.TextFlow;
-import model.Controller;
 
 class LabelFactory {
     private final double cellHeight;
     private final double cellWidth;
-    public LabelFactory(double cellHeight, double cellWidth){
+
+    public LabelFactory(double cellHeight, double cellWidth) {
         this.cellHeight = cellHeight;
         this.cellWidth = cellWidth;
     }
@@ -42,14 +39,14 @@ class LabelFactory {
             label.setText(String.format(FormatConfig.numberFormat(), "%,d", num.intValue()));
         } else if (type == LabelType.NUMBER) {
             label.setText("");
-        }else {
+        } else {
             label.setText(text != null ? text.toString() : "");
         }
 
         return label;
     }
 
-    public enum LabelType{
+    public enum LabelType {
         TEXT,
         NUMBER,
         TALL
