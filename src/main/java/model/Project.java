@@ -2,8 +2,9 @@ package model;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+
+import java.util.List;
 import java.util.Locale;
-import java.util.TreeMap;
 
 public class Project {
     private final int projectNr;
@@ -34,7 +35,7 @@ public class Project {
     private String coNo;
     private String special;
     private ProjectData data;
-    private TreeMap<Integer, Calculation> calculations;
+    private List<Calculation> calculations;
     private Locale swissLocale = Locale.of("de", "CH");
     private BooleanProperty pinned = new SimpleBooleanProperty(false); //code from claude.ai
 
@@ -43,8 +44,7 @@ public class Project {
                    int hnf, int gf, int volumeUnderground, int volumeAboveGround, int facadeArea, int windowArea,
                    String facadeType, String windowType, String roofType, String heatingType, String coolingType,
                    String ventilationTypeApartments, String ventilationTypeUg, String coNo, String special,
-                   ProjectData projectData)
-    {
+                   ProjectData projectData) {
         this.projectNr = projectNr;
         this.version = version;
         this.address = address;
@@ -74,95 +74,76 @@ public class Project {
         this.special = special;
         this.data = projectData;
         this.calculations = calculations();
-
     }
 
-    public TreeMap<Integer, Calculation> calculations(){
-        //ToDo create a List instead of TreeMap
-        TreeMap<Integer, Calculation> map = new TreeMap<>();
+    public List<Calculation> calculations() {
+        return List.of(
+                calc("Bausumme", chf(data.getTotalCost())),
+                calc("BKP 2", chf(data.getBKP(2))),
+                calc("BKP 211 + 212", chf(data.getBKP(211) + data.getBKP(212))),
+                calc("BKP 23 (o. PV/E-Mob.)", chf(data.getBKP(23) - data.getBKP(2331) - data.getBKP(2332))),
+                calc("BKP 241+242", chf(data.getBKP(241) + data.getBKP(242))),
+                calc("BKP 244", chf(data.getBKP(244))),
+                calc("BKP 250-257", chf(data.getBKP(25) - data.getBKP(258) - data.getBKP(259))),
+                calc("Ausbau 1", chf(data.getBKP(27))),
+                calc("Ausbau 2 (o. Res.)", chf(data.getBKP(28) - data.getBKP(289))),
 
-        String[] titel = {
-                "Bausumme",
-                "BKP 2",
-                "BKP 211 + 212",
-                "BKP 23 (o. PV/E-Mob.)",
-                "BKP 241+242",
-                "BKP 244",
-                "BKP 250-257",
-                "Ausbau 1",
-                "Ausbau 2 (o. Res.)",
-                "",
-                "BKP 1-5/m3",
-                "BKP 1-5/HNF",
-                "BKP 1-5/WHG",
-                "",
-                "BKP 2/m3",
-                "BKP 2/HNF",
-                "BKP 2/WHG",
-                "",
-                "BKP 211/m3",
-                "",
-                "BKP 230/m3",
-                "BKP 230/HNF",
-                "BKP 242/HNF",
-                "BKP 244/HNF",
-                "BKP 250-257/HNF",
-                "",
-                "Ausbau 1/HNF",
-                "Ausbau 2/HNF",
-                "Ausbau 1+2/HNF",
-                "",
-                "HNF/WHG",
-                "Verhältnis UG/OG",
-                "Fenster Anteil"
-        };
+                Calculation.SEPARATOR,
 
-        //ToDo Kalkluation muss erkennen wenn eine BKP nicht vorhanden ist.
+                calc("BKP 1-5/m3", perM3(data.getTotalCost(), getVolume())),
+                calc("BKP 1-5/HNF", perM2(data.getTotalCost(), hnf)),
+                calc("BKP 1-5/WHG", perUnit(data.getTotalCost(), apartmentsNr)),
 
-        String[] numbers = {
-                String.format(swissLocale, "%,d", getData().getTotalCost()) + " Fr.",
-                String.format(swissLocale, "%,d", data.getBKP(2)) + " Fr.",
-                String.format(swissLocale, "%,d", data.getBKP(211) + data.getBKP(212)) + " Fr.",
-                String.format(swissLocale, "%,d",data.getBKP(23) - data.getBKP(2331) - data.getBKP(2332)) + " Fr.",
-                String.format(swissLocale, "%,d",data.getBKP(241) + data.getBKP(242)) + " Fr.",
-                String.format(swissLocale, "%,d",data.getBKP(244)) + " Fr.",
-                String.format(swissLocale, "%,d",data.getBKP(25) - data.getBKP(258) - data.getBKP(259)) + " Fr.",
-                String.format(swissLocale, "%,d",data.getBKP(27)) + " Fr.",
-                String.format(swissLocale, "%,d",data.getBKP(28)-data.getBKP(289)) + " Fr.",
-                "",
-                String.format(swissLocale, "%,d", (getData().getTotalCost() / (volumeUnderground + volumeAboveGround))),
-                String.format(swissLocale, "%,d", (getData().getTotalCost() / hnf)),
-                String.format(swissLocale, "%,d", (getData().getTotalCost() / apartmentsNr)),
-                "",
-                String.format(swissLocale, "%,d", (data.getBKP(2) / (volumeUnderground + volumeAboveGround))),
-                String.format(swissLocale, "%,d", (data.getBKP(2) / hnf)),
-                String.format(swissLocale, "%,d", (data.getBKP(2) / apartmentsNr)),
-                "",
-                String.format(swissLocale, "%,d", (data.getBKP(211) / (volumeUnderground + volumeAboveGround))),
-                "",
-                String.format(swissLocale, "%,d", (data.getBKP(230) / (volumeUnderground + volumeAboveGround))),
-                String.format(swissLocale, "%,d", (data.getBKP(230) / hnf)),
-                String.format(swissLocale, "%,d", (data.getBKP(242) / hnf)),
-                String.format(swissLocale, "%,d", (data.getBKP(244) / hnf)),
-                String.format(swissLocale, "%,d", (data.getRange(250,25799) / hnf)),
-                "",
-                String.format(swissLocale, "%,d", (data.getBKP(27) / hnf)),
-                String.format(swissLocale, "%,d", (data.getBKP(28) / hnf)),
-                String.format(swissLocale, "%,d", ((data.getBKP(27) + data.getBKP(28)) / hnf)),
-                "",
-                String.format(swissLocale, "%,d",hnf / apartmentsNr) + " m²",
-                String.format("%.2f", (double) volumeUnderground / volumeAboveGround),
-                String.valueOf((int) (((double) windowArea / (double) facadeArea)*100)) + " %"
-        };
+                Calculation.SEPARATOR,
 
-        if (titel.length == numbers.length){
-            for (int i = 0; i < titel.length; i++){
-                map.put(i, new Calculation(titel[i], numbers[i]));
-            }
-        } else {
-            System.err.println("Error in calculations. Arrays do not have the same length!");
-        }
-        return map;
+                calc("BKP 2/m3", perM3(data.getBKP(2), getVolume())),
+                calc("BKP 2/HNF", perM2(data.getBKP(2), hnf)),
+                calc("BKP 2/WHG", perUnit(data.getBKP(2), apartmentsNr)),
+
+                Calculation.SEPARATOR,
+
+                calc("BKP 211/m3", perM3(data.getBKP(211), getVolume())),
+
+                Calculation.SEPARATOR,
+
+                calc("BKP 230/m3", perM3(data.getBKP(230), getVolume())),
+                calc("BKP 230/HNF", perM2(data.getBKP(230), hnf)),
+                calc("BKP 242/HNF", perM2(data.getBKP(242), hnf)),
+                calc("BKP 244/HNF", perM2(data.getBKP(244), hnf)),
+                calc("BKP 250-257/HNF", perM2(data.getRange(250, 25799), hnf)),
+
+                Calculation.SEPARATOR,
+
+                calc("Ausbau 1/HNF", perM2(data.getBKP(27), hnf)),
+                calc("Ausbau 2/HNF", perM2(data.getBKP(28), hnf)),
+                calc("Ausbau 1+2/HNF", perM2(data.getBKP(27) + data.getBKP(28), hnf)),
+
+                Calculation.SEPARATOR,
+
+                calc("HNF/WHG", String.format(swissLocale, "%,d m²", hnf / apartmentsNr)),
+                calc("Verhältnis UG/OG", String.format("%.2f", (double) volumeUnderground / volumeAboveGround)),
+                calc("Fenster Anteil", (int) ((double) windowArea / facadeArea * 100) + " %")
+        );
+    }
+
+    private Calculation calc(String titel, String value) {
+        return new Calculation(titel, value);
+    }
+
+    private String chf(int amount) {
+        return String.format(swissLocale, "%,d Fr.", amount);
+    }
+
+    private String perM3(int value, int volume) {
+        return String.format(swissLocale, "%,d", value / volume);
+    }
+
+    private String perM2(int value, int area) {
+        return String.format(swissLocale, "%,d", value / area);
+    }
+
+    private String perUnit(int value, int units) {
+        return String.format(swissLocale, "%,d", value / units);
     }
 
     public BooleanProperty pinnedProperty() {
@@ -173,11 +154,7 @@ public class Project {
         return pinned.get();
     }
 
-    public void setPinned(boolean pinned) {
-        this.pinned.set(pinned);
-    }
-
-    public int getProjectNr(){
+    public int getProjectNr() {
         return projectNr;
     }
 
@@ -185,7 +162,7 @@ public class Project {
         return version;
     }
 
-    public String getAddress(){
+    public String getAddress() {
         return address;
     }
 
@@ -193,11 +170,11 @@ public class Project {
         return plz;
     }
 
-    public String getLocation(){
+    public String getLocation() {
         return location;
     }
 
-    public String getOwner(){
+    public String getOwner() {
         return owner;
     }
 
@@ -205,21 +182,19 @@ public class Project {
         return propertyType;
     }
 
-    public int getBathroomNr(){
+    public int getBathroomNr() {
         return bathroomNr;
     }
 
-    public int getApartmentsNr(){
+    public int getApartmentsNr() {
         return apartmentsNr;
     }
 
-    public ProjectData getData(){
+    public ProjectData getData() {
         return data;
     }
 
-    public TreeMap<Integer, Calculation> getCalculations() {
-        //ToDo make this methode to return a List (refactor
-
+    public List<Calculation> getCalculations() {
         return calculations;
     }
 
@@ -247,7 +222,7 @@ public class Project {
         return volumeAboveGround;
     }
 
-    public int getVolume(){
+    public int getVolume() {
         return volumeAboveGround + volumeUnderground;
     }
 
@@ -299,7 +274,7 @@ public class Project {
         return special;
     }
 
-    public Object[] getAttributes(){
+    public Object[] getAttributes() {
         return new Object[]{
                 projectNr,
                 version,
@@ -332,59 +307,111 @@ public class Project {
         };
     }
 
-    public void setVersion(int version){
+    public void setVersion(int version) {
         this.version = version;
     }
 
-    public void setAddress(String address) { this.address = address; }
+    public void setAddress(String address) {
+        this.address = address;
+    }
 
-    public void setPlz(int plz) { this.plz = plz; }
+    public void setPlz(int plz) {
+        this.plz = plz;
+    }
 
-    public void setLocation(String location) { this.location = location; }
+    public void setLocation(String location) {
+        this.location = location;
+    }
 
-    public void setOwner(String owner) { this.owner = owner; }
+    public void setOwner(String owner) {
+        this.owner = owner;
+    }
 
-    public void setPropertyType(String propertyType) { this.propertyType = propertyType; }
+    public void setPropertyType(String propertyType) {
+        this.propertyType = propertyType;
+    }
 
-    public void setConstructionType(String constructionType) { this.constructionType = constructionType; }
+    public void setConstructionType(String constructionType) {
+        this.constructionType = constructionType;
+    }
 
-    public void setDocumentPhase(int documentPhase) { this.documentPhase = documentPhase; }
+    public void setDocumentPhase(int documentPhase) {
+        this.documentPhase = documentPhase;
+    }
 
-    public void setCalculationPhase(int calculationPhase) { this.calculationPhase = calculationPhase; }
+    public void setCalculationPhase(int calculationPhase) {
+        this.calculationPhase = calculationPhase;
+    }
 
-    public void setApartmentsNr(int apartmentsNr) { this.apartmentsNr = apartmentsNr; }
+    public void setApartmentsNr(int apartmentsNr) {
+        this.apartmentsNr = apartmentsNr;
+    }
 
-    public void setBathroomNr(int bathroomNr) { this.bathroomNr = bathroomNr; }
+    public void setBathroomNr(int bathroomNr) {
+        this.bathroomNr = bathroomNr;
+    }
 
-    public void setHnf(int hnf) { this.hnf = hnf; }
+    public void setHnf(int hnf) {
+        this.hnf = hnf;
+    }
 
-    public void setGf(int gf) { this.gf = gf; }
+    public void setGf(int gf) {
+        this.gf = gf;
+    }
 
-    public void setVolumeUnderground(int volumeUnderground) { this.volumeUnderground = volumeUnderground; }
+    public void setVolumeUnderground(int volumeUnderground) {
+        this.volumeUnderground = volumeUnderground;
+    }
 
-    public void setVolumeAboveGround(int volumeAboveGround) { this.volumeAboveGround = volumeAboveGround; }
+    public void setVolumeAboveGround(int volumeAboveGround) {
+        this.volumeAboveGround = volumeAboveGround;
+    }
 
-    public void setFacadeArea(int facadeArea) { this.facadeArea = facadeArea; }
+    public void setFacadeArea(int facadeArea) {
+        this.facadeArea = facadeArea;
+    }
 
-    public void setWindowArea(int windowArea) { this.windowArea = windowArea; }
+    public void setWindowArea(int windowArea) {
+        this.windowArea = windowArea;
+    }
 
-    public void setFacadeType(String facadeType) { this.facadeType = facadeType; }
+    public void setFacadeType(String facadeType) {
+        this.facadeType = facadeType;
+    }
 
-    public void setWindowType(String windowType) { this.windowType = windowType; }
+    public void setWindowType(String windowType) {
+        this.windowType = windowType;
+    }
 
-    public void setRoofType(String roofType) { this.roofType = roofType; }
+    public void setRoofType(String roofType) {
+        this.roofType = roofType;
+    }
 
-    public void setHeatingType(String heatingType) { this.heatingType = heatingType; }
+    public void setHeatingType(String heatingType) {
+        this.heatingType = heatingType;
+    }
 
-    public void setCoolingType(String coolingType) { this.coolingType = coolingType; }
+    public void setCoolingType(String coolingType) {
+        this.coolingType = coolingType;
+    }
 
-    public void setVentilationTypeApartments(String ventilationTypeApartments) { this.ventilationTypeApartments = ventilationTypeApartments; }
+    public void setVentilationTypeApartments(String ventilationTypeApartments) {
+        this.ventilationTypeApartments = ventilationTypeApartments;
+    }
 
-    public void setVentilationTypeUg(String ventilationTypeUg) { this.ventilationTypeUg = ventilationTypeUg; }
+    public void setVentilationTypeUg(String ventilationTypeUg) {
+        this.ventilationTypeUg = ventilationTypeUg;
+    }
 
-    public void setCoNo(String coNo) { this.coNo = coNo; }
+    public void setCoNo(String coNo) {
+        this.coNo = coNo;
+    }
 
-    public void setSpecial(String special) { this.special = special; }
+    public void setSpecial(String special) {
+        this.special = special;
+    }
 
-    public void setData(ProjectData data) { this.data = data; }
+    public void setData(ProjectData data) {
+        this.data = data;
+    }
 }

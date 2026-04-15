@@ -284,7 +284,7 @@ class MiddlePane {
                 labelFactory.getLabel("", LabelFactory.LabelType.TEXT, true, true)
         );
 
-        for (Calculation calc : project.getCalculations().values()) {
+        for (Calculation calc : project.getCalculations()) {
             projectBox.getChildren().add(labelFactory.getLabel(calc.getCalculation(), LabelFactory.LabelType.TEXT, true, true));
         }
 

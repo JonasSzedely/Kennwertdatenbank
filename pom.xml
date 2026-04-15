@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>jonas</groupId>
-    <artifactId>Kennwertdatenbank</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <artifactId>kennwertdatenbank</artifactId>
+    <version>v1.1.9</version>
     <packaging>jar</packaging>
     <name>Kennwertdatenbank</name>
 
@@ -15,6 +15,8 @@
         <junit.version>5.12.1</junit.version>
         <javafx.version>24.0.1</javafx.version>
         <launch4j.version>2.5.3</launch4j.version>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
     </properties>
 
     <dependencies>
@@ -49,14 +51,14 @@
             <version>42.7.8</version>
         </dependency>
 
-        <!-- OpenPDF https://github.com/LibrePDF/OpenPDF/blob/master/README.md -->
+        <!-- OpenPDF [https://github.com/LibrePDF/OpenPDF/blob/master/README.md](https://github.com/LibrePDF/OpenPDF/blob/master/README.md) -->
         <dependency>
             <groupId>com.github.librepdf</groupId>
             <artifactId>openpdf</artifactId>
             <version>3.0.0</version>
         </dependency>
 
-        <!-- Fast Excel https://github.com/dhatim/fastexcel/blob/master/README.md -->
+        <!-- Fast Excel [https://github.com/dhatim/fastexcel/blob/master/README.md](https://github.com/dhatim/fastexcel/blob/master/README.md) -->
         <dependency>
             <groupId>org.dhatim</groupId>
             <artifactId>fastexcel</artifactId>
@@ -79,6 +81,14 @@
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <excludes>
+                    <exclude>kv*.csv</exclude>
+                </excludes>
+            </resource>
+        </resources>
         <plugins>
             <!-- Compiler -->
             <plugin>
@@ -86,8 +96,13 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.13.0</version>
                 <configuration>
-                    <source>25</source>
-                    <target>25</target>
+                    <excludes>
+                        <exclude>src/main/resources/kv*.csv</exclude>
+                        <exclude>**/model/RandomProjects.java</exclude>
+                        <exclude>**/kv*.csv</exclude>
+                    </excludes>
+                    <source>21</source>
+                    <target>21</target>
                 </configuration>
             </plugin>
 
@@ -114,7 +129,7 @@
                 </configuration>
             </plugin>
 
-            <!-- Shade Plugin - alles in einem JAR -->
+            <!-- JAR -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -140,7 +155,35 @@
                                     </excludes>
                                 </filter>
                             </filters>
-                            <finalName>Kennwertdatenbank-1.0-SNAPSHOT</finalName>
+                            <finalName>Kennwertdatenbank-${project.version}</finalName>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.3.1</version>
+                <executions>
+                    <execution>
+                        <id>copy-resources</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/resources</directory>
+                                    <filtering>true</filtering>
+                                    <excludes>
+                                        <exclude>**/kv*.csv</exclude>
+                                    </excludes>
+                                </resource>
+                            </resources>
+                            <includeEmptyDirs>false</includeEmptyDirs>
                         </configuration>
                     </execution>
                 </executions>

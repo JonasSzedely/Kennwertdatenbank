@@ -8,6 +8,8 @@ public class Calculation {
         this.calculation = calculation;
     }
 
+    public static final Calculation SEPARATOR = new Calculation("", "");
+
     public String getName(){
         return name;
     }

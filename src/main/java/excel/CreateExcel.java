@@ -68,7 +68,7 @@ public class CreateExcel {
                     ws.value(row++, 0, str);
                 }
                 // Row labels in column 0 for calculations
-                for (Calculation calc : projects.getFirst().getCalculations().values()) {
+                for (Calculation calc : projects.getFirst().getCalculations()) {
                     ws.value(row++, 0, calc.getName());
                 }
 
@@ -101,7 +101,7 @@ public class CreateExcel {
                     ws.value(row++, col + 1, project.getCoNo());
                     ws.value(row++, col + 1, project.getSpecial());
 
-                    for (Calculation calc : project.getCalculations().values()) {
+                    for (Calculation calc : project.getCalculations()) {
                         ws.value(row++, col + 1, calc.getCalculation());
                     }
                 }

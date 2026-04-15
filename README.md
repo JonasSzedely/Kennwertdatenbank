@@ -18,7 +18,7 @@ jszedely@gmail.com
 
 <ins>Roadmap</ins>  
 Several Features could be implemented in the Future, some of them are listed bellow:
-- Option to export all projects to an Excel.
+- Option to show difference to a target project.
 - Option to create/add new calculations in the UI.
 - Backend with API and frontend as a website.
 
@@ -34,13 +34,3 @@ These are the sources used for this project. You can find more information in ea
 - JavaFX Alert tutorial by code.makery.ch https://code.makery.ch/blog/javafx-dialogs-official/
 - Claude AI for code snippets or as a search instrument for information on functionalities, technologies and procedures. https://www.claude.ai
 - stackoverflow for patterns and tipps https://stackoverflow.com
-
-<ins>Info for development</ins>  
-New version:
-- change package.json -> version
-- mvn clean
-- git add .
-- git commit -m "..."
-- git push origin master
-- git tag v1.0.0 (the new version nr) (delete with -d v...)
-- git push origin v1.1.1

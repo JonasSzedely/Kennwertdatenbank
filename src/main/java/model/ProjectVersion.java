@@ -14,9 +14,8 @@ class ProjectVersion {
             pstmt.setInt(1, projectNr);
             ResultSet rs = pstmt.executeQuery();
 
-            //if the same project exists, the highest version will be set. (1,3,4 -> 5)
             if (rs.next()) {
-                int maxVersion = rs.getInt(1); //if no project exist it will be 0s
+                int maxVersion = rs.getInt(1);
                 return maxVersion + 1;
             }
         } catch (SQLException e) {

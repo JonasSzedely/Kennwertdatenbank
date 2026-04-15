@@ -19,25 +19,22 @@ class RangeFilter {
     private final TextField maxTextField;
     private final TextFormatter<Number> minFormatter;
     private final TextFormatter<Number> maxFormatter;
-    private final Supplier<Integer> minSupplier; //from claude.ai
-    private final Supplier<Integer> maxSupplier; //from claude.ai
-    private final Function<Project, Integer> valueExtractor; //from claude.ai
+    private final Supplier<Integer> minSupplier;
+    private final Supplier<Integer> maxSupplier;
+    private final Function<Project, Integer> valueExtractor;
 
 
-    //Callback methode interface (from claude.ai)
     @FunctionalInterface
     public interface FilterChangeListener {
         void onFilterChanged();
     }
 
-    private FilterChangeListener changeListener; //from claude.ai
+    private FilterChangeListener changeListener;
 
-    //method to register the callback (from claude.ai)
     public void setOnFilterChanged(FilterChangeListener listener) {
         this.changeListener = listener;
     }
 
-    //helper method to call back (from claude.ai)
     private void notifyFilterChanged() {
         if (changeListener != null) {
             changeListener.onFilterChanged();
@@ -184,7 +181,6 @@ class RangeFilter {
      * @return returns the value as int
      */
     public Predicate<Project> getPredicate() {
-        //von claude.ai
         return project -> {
             int value = valueExtractor.apply(project);
             return value >= slider.getLowValue() && value <= slider.getHighValue();
