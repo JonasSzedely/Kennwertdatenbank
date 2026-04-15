@@ -9,10 +9,10 @@ on:
       - 'v*'
 
 permissions:
-  contents: write      # Für Releases und Assets
-  id-token: write      # Für OIDC (npm)
-  packages: write      # Für GitHub Packages
-  pull-requests: read  # Basis-Berechtigung
+  contents: write
+  id-token: write
+  packages: write
+  pull-requests: read
 
 jobs:
   build:
@@ -21,7 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Wichtig für Tags
+          fetch-depth: 0
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -34,6 +34,6 @@ jobs:
         run: mvn -B package --file pom.xml
 
       - name: Build App Installer Bundles
-        uses: shannah/jdeploy@master  # Offiziell empfohlen [web:2]
+        uses: shannah/jdeploy@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}

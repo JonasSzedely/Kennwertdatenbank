@@ -4,7 +4,7 @@
   <groupId>jonas</groupId>
   <artifactId>kennwertdatenbank</artifactId>
   <name>Kennwertdatenbank</name>
-  <version>v1.1.9</version>
+  <version>1.1.9</version>
   <build>
     <resources>
       <resource>
@@ -73,7 +73,7 @@
                   </excludes>
                 </filter>
               </filters>
-              <finalName>Kennwertdatenbank-${project.version}</finalName>
+              <finalName>Kennwertdatenbank</finalName>
             </configuration>
           </execution>
         </executions>

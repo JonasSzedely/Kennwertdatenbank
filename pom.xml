@@ -6,7 +6,7 @@
 
     <groupId>jonas</groupId>
     <artifactId>kennwertdatenbank</artifactId>
-    <version>v1.1.9</version>
+    <version>1.1.9</version>
     <packaging>jar</packaging>
     <name>Kennwertdatenbank</name>
 
@@ -155,7 +155,7 @@
                                     </excludes>
                                 </filter>
                             </filters>
-                            <finalName>Kennwertdatenbank-${project.version}</finalName>
+                            <finalName>Kennwertdatenbank</finalName>
                         </configuration>
                     </execution>
                 </executions>

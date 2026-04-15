@@ -7,7 +7,7 @@
   "preferGlobal": true,
   "repository": {"url": "https://github.com/JonasSzedely/Kennwertdatenbank"},
   "scripts": {"test": "echo \"Error: no test specified\" && exit 1"},
-  "version": "${project.version}",
+  "version": "1.1.9",
   "jdeploy": {
     "jdk": true,
     "singleton": true,
@@ -18,7 +18,7 @@
       "url": "https://github.com/JonasSzedely/Kennwertdatenbank"
     }],
     "javaVersion": "21",
-    "jar": "target/Kennwertdatenbank-${project.version}.jar",
+    "jar": "target/Kennwertdatenbank.jar",
     "javafx": true,
     "title": "Kennwertdatenbank",
     "platformBundlesEnabled": false,
