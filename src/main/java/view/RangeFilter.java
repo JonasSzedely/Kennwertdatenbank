@@ -22,34 +22,18 @@ class RangeFilter {
     private final Supplier<Integer> minSupplier;
     private final Supplier<Integer> maxSupplier;
     private final Function<Project, Integer> valueExtractor;
-
-
-    @FunctionalInterface
-    public interface FilterChangeListener {
-        void onFilterChanged();
-    }
-
     private FilterChangeListener changeListener;
-
-    public void setOnFilterChanged(FilterChangeListener listener) {
-        this.changeListener = listener;
-    }
-
-    private void notifyFilterChanged() {
-        if (changeListener != null) {
-            changeListener.onFilterChanged();
-        }
-    }
 
     /**
      * Creates a new RangeFilter with UI elements
-     * @param titel the text that will be displayed in the titel Label
-     * @param resetText the text that will be displayed in the reset Button
+     *
+     * @param titel          the text that will be displayed in the titel Label
+     * @param resetText      the text that will be displayed in the reset Button
      * @param valueExtractor
      * @param minSupplier
      * @param maxSupplier
      */
-    public RangeFilter(String titel, String resetText, Function<Project, Integer> valueExtractor, Supplier<Integer> minSupplier, Supplier<Integer> maxSupplier){
+    public RangeFilter(String titel, String resetText, Function<Project, Integer> valueExtractor, Supplier<Integer> minSupplier, Supplier<Integer> maxSupplier) {
         this.titel = new Label(titel);
         this.reset = new Button(resetText);
         this.slider = new RangeSlider();
@@ -84,7 +68,7 @@ class RangeFilter {
 
         //listener for minimum text field on focus
         minTextField.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
-            if(!isNowFocused && wasFocused) {
+            if (!isNowFocused && wasFocused) {
                 try {
                     int value = minFormatter.getValue().intValue();
                     if (value >= slider.getMin() && value <= slider.getHighValue()) {
@@ -103,7 +87,7 @@ class RangeFilter {
         });
 
         //listener for minimum text field on enter
-        minTextField.setOnAction(e ->  {
+        minTextField.setOnAction(e -> {
             try {
                 int value = minFormatter.getValue().intValue();
                 if (value >= slider.getMin() && value <= slider.getHighValue()) {
@@ -122,7 +106,7 @@ class RangeFilter {
 
         //listener for maximum text field on focus
         maxTextField.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
-            if(!isNowFocused && wasFocused) {
+            if (!isNowFocused && wasFocused) {
                 try {
                     int value = maxFormatter.getValue().intValue();
                     if (value <= slider.getMax() && value >= slider.getLowValue()) {
@@ -149,7 +133,7 @@ class RangeFilter {
                 } else if (value > slider.getMax()) {
                     slider.setHighValue(slider.getMax());
                     maxFormatter.setValue(slider.getMax());
-                } else if (value < slider.getMin()){
+                } else if (value < slider.getMin()) {
                     slider.setHighValue(slider.getLowValue());
                     maxFormatter.setValue(slider.getLowValue());
                 }
@@ -160,7 +144,7 @@ class RangeFilter {
 
         //listener when slider low value was set
         slider.lowValueChangingProperty().addListener((obs, wasChangin, isChanging) -> {
-            if(!isChanging && wasChangin) {
+            if (!isChanging && wasChangin) {
                 minFormatter.setValue(slider.getLowValue());
                 notifyFilterChanged();
             }
@@ -168,7 +152,7 @@ class RangeFilter {
 
         //listener when slider heigh value was set
         slider.highValueChangingProperty().addListener((obs, wasChangin, isChanging) -> {
-            if(!isChanging && wasChangin) {
+            if (!isChanging && wasChangin) {
                 maxFormatter.setValue(slider.getHighValue());
                 notifyFilterChanged();
             }
@@ -176,8 +160,19 @@ class RangeFilter {
 
     }
 
+    public void setOnFilterChanged(FilterChangeListener listener) {
+        this.changeListener = listener;
+    }
+
+    private void notifyFilterChanged() {
+        if (changeListener != null) {
+            changeListener.onFilterChanged();
+        }
+    }
+
     /**
      * Creates a test-function
+     *
      * @return returns the value as int
      */
     public Predicate<Project> getPredicate() {
@@ -190,7 +185,7 @@ class RangeFilter {
     /**
      * sets the range (min to max) of the range-slider, must be updatet when a new project is added.
      */
-    public void setRange(){
+    public void setRange() {
         int min = minSupplier.get();
         int max = maxSupplier.get();
         slider.setMin(min);
@@ -212,7 +207,7 @@ class RangeFilter {
      *
      * @return the reset Button element
      */
-    public Button getResetButton(){
+    public Button getResetButton() {
         return reset;
     }
 
@@ -220,7 +215,7 @@ class RangeFilter {
      *
      * @return the range-slider element
      */
-    public RangeSlider getSlider(){
+    public RangeSlider getSlider() {
         return slider;
     }
 
@@ -228,7 +223,7 @@ class RangeFilter {
      *
      * @return the min TextField element
      */
-    public TextField getMinTextField(){
+    public TextField getMinTextField() {
         return minTextField;
     }
 
@@ -236,8 +231,13 @@ class RangeFilter {
      *
      * @return the max TextField element
      */
-    public TextField getMaxTextField(){
+    public TextField getMaxTextField() {
         return maxTextField;
+    }
+
+    @FunctionalInterface
+    public interface FilterChangeListener {
+        void onFilterChanged();
     }
 
 }

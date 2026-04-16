@@ -7,35 +7,34 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.*;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import model.Controller;
 import model.Project;
 import model.ProjectData;
 
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 
 class ProjectInputWindow extends Application {
 
-    enum Type {
-        NEW,
-        MODIFY,
-        NEXT
-    }
     private final Controller controller;
+    private final Type type;
     private Project project;
     private Button addButton;
     private boolean addButtonUsed = false;
-    private final Type type;
     private LinkedHashMap<String, Form> forms;
     private ArrayList<FormListener> formListeners;
     private Stage stage;
-
     /**
      * Creates a new Window that allows to add a project to the Database.
      * It validates the input before it can be added, and flags wrong inputs in the UI.
+     *
      * @param controller pass the controller class object.
      */
     public ProjectInputWindow(Controller controller, Type type) {
@@ -46,10 +45,11 @@ class ProjectInputWindow extends Application {
     /**
      * Creates a new Window that allows to edit a project.
      * It validates the input before it can be added, and flags wrong inputs in the UI.
+     *
      * @param controller pass the controller class object.
-     * @param project the project to be edited.
+     * @param project    the project to be edited.
      */
-    public ProjectInputWindow(Controller controller, Project project, Type type){
+    public ProjectInputWindow(Controller controller, Project project, Type type) {
         this.controller = controller;
         this.project = project;
         this.type = type;
@@ -67,14 +67,15 @@ class ProjectInputWindow extends Application {
 
         Label title = new Label();
         title.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
-        switch(type){
+        switch (type) {
             case NEW -> title.setText("Neues Projekt hinzufügen");
-            case MODIFY -> title.setText("Projekt Nr. " + project.getProjectNr() + " Version " + project.getVersion() + " bearbeiten");
+            case MODIFY ->
+                    title.setText("Projekt Nr. " + project.getProjectNr() + " Version " + project.getVersion() + " bearbeiten");
             case NEXT -> title.setText("Neue Version von Projekt Nr. " + project.getProjectNr() + " hinzufügen");
         }
 
-        GridPane gridPane = new GridPane(10,10);
-        gridPane.setPadding(new Insets(20,20,20,20));
+        GridPane gridPane = new GridPane(10, 10);
+        gridPane.setPadding(new Insets(20, 20, 20, 20));
         gridPane.setAlignment(Pos.CENTER);
         gridPane.getColumnConstraints().addAll(new ColumnConstraints(150), new ColumnConstraints(200), new ColumnConstraints(150), new ColumnConstraints(150), new ColumnConstraints(200), new ColumnConstraints(150));
         forms = new LinkedHashMap<>();
@@ -86,10 +87,10 @@ class ProjectInputWindow extends Application {
         LABEL ; NAME ; EXAMPLE TEXT ; WARNING ; TYPE ; VALIDATION-PARAMETER MIN ; VALIDATION-PARAMETER MAX
         */
         addInputNumber("projectNr", "Projekt Nummer", "10000", "Keine gültige Zahl!", 10000, 99999);
-        addInputText("address", "Adresse", "Musterstrasse 5", "Bitte Adresse eingeben!",22);
+        addInputText("address", "Adresse", "Musterstrasse 5", "Bitte Adresse eingeben!", 22);
         addInputNumber("plz", "Postleitzahl", "8001", "Keine gültige Zahl!", 1000, 9999);
-        addInputText("location", "Ort", "Zürich", "Bitte Ortschaft eingeben!",22);
-        addInputText("owner", "Bauherr", "Marcel Muster", "Bitte Name eingeben!",22);
+        addInputText("location", "Ort", "Zürich", "Bitte Ortschaft eingeben!", 22);
+        addInputText("owner", "Bauherr", "Marcel Muster", "Bitte Name eingeben!", 22);
         addDropdown("propertyType", "Gebäudenutzungen", "Miete|Stockwerkeigentum|Gewerbe/Industrie|Wohnen+Gewerbe", "Bitte auswählen!");
         addDropdown("constructionType", "Art des Bauvorhaben", "Neubau|Sanierung|Umbau|Anbau|Ausbau", "Bitte auswählen!");
         addDropdown("documentPhase", "Planungsstand", "2|31|32|33|41|5", "Bitte auswählen!");
@@ -111,7 +112,7 @@ class ProjectInputWindow extends Application {
         addDropdown("ventilationTypeUG", "Lüftung UG", "natürlich|Abluft|Zu- & Abluft|Unklar", "Bitte auswählen!");
         addDropdown("coNO", "CO/NO-Anlage", "Ja|Nein|Unklar", "Bitte auswählen!");
         addInputText("special", "Spezielles", "Spezielle Projekt Eigenschaften", "Ungültiger Eingabe!", 65);
-        addInputText("dataPath", "BKP Dateipfad", "C:\\Benutzer\\Name\\Downloads\\kv.csv", "Kein gültiger Pfad!",260);
+        addInputText("dataPath", "BKP Dateipfad", "C:\\Benutzer\\Name\\Downloads\\kv.csv", "Kein gültiger Pfad!", 260);
 
 
         //adding the forms to the GridPane
@@ -120,14 +121,15 @@ class ProjectInputWindow extends Application {
         int j = 0, k = 0;
         for (String name : keys) {
             if (name.equals(midKey)) {
-                k = 3; j = 0;
+                k = 3;
+                j = 0;
             } else if (name.equals("dataPath")) {
                 k = 0;
             }
 
             gridPane.add(forms.get(name).getLabel(), k, j);
-            gridPane.add(forms.get(name).getInputField(), k+1, j);
-            gridPane.add(forms.get(name).getInvalidLabel(), k+2, j);
+            gridPane.add(forms.get(name).getInputField(), k + 1, j);
+            gridPane.add(forms.get(name).getInvalidLabel(), k + 2, j);
 
             if (name.equals("dataPath")) {
                 GridPane.setColumnSpan(forms.get(name).getInputField(), 4);
@@ -140,7 +142,7 @@ class ProjectInputWindow extends Application {
         //The button checks whether the input in the form is valid and passes the data to the controller.
         addButton = new Button();
 
-        switch(type){
+        switch (type) {
             case NEW -> {
                 //Adding a new Project to the DB
                 addButton.setText("Projekt hinzufügen");
@@ -159,8 +161,8 @@ class ProjectInputWindow extends Application {
                 forms.get("dataPath").setInputFieldText("Projekt Kosten können nicht überschrieben werden. Bitte neues Projekt anlegen.");
                 forms.get("dataPath").getInputField().setDisable(true);
 
-                addButton.setOnAction(event ->{
-                    if (validate()){
+                addButton.setOnAction(event -> {
+                    if (validate()) {
                         String message = modifyProject();
                         confirmationWindow("Projekt angepasst", message);
                     }
@@ -182,8 +184,8 @@ class ProjectInputWindow extends Application {
         }
 
         addButton.prefWidthProperty().bind(gridPane.widthProperty());
-        gridPane.add(addButton,0,(forms.size()/2)+1);
-        GridPane.setColumnSpan(addButton,5);
+        gridPane.add(addButton, 0, (forms.size() / 2) + 1);
+        GridPane.setColumnSpan(addButton, 5);
 
         outerPane.getChildren().addAll(title, gridPane);
         Scene scene = new Scene(outerPane);
@@ -217,11 +219,11 @@ class ProjectInputWindow extends Application {
         formListeners.add(new FormListener((DropdownForm) forms.get(name)));
     }
 
-    public boolean getAddButtonStatus(){
+    public boolean getAddButtonStatus() {
         return addButtonUsed;
     }
 
-    private void fillFields(){
+    private void fillFields() {
         forms.get("projectNr").setInputFieldText(String.valueOf(project.getProjectNr()));
         forms.get("address").setInputFieldText(project.getAddress());
         forms.get("plz").setInputFieldText(String.valueOf(project.getPlz()));
@@ -313,7 +315,7 @@ class ProjectInputWindow extends Application {
         return controller.modifyProjects(project);
     }
 
-    private boolean validate(){
+    private boolean validate() {
         boolean inputIsValid = false;
         for (FormListener formListener : formListeners) {
             formListener.validate();
@@ -323,7 +325,7 @@ class ProjectInputWindow extends Application {
         return inputIsValid;
     }
 
-    private void confirmationWindow(String title, String message){
+    private void confirmationWindow(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle(title);
         alert.setHeaderText("Rückmeldung");
@@ -331,5 +333,11 @@ class ProjectInputWindow extends Application {
         alert.showAndWait();
         addButtonUsed = true;
         stage.close();
+    }
+
+    enum Type {
+        NEW,
+        MODIFY,
+        NEXT
     }
 }

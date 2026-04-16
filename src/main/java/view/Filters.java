@@ -25,25 +25,27 @@ class Filters {
     private RangeFilter apartmentNrFilter;
     private RangeFilter volumeFilter;
 
-    public Filters(Controller controller){
+    public Filters(Controller controller) {
         this.controller = controller;
     }
+
     /**
      * creates the filters
+     *
      * @return HBox
      */
-    public HBox get(){
+    public HBox get() {
         HBox outerPane = new HBox();
         outerPane.setAlignment(Pos.CENTER);
-        outerPane.setPadding(new Insets(20,0,20,0));
+        outerPane.setPadding(new Insets(20, 0, 20, 0));
 
-        GridPane filterBox = new GridPane(10,10);
-        filterBox.getColumnConstraints().addAll(new ColumnConstraints(100),new ColumnConstraints(100),new ColumnConstraints(2),new ColumnConstraints(100),new ColumnConstraints(100),new ColumnConstraints(2),new ColumnConstraints(100),new ColumnConstraints(100),new ColumnConstraints(2),new ColumnConstraints(100),new ColumnConstraints(100));
+        GridPane filterBox = new GridPane(10, 10);
+        filterBox.getColumnConstraints().addAll(new ColumnConstraints(100), new ColumnConstraints(100), new ColumnConstraints(2), new ColumnConstraints(100), new ColumnConstraints(100), new ColumnConstraints(2), new ColumnConstraints(100), new ColumnConstraints(100), new ColumnConstraints(2), new ColumnConstraints(100), new ColumnConstraints(100));
 
         //filter project number
         TextField filterProjectNr = new TextField();
         filterProjectNr.setPromptText("Projektnummer");
-        filterBox.add(filterProjectNr, 0,0);
+        filterBox.add(filterProjectNr, 0, 0);
         filterProjectNr.setTooltip(new Tooltip("Nach Projektnummer filtern"));
         filterProjectNr.getTooltip().setShowDelay(Duration.millis(TOOL_TIP_TIME));
 
@@ -52,7 +54,7 @@ class Filters {
         ObservableList<String> options = FXCollections.observableArrayList("Alle Gebäudenutzer", "Miete", "Stockwerkeigentum");
         projectTypeFilter.setItems(options);
         projectTypeFilter.setPromptText("Gebäudenutzer");
-        filterBox.add(projectTypeFilter,0,1);
+        filterBox.add(projectTypeFilter, 0, 1);
         projectTypeFilter.setTooltip(new Tooltip("Nach Gebäudenutzer filtern"));
         projectTypeFilter.getTooltip().setShowDelay(Duration.millis(TOOL_TIP_TIME));
 
@@ -61,7 +63,7 @@ class Filters {
         ObservableList<String> optionsConstructionType = FXCollections.observableArrayList("Alle Bauvorhaben", "Neubau", "Sanierung", "Umbau", "Anbau", "Ausbau");
         constructionTypeFilter.setItems(optionsConstructionType);
         constructionTypeFilter.setPromptText("Bauvorhaben");
-        filterBox.add(constructionTypeFilter,0,2);
+        filterBox.add(constructionTypeFilter, 0, 2);
         constructionTypeFilter.setTooltip(new Tooltip("Nach Bauvorhaben Art filtern"));
         constructionTypeFilter.getTooltip().setShowDelay(Duration.millis(TOOL_TIP_TIME));
 
@@ -78,7 +80,7 @@ class Filters {
         versionFilter.setMaxWidth(99);
         versionFilter.setSelected(false);
         versionFilter.setText("vollständig");
-        filterBox.add(versionFilter, 1,0);
+        filterBox.add(versionFilter, 1, 0);
         versionFilter.setTooltip(new Tooltip("Nach Versionen filtern"));
         versionFilter.getTooltip().setShowDelay(Duration.millis(TOOL_TIP_TIME));
 
@@ -90,12 +92,12 @@ class Filters {
                 controller::getMaxTotalCost
         );
 
-        filterBox.add(sumFilter.getTitelLabel(),3,0);
-        filterBox.add(sumFilter.getResetButton(),4,0);
-        filterBox.add(sumFilter.getSlider(),3,1);
-        GridPane.setColumnSpan(sumFilter.getSlider(),2);
-        filterBox.add(sumFilter.getMinTextField(),3,2);
-        filterBox.add(sumFilter.getMaxTextField(),4,2);
+        filterBox.add(sumFilter.getTitelLabel(), 3, 0);
+        filterBox.add(sumFilter.getResetButton(), 4, 0);
+        filterBox.add(sumFilter.getSlider(), 3, 1);
+        GridPane.setColumnSpan(sumFilter.getSlider(), 2);
+        filterBox.add(sumFilter.getMinTextField(), 3, 2);
+        filterBox.add(sumFilter.getMaxTextField(), 4, 2);
 
         Separator verticalLine2 = new Separator(Orientation.VERTICAL);
         filterBox.add(verticalLine2, 5, 0);
@@ -112,10 +114,10 @@ class Filters {
 
         filterBox.add(apartmentNrFilter.getTitelLabel(), 6, 0);
         filterBox.add(apartmentNrFilter.getResetButton(), 7, 0);
-        filterBox.add(apartmentNrFilter.getSlider(),6,1);
-        GridPane.setColumnSpan(apartmentNrFilter.getSlider(),2);
-        filterBox.add(apartmentNrFilter.getMinTextField(),6,2);
-        filterBox.add(apartmentNrFilter.getMaxTextField(),7,2);
+        filterBox.add(apartmentNrFilter.getSlider(), 6, 1);
+        GridPane.setColumnSpan(apartmentNrFilter.getSlider(), 2);
+        filterBox.add(apartmentNrFilter.getMinTextField(), 6, 2);
+        filterBox.add(apartmentNrFilter.getMaxTextField(), 7, 2);
 
         Separator verticalLine3 = new Separator(Orientation.VERTICAL);
         filterBox.add(verticalLine3, 8, 0);
@@ -132,19 +134,19 @@ class Filters {
 
         filterBox.add(volumeFilter.getTitelLabel(), 9, 0);
         filterBox.add(volumeFilter.getResetButton(), 10, 0);
-        filterBox.add(volumeFilter.getSlider(),9,1);
-        GridPane.setColumnSpan(volumeFilter.getSlider(),2);
-        filterBox.add(volumeFilter.getMinTextField(),9,2);
-        filterBox.add(volumeFilter.getMaxTextField(),10,2);
+        filterBox.add(volumeFilter.getSlider(), 9, 1);
+        GridPane.setColumnSpan(volumeFilter.getSlider(), 2);
+        filterBox.add(volumeFilter.getMinTextField(), 9, 2);
+        filterBox.add(volumeFilter.getMaxTextField(), 10, 2);
 
         //listener for filter
         sumFilter.setOnFilterChanged(() -> updateFilter(filterProjectNr, versionFilter, constructionTypeFilter, projectTypeFilter));
-        apartmentNrFilter.setOnFilterChanged(() -> updateFilter(filterProjectNr, versionFilter, constructionTypeFilter,projectTypeFilter));
-        volumeFilter.setOnFilterChanged(() -> updateFilter(filterProjectNr, versionFilter, constructionTypeFilter,projectTypeFilter));
+        apartmentNrFilter.setOnFilterChanged(() -> updateFilter(filterProjectNr, versionFilter, constructionTypeFilter, projectTypeFilter));
+        volumeFilter.setOnFilterChanged(() -> updateFilter(filterProjectNr, versionFilter, constructionTypeFilter, projectTypeFilter));
 
-        filterProjectNr.setOnAction(event -> updateFilter(filterProjectNr, versionFilter, constructionTypeFilter,projectTypeFilter));
+        filterProjectNr.setOnAction(event -> updateFilter(filterProjectNr, versionFilter, constructionTypeFilter, projectTypeFilter));
 
-        ProjectList.getProjectList().addListener((ListChangeListener<Project>) change ->  {
+        ProjectList.getProjectList().addListener((ListChangeListener<Project>) change -> {
             sumFilter.setRange();
             apartmentNrFilter.setRange();
             volumeFilter.setRange();
@@ -156,12 +158,12 @@ class Filters {
             } else {
                 versionFilter.setText("vollständig");
             }
-            updateFilter(filterProjectNr, versionFilter, constructionTypeFilter,projectTypeFilter);
+            updateFilter(filterProjectNr, versionFilter, constructionTypeFilter, projectTypeFilter);
         });
 
-        constructionTypeFilter.setOnAction(event -> updateFilter(filterProjectNr, versionFilter, constructionTypeFilter,projectTypeFilter));
+        constructionTypeFilter.setOnAction(event -> updateFilter(filterProjectNr, versionFilter, constructionTypeFilter, projectTypeFilter));
 
-        projectTypeFilter.setOnAction(event -> updateFilter(filterProjectNr, versionFilter, constructionTypeFilter,projectTypeFilter));
+        projectTypeFilter.setOnAction(event -> updateFilter(filterProjectNr, versionFilter, constructionTypeFilter, projectTypeFilter));
 
         outerPane.getChildren().addAll(filterBox);
         return outerPane;
@@ -169,10 +171,11 @@ class Filters {
 
     /**
      * used to update the projects
-     * @param filterProjectNr input filter for project number
-     * @param versionFilter input filter for version
+     *
+     * @param filterProjectNr        input filter for project number
+     * @param versionFilter          input filter for version
      * @param constructionTypeFilter input filter for construction type
-     * @param projectTypeFilter input filter for project type
+     * @param projectTypeFilter      input filter for project type
      */
     private void updateFilter(TextField filterProjectNr,
                               ToggleSwitch versionFilter,
@@ -191,8 +194,7 @@ class Filters {
             if (isEmpty(filterProjectNr)
                     && (selectedConstructionType == null || selectedConstructionType.equals("Alle Bauvorhaben"))
                     && (selectedProjectType == null || selectedProjectType.equals("Alle Gebäudenutzer"))
-                    && !versionFilter.isSelected())
-            {
+                    && !versionFilter.isSelected()) {
                 return matchSumFilter && matchApartmentFilter && matchVolumeFilter;
             }
 

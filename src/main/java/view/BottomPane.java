@@ -16,9 +16,10 @@ import java.time.format.DateTimeFormatter;
 
 public class BottomPane {
 
-    BottomPane(){
+    BottomPane() {
 
     }
+
     /**
      * creates the bottom pane
      *
@@ -32,7 +33,7 @@ public class BottomPane {
         bottomPane.setId("bottom-pane");
         bottomPane.setStyle("-fx-border-color: lightgray; -fx-border-width: 0 1 1 1;");
 
-        Label version = new Label(SoftwareVersion.get());
+        Label version = new Label("Version: " + SoftwareVersion.get());
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 

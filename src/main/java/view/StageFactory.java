@@ -2,6 +2,7 @@ package view;
 
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
+
 import java.util.Objects;
 
 class StageFactory {
@@ -27,7 +28,7 @@ class StageFactory {
         }
     }
 
-    public static void setName(Stage stage, String name){
+    public static void setName(Stage stage, String name) {
         stage.titleProperty().set(name);
     }
 }

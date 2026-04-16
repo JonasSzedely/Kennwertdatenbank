@@ -18,19 +18,19 @@ import java.util.LinkedHashMap;
 import java.util.Optional;
 
 class MiddlePane {
+    private static final int MAX_CACHE_SIZE = 50;
     private final Controller controller;
     private final LinkedHashMap<Integer, VBox> cellCache = new LinkedHashMap<>();
-    private ScrollPane rightScroll;
-    private HBox projectsContainer;
-    private VBox rowLabels;
     private final double CELL_WIDTH = 150;
     private final double CELL_HEIGHT = 30;
     private final double CELL_GAP = 0;
     private final int TOOL_TIP_TIME = 200;
     private final double BUTTON_SIZE = CELL_HEIGHT * 0.66;
     private final int SCROLLBAR_WIDTH = 15;
-    private static final int MAX_CACHE_SIZE = 50;
     private final LabelFactory labelFactory;
+    private ScrollPane rightScroll;
+    private HBox projectsContainer;
+    private VBox rowLabels;
 
     MiddlePane(Controller controller) {
         this.controller = controller;
@@ -139,7 +139,6 @@ class MiddlePane {
                     labelFactory.getLabel("SIA m³", LabelFactory.LabelType.TEXT, true, false),
                     //rowLabel()("unten"),
                     //rowLabel()("oben"),
-                    labelFactory.getLabel("SIA m³", LabelFactory.LabelType.TEXT, true, false),
                     labelFactory.getLabel("Fassaden-Typ", LabelFactory.LabelType.TEXT, true, false),
                     labelFactory.getLabel("Fenster-Typ", LabelFactory.LabelType.TEXT, true, false),
                     labelFactory.getLabel("Dach-Art", LabelFactory.LabelType.TEXT, true, false),
@@ -148,7 +147,7 @@ class MiddlePane {
                     labelFactory.getLabel("Lüftung WHG", LabelFactory.LabelType.TEXT, true, false),
                     labelFactory.getLabel("Lüftung TG", LabelFactory.LabelType.TEXT, true, false),
                     labelFactory.getLabel("CO/NO Anlage", LabelFactory.LabelType.TEXT, true, false),
-                    labelFactory.getLabel("Spezielles", LabelFactory.LabelType.TEXT, true, false),
+                    labelFactory.getLabel("Spezielles", LabelFactory.LabelType.TALL, true, false),
                     labelFactory.getLabel("", LabelFactory.LabelType.TEXT, true, false)
             );
             HBox noScroll = new HBox();
@@ -180,7 +179,7 @@ class MiddlePane {
         Label averageRatioUG = new Label("⌀ Verhältnis UG/OG:");
         Label averageRatioUGValue = new Label(String.format("%.2f", controller.getAverageRatioUG()));
         Label averageWindowRatio = new Label("⌀ Anteil Fenster/Fassade:");
-        Label averageWindowRatioValue = new Label(String.valueOf(controller.getAverageWindowRatio()) + " %");
+        Label averageWindowRatioValue = new Label(controller.getAverageWindowRatio() + " %");
 
         grid.add(statisticsTitel, 0, 0);
         grid.add(nrOfProjects, 0, 1);

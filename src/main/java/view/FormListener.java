@@ -8,11 +8,11 @@ import static view.FormListener.Type.*;
 class FormListener {
 
     private final Form form;
+    private final Type type;
+    private final String format;
     boolean isValid = false;
     private int min = 0;
     private int max = 0;
-    private final Type type;
-    private final String format;
 
 
     /**
@@ -133,15 +133,9 @@ class FormListener {
         form.getInvalidLabel().setVisible(!isValid);
     }
 
-    enum Type {
-        NUMBER,
-        DROPDOWN,
-        TEXT_MAX,
-        FORMAT
-    }
-
     /**
      * Check if input is valid.
+     *
      * @return boolean
      */
     public boolean isValid() {
@@ -150,9 +144,17 @@ class FormListener {
 
     /**
      * Change visibility of invalidLabel.
+     *
      * @param visible boolean
      */
     public void setInvalidLabel(boolean visible) {
         form.getInvalidLabel().setVisible(visible);
+    }
+
+    enum Type {
+        NUMBER,
+        DROPDOWN,
+        TEXT_MAX,
+        FORMAT
     }
 }

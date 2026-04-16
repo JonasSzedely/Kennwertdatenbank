@@ -6,7 +6,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.paint.Color;
 
 
-class InputForm implements Form{
+class InputForm implements Form {
     private final String name;
     private final String example;
     private final String validateText;
@@ -14,9 +14,9 @@ class InputForm implements Form{
     private final TextField input;
     private final Label invalid;
 
-    public InputForm(String name, String example, String validateText){
+    public InputForm(String name, String example, String validateText) {
         this.name = name;
-        this. example = example;
+        this.example = example;
         this.validateText = validateText;
         this.label = new Label(this.name);
         this.input = new TextField();
@@ -38,22 +38,22 @@ class InputForm implements Form{
 
 
     @Override
-    public Label getLabel(){
+    public Label getLabel() {
         return label;
     }
 
     @Override
-    public Control getInputField(){
+    public Control getInputField() {
         return input;
     }
 
     @Override
-    public Label getInvalidLabel(){
+    public Label getInvalidLabel() {
         return invalid;
     }
 
     @Override
-    public String getInput(){
+    public String getInput() {
         return input.getText();
     }
 

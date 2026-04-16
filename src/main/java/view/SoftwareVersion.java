@@ -1,19 +1,17 @@
 package view;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.io.File;
-import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 
 class SoftwareVersion {
     public static String get() {
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            File file = new File("package.json");
-            JsonNode root = mapper.readTree(file);
-            return root.get("version").asText();
-        } catch (IOException e) {
+        try (InputStream is = SoftwareVersion.class.getClassLoader().getResourceAsStream("version.properties")) {
+            if (is == null) return "unbekannt";
+
+            Properties props = new Properties();
+            props.load(is);
+            return props.getProperty("app.version", "unbekannt");
+        } catch (Exception e) {
             System.err.println("Version konnte nicht gelesen werden: " + e.getMessage());
             return "unbekannt";
         }
