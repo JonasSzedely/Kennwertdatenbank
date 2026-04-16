@@ -61,12 +61,17 @@ public class PDFCreator {
     /**
      * Normal cell height
      */
-    private final float CELL_HEIGHT = 20f;
+    private final float CELL_HEIGHT = 15f;
 
     /**
      * Special cell height for column to fit 65 characters
      */
     private final float SPECIAL_CELL_HEIGHT = 30f;
+
+    /**
+     * Padding for the labels.
+     */
+    private final int LABEL_PADDING = 3;
 
     /**
      * Maximum projects to export
@@ -390,7 +395,7 @@ public class PDFCreator {
         cell.setBackgroundColor(new Color(200, 200, 200));
         cell.setHorizontalAlignment(Element.ALIGN_LEFT);
         cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-        cell.setPadding(5);
+        cell.setPadding(LABEL_PADDING);
         cell.setFixedHeight(CELL_HEIGHT); // Consistent height for label cells
         table.addCell(cell);
     }
@@ -407,7 +412,7 @@ public class PDFCreator {
         cell.setBackgroundColor(new Color(230, 230, 230));
         cell.setHorizontalAlignment(Element.ALIGN_CENTER);
         cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-        cell.setPadding(5);
+        cell.setPadding(LABEL_PADDING);
         cell.setFixedHeight(CELL_HEIGHT); // Consistent height for header cells
         table.addCell(cell);
     }
@@ -423,7 +428,7 @@ public class PDFCreator {
         PdfPCell cell = new PdfPCell(new Phrase(text != null ? text : "", font));
         cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
         cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-        cell.setPadding(4);
+        cell.setPadding(LABEL_PADDING);
         cell.setFixedHeight(CELL_HEIGHT); // Consistent height for regular cells
         table.addCell(cell);
     }
@@ -440,7 +445,7 @@ public class PDFCreator {
         PdfPCell cell = new PdfPCell(new Phrase(text != null ? text : "", font));
         cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
         cell.setVerticalAlignment(Element.ALIGN_TOP); // Align text to top for multi-line
-        cell.setPadding(4);
+        cell.setPadding(LABEL_PADDING);
 
         // Enable text wrapping and set fixed height
         cell.setNoWrap(false); // Allow text wrapping

@@ -301,7 +301,7 @@ class ProjectInputWindow extends Application {
         project.setGf(Integer.parseInt(forms.get("gf").getInput()));
         project.setVolumeUnderground(Integer.parseInt(forms.get("volumeUnderground").getInput()));
         project.setVolumeAboveGround(Integer.parseInt(forms.get("volumeAboveUnderground").getInput()));
-        project.setFacadeArea(Integer.parseInt(forms.get("volumeAboveUnderground").getInput()));
+        project.setFacadeArea(Integer.parseInt(forms.get("facadearea").getInput()));
         project.setWindowArea(Integer.parseInt(forms.get("windowarea").getInput()));
         project.setFacadeType(forms.get("facadeType").getInput());
         project.setWindowType(forms.get("windowType").getInput());
