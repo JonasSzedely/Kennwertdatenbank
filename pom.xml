@@ -89,6 +89,7 @@
                 </excludes>
             </resource>
         </resources>
+
         <plugins>
             <!-- Compiler -->
             <plugin>
@@ -97,9 +98,7 @@
                 <version>3.13.0</version>
                 <configuration>
                     <excludes>
-                        <exclude>src/main/resources/kv*.csv</exclude>
                         <exclude>**/model/RandomProjects.java</exclude>
-                        <exclude>**/kv*.csv</exclude>
                     </excludes>
                     <source>21</source>
                     <target>21</target>
@@ -137,8 +136,11 @@
                 <executions>
                     <execution>
                         <phase>package</phase>
-                        <goals><goal>shade</goal></goals>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
                         <configuration>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>Main</mainClass>
@@ -156,34 +158,6 @@
                                 </filter>
                             </filters>
                             <finalName>Kennwertdatenbank</finalName>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>3.3.1</version>
-                <executions>
-                    <execution>
-                        <id>copy-resources</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>src/main/resources</directory>
-                                    <filtering>true</filtering>
-                                    <excludes>
-                                        <exclude>**/kv*.csv</exclude>
-                                    </excludes>
-                                </resource>
-                            </resources>
-                            <includeEmptyDirs>false</includeEmptyDirs>
                         </configuration>
                     </execution>
                 </executions>
