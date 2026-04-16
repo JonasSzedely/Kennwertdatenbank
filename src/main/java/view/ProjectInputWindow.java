@@ -306,7 +306,8 @@ class ProjectInputWindow extends Application {
         project.setFacadeType(forms.get("facadeType").getInput());
         project.setWindowType(forms.get("windowType").getInput());
         project.setRoofType(forms.get("roofType").getInput());
-        project.setCoolingType(forms.get("heatingType").getInput());
+        project.setHeatingType(forms.get("heatingType").getInput());
+        project.setCoolingType(forms.get("coolingType").getInput());
         project.setVentilationTypeApartments(forms.get("ventilationTypeApartments").getInput());
         project.setVentilationTypeUg(forms.get("ventilationTypeUG").getInput());
         project.setCoNo(forms.get("coNO").getInput());

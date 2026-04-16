@@ -39,9 +39,9 @@ class RangeFilter {
         this.slider = new RangeSlider();
         this.minTextField = new TextField();
         this.maxTextField = new TextField();
-        this.valueExtractor = valueExtractor; //from claude ai
-        this.minSupplier = minSupplier; //from claude ai
-        this.maxSupplier = maxSupplier; //from claude ai
+        this.valueExtractor = valueExtractor;
+        this.minSupplier = minSupplier;
+        this.maxSupplier = maxSupplier;
         NumberFormat integerFormat = NumberFormat.getIntegerInstance(FormatConfig.numberFormat()); //formatter to format numbers in swiss style (#'###)
         integerFormat.setMaximumFractionDigits(0); //set the formatter to display only integers
         this.minFormatter = new TextFormatter<>(new NumberStringConverter(integerFormat), minSupplier.get());
@@ -64,6 +64,16 @@ class RangeFilter {
             slider.setLowValue(slider.getMin());
             slider.setHighValue(slider.getMax());
             notifyFilterChanged();
+        });
+
+        //listener when slider low value is changed
+        slider.lowValueProperty().addListener((obs, oldValue, newValue) -> {
+            minFormatter.setValue(newValue.intValue());
+        });
+
+        //listener when slider heigh value is changed
+        slider.highValueProperty().addListener((obs, oldValue, newValue) -> {
+            maxFormatter.setValue(newValue.intValue());
         });
 
         //listener for minimum text field on focus
