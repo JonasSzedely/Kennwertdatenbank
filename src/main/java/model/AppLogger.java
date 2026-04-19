@@ -21,7 +21,6 @@ public class AppLogger {
     private static synchronized Logger getLogger() {
         LocalDate today = LocalDate.now();
 
-        // Neu initialisieren wenn erstmaliger Aufruf oder Tageswechsel
         if (logger == null || !today.equals(currentDate)) {
             initLogger(today);
             currentDate = today;
@@ -38,7 +37,6 @@ public class AppLogger {
 
             String logFile = LOG_DIR + "/log-" + date.format(DATE_FORMAT) + ".log";
 
-            // Alten Handler entfernen wenn vorhanden (bei Tageswechsel)
             if (logger != null) {
                 for (Handler h : logger.getHandlers()) {
                     h.close();
@@ -47,18 +45,16 @@ public class AppLogger {
             }
 
             logger = Logger.getLogger("AppLogger");
-            logger.setUseParentHandlers(false); // kein Konsolenoutput vom Root-Logger
+            logger.setUseParentHandlers(false);
 
-            // Datei-Handler – append=true damit nichts überschrieben wird
             FileHandler fileHandler = new FileHandler(logFile, true);
             fileHandler.setFormatter(new LogFormatter());
             fileHandler.setLevel(Level.ALL);
             logger.addHandler(fileHandler);
 
-            // Konsolen-Handler für Entwicklung
             ConsoleHandler consoleHandler = new ConsoleHandler();
             consoleHandler.setFormatter(new LogFormatter());
-            consoleHandler.setLevel(Level.WARNING); // Konsole nur ab WARNING
+            consoleHandler.setLevel(Level.WARNING);
             logger.addHandler(consoleHandler);
 
             logger.setLevel(Level.ALL);
