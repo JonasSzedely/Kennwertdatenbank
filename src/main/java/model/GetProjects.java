@@ -82,10 +82,9 @@ class GetProjects {
                 PROJECTS.put((project.getProjectNr() * 100) + project.getVersion(), project);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
-        } catch (JsonMappingException e) {
-            throw new RuntimeException(e);
+            AppLogger.error("SQL-DB Problem: " + e);
         } catch (JsonProcessingException e) {
+            AppLogger.error("JSON Problem: " + e);
             throw new RuntimeException(e);
         }
         return PROJECTS;

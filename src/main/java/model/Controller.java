@@ -48,6 +48,7 @@ public class Controller {
     private int averageWindowRatio;
     private int minVolume;
     private int maxVolume;
+    private DB database = new DB();
 
 
     public Controller(){
@@ -63,8 +64,6 @@ public class Controller {
     }
 
     public boolean initializeDatabase() {
-
-
         STRING_BUILDER.append("CREATE TABLE IF NOT EXISTS projects(");
 
         //construct SQL-table based on array SQL_PROJECT_DATA
@@ -106,15 +105,19 @@ public class Controller {
      * @return boolean
      */
     public boolean isDatabaseAvailable() {
-        return dbAvailable;
+        return database.isConnectionAvailable();
+    }
+
+    public boolean testDBConnection(String url, String username, String password) {
+        return database.isConnectionAvailable(url, username, password);
     }
 
     public Connection connectorDB() throws SQLException {
-        return DB.connect();
+        return database.connect();
     }
 
     public boolean testDBConnection() {
-        return DB.isConnectionAvailable();
+        return database.isConnectionAvailable();
     }
 
     /**
@@ -152,7 +155,7 @@ public class Controller {
             return "Keine Datenbankverbindung verfügbar. Projekte kann nicht gelöscht werden.";
         }
         String sql = ("UPDATE projects SET active = false WHERE project_nr = ? AND version = ?");
-        try (Connection conn =  DB.connect(); PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        try (Connection conn =  database.connect(); PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setInt(1, projectNr);
             pstmt.setInt(2, version);
             int editedRow = pstmt.executeUpdate();
@@ -163,7 +166,7 @@ public class Controller {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            AppLogger.error("Projekt konnte nicht entfernt werden. " + projectNr + " Version " + version + " " + e.getMessage());
             return "Projekt konnte nicht entfernt werden";
         }
         return "Projekt konnte nicht entfernt werden";
@@ -198,7 +201,6 @@ public class Controller {
             return;
         }
 
-
         for (Project project : PROJECTS.values()) {
             int cost = project.getData().getTotalCost();
             int apartments = project.getApartmentsNr();
@@ -216,8 +218,6 @@ public class Controller {
         averageWindowRatio /= PROJECTS.size();
 
     }
-
-
 
     /**
      * @return the highest volume of all projects.
@@ -273,6 +273,23 @@ public class Controller {
      */
     public int getAverageWindowRatio(){
         return averageWindowRatio;
+    }
+
+    public String getDBUrl() {
+        return database.getURL();
+    }
+
+    public String getDBUsername() {
+        return database.getUsername();
+    }
+
+    public String getDBPassword() {
+        return database.getPassword();
+    }
+
+
+    public boolean setDBConfig(String url, String username, String password){
+        return database.setConfig(url, username, password);
     }
 
 }

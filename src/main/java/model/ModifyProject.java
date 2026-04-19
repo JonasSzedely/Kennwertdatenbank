@@ -78,7 +78,7 @@ class ModifyProject {
                 return "Projekt konnte nicht angepasst werden";
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            AppLogger.error("SQL-DB problem when modifying Project: " + project.getProjectNr() + " Version " + project.getVersion() + e);
         }
         return "Projekt konnte nicht angepasst werden";
     }

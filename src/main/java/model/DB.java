@@ -13,51 +13,56 @@ import java.sql.SQLException;
  */
 
 class DB {
-    private static boolean connectionAvailable = true;
 
-    public static Connection connect() throws SQLException {
+    private final DBConfig config;
 
+    DB() {
+        this.config = new DBConfig(); // lädt db.properties einmalig
+    }
+
+    Connection connect() throws SQLException {
         try {
-            // Get database credentials from DatabaseConfig class
-            DBConfig.loadProperties();
-            String jdbcUrl = DBConfig.getDbUrl();
-            String user = DBConfig.getDbUsername();
-            String password = DBConfig.getDbPassword();
-
-            // Open a connection
-            Connection conn = DriverManager.getConnection(jdbcUrl, user, password);
-            connectionAvailable = true; // Verbindung erfolgreich
-            return conn;
-
-        } catch (SQLException  e) {
-            System.err.println("DB-Verbindungsfehler: " + e.getMessage());
-            connectionAvailable = false;
+            return DriverManager.getConnection(
+                    config.getDbUrl(),
+                    config.getDbUsername(),
+                    config.getDbPassword()
+            );
+        } catch (SQLException e) {
+            AppLogger.error("DB-Connection error: " + e.getMessage());
             throw e;
         }
     }
 
-    /**
-     * Test if DB connection is possible
-     */
-    public static boolean isConnectionAvailable() {
-        try {
-            DBConfig.loadProperties();
-            Connection conn = connect();
-            if (conn != null && !conn.isClosed()) {
-                conn.close();
-                return true;
-            }
+    boolean isConnectionAvailable() {
+        try (Connection conn = connect()) {
+            return conn != null && !conn.isClosed();
         } catch (SQLException e) {
             return false;
         }
-        return false;
     }
 
-    /**
-     * will not test the connection.
-     * @return returns last known connection status.
-     */
-    public static boolean wasLastConnectionSuccessful() {
-        return connectionAvailable;
+    boolean isConnectionAvailable(String url, String username, String password) {
+        try (Connection conn = DriverManager.getConnection(url, username, password)) {
+            return conn != null && !conn.isClosed();
+        } catch (SQLException e) {
+            return false;
+        }
+    }
+
+
+    boolean setConfig(String url, String username, String password) {
+        return config.update(url, username, password);
+    }
+
+    String getURL()      {
+        return config.getDbUrl();
+    }
+
+    String getUsername() {
+        return config.getDbUsername();
+    }
+
+    String getPassword() {
+        return config.getDbPassword();
     }
 }

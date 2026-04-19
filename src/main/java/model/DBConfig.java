@@ -2,81 +2,76 @@ package model;
 
 import java.io.*;
 import java.util.Properties;
-
-/**
- * The DatabaseConfig class is responsible for loading database configuration from the db.properties file.
- * The DatabaseConfig has three static methods that expose the database configuration:
- *     getDbUrl() – Return the database URL.
- *     getDbUsername() – Return the username.
- *     getDbPassword() – Return the password.
- * A db.properties file in the src directory of the project is needed with
- *     db.url=Database URL
- *     db.username=Your Username
- *     db.password=Your Password
- * code from: https://neon.com/postgresql/postgresql-jdbc/connecting-to-postgresql-database
- */
 public class DBConfig {
-    private static final Properties properties = new Properties();
+
     private static final String PROPERTIES_PATH = System.getProperty("user.dir") + "/db.properties";
+    private static final String DEFAULT_URL = "jdbc:postgresql://localhost:5432/kennwertdatenbank";
+    private static final String DEFAULT_USERNAME = "postgres";
+    private static final String DEFAULT_PASSWORD  = "password";
 
-    private static String getPropertiesFilePath() {
-        File exePath = new File(System.getProperty("user.dir") + "/db.properties");
-        if (exePath.exists()) {
-            return exePath.getAbsolutePath();
-        }
-        return "src/main/resources/db.properties";
+    private final Properties properties = new Properties();
+
+    public DBConfig() {
+        load();
     }
 
-    private static void createDefaultProperties(File file) throws IOException {
-        file.getParentFile().mkdirs();
-        Properties defaultProps = new Properties();
-        defaultProps.setProperty("db.url", "jdbc:postgresql://localhost:5432/kennwertdatenbank");
-        defaultProps.setProperty("db.username", "postgres");
-        defaultProps.setProperty("db.password", "password");
-        try (FileOutputStream out = new FileOutputStream(file)) {
-            defaultProps.store(out, "Datenbank Konfiguration");
-        }
-    }
-
-    public static void loadProperties() {
+    private void load() {
         File file = new File(PROPERTIES_PATH);
         if (!file.exists()) {
-            try {
-                createDefaultProperties(file);
-            } catch (IOException e) {
-                System.err.println("Konnte db.properties nicht erstellen: " + e.getMessage());
-            }
+            setDefaults();
+            saveToFile(file);
+            return;
         }
-        try {
-            FileInputStream fileInput = new FileInputStream(PROPERTIES_PATH);
-            properties.load(fileInput);
-            fileInput.close();
+        try (FileInputStream fis = new FileInputStream(file)) {
+            properties.load(fis);
         } catch (IOException e) {
-            try (InputStream input = DBConfig.class.getClassLoader().getResourceAsStream("db.properties")) {
-                if (input == null) {
-                    System.out.println("Sorry, unable to find db.properties");
-                    return;
-                }
-                properties.load(input);
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
+            AppLogger.error("Error loading db.properties: " + e.getMessage());
+            System.err.println("Fehler beim Laden von db.properties: " + e.getMessage());
+            setDefaults();
         }
     }
 
-    public static String getDbUrl() {
+    private void setDefaults() {
+        properties.setProperty("db.url",      DEFAULT_URL);
+        properties.setProperty("db.username", DEFAULT_USERNAME);
+        properties.setProperty("db.password", DEFAULT_PASSWORD);
+    }
+
+    private boolean saveToFile(File file) {
+        File parent = file.getParentFile();
+        if (parent != null && !parent.exists() && !parent.mkdirs()) {
+            AppLogger.error("Directory could not be created: " + parent);
+            System.err.println("Verzeichnis konnte nicht erstellt werden: " + parent);
+            return false;
+        }
+        try (FileOutputStream fos = new FileOutputStream(file)) {
+            properties.store(fos, "Datenbank Konfiguration");
+            return true;
+        } catch (IOException e) {
+            AppLogger.error("Error when saving db.properties " + e.getMessage());
+            System.err.println("Fehler beim Speichern von db.properties: " + e.getMessage());
+            return false;
+        }
+    }
+
+    private boolean save() {
+        return saveToFile(new File(PROPERTIES_PATH));
+    }
+
+    public String getDbUrl()      {
         return properties.getProperty("db.url");
     }
-
-    public static String getDbUsername() {
+    public String getDbUsername() {
         return properties.getProperty("db.username");
     }
-
-    public static String getDbPassword() {
+    public String getDbPassword() {
         return properties.getProperty("db.password");
     }
 
-    public static String getPropertiesPath() {
-        return PROPERTIES_PATH;
+    public boolean update(String url, String username, String password) {
+        properties.setProperty("db.url",      url);
+        properties.setProperty("db.username", username);
+        properties.setProperty("db.password", password);
+        return save();
     }
 }

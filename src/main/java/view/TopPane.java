@@ -75,7 +75,7 @@ class TopPane {
         //Event-Handler for pdfButton
         pdfButton.setOnAction(event -> {
             if (!controller.isDatabaseAvailable()) {
-                noDBConnection();
+                NoDBConnection.show();
                 return;
             }
             CreatePDF newPDF = new CreatePDF(ProjectList.getSortedProjects());
@@ -94,7 +94,7 @@ class TopPane {
         //Event-Handler for exportButton
         exportButton.setOnAction(event -> {
             if (!controller.isDatabaseAvailable()) {
-                noDBConnection();
+                NoDBConnection.show();
                 return;
             }
             TextInputDialog dialog = new TextInputDialog();
@@ -131,7 +131,7 @@ class TopPane {
         //Event-Handler for addProjectButton
         addProjectButton.setOnAction(event -> {
             if (!controller.isDatabaseAvailable()) {
-                noDBConnection();
+                NoDBConnection.show();
                 return;
             }
             ProjectInputWindow addProject = new ProjectInputWindow(controller, ProjectInputWindow.Type.NEW);
@@ -220,12 +220,5 @@ class TopPane {
         topPane.getChildren().addAll(topLeft, filters, topRight);
 
         return topPane;
-    }
-
-    private void noDBConnection() {
-        Alert error = new Alert(Alert.AlertType.ERROR);
-        error.setHeaderText("Keine Datenbankverbindung");
-        error.setContentText("Die Funktion kann nur bei aktiver Datenbankverbindung verwendet werden.");
-        error.show();
     }
 }

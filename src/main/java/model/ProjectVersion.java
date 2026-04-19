@@ -19,7 +19,7 @@ class ProjectVersion {
                 return maxVersion + 1;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            AppLogger.error("DB-Error: " + e.getMessage());
         }
         return -1;
     }

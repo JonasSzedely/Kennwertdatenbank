@@ -29,33 +29,33 @@ class Settings {
     public void start(Stage stage) {
         VBox outerPane = new VBox();
         outerPane.setAlignment(Pos.CENTER);
-        String path = DBConfig.getPropertiesPath();
 
         Label dbURLLabel = new Label("Datenbank URL");
         TextField dbURLInput = new TextField();
-        dbURLInput.setText(getValue(path, "db.url"));
+        dbURLInput.setText(controller.getDBUrl());
 
         Label dbUsernameLabel = new Label("Benutzername");
         TextField dbUsernameInput = new TextField();
-        dbUsernameInput.setText(getValue(path, "db.username"));
+        dbUsernameInput.setText(controller.getDBUsername());
 
         Label dbPasswordLabel = new Label("Passwort");
         PasswordField dbPasswordInput = new PasswordField();
-        String dbPassword = getValue(path, "db.password");
-        dbPasswordInput.setText(dbPassword);
-        AtomicReference<String> newPassword = new AtomicReference<>(dbPassword);
+        dbPasswordInput.setText(controller.getDBPassword());
+        AtomicReference<String> newPassword = new AtomicReference<>(controller.getDBPassword());
 
         dbPasswordInput.textProperty().addListener((observable, oldValue, newValue) -> newPassword.set(newValue));
 
         Button setSettingsButton = new Button("Einstellungen speichern");
         setSettingsButton.setOnAction(event -> {
-            boolean dbPath = setValue(path, "db.url", dbURLInput.getText());
-            boolean dbUser = setValue(path, "db.username", dbUsernameInput.getText());
-            boolean dbPass = setValue(path, "db.password", String.valueOf(newPassword));
+            boolean settings = controller.setDBConfig(
+                    dbURLInput.getText(),
+                    dbUsernameInput.getText(),
+                    String.valueOf(newPassword)
+            );
             Alert settingsSetConfirmation = new Alert(Alert.AlertType.INFORMATION);
             settingsSetConfirmation.setTitle("Einstellungen");
             settingsSetConfirmation.setHeaderText(null);
-            if (dbPath && dbUser && dbPass) {
+            if (settings) {
                 settingsSetConfirmation.setContentText("Erfolgreich angepasst.");
             } else {
                 settingsSetConfirmation.setContentText("Einstellungen konnten nicht angepasst werden.");
@@ -67,10 +67,12 @@ class Settings {
 
         Button tryDBConnectionButton = new Button("DB-Verbindung testen");
         tryDBConnectionButton.setOnAction(event -> {
-            boolean dbPath = setValue(path, "db.url", dbURLInput.getText());
-            boolean dbUser = setValue(path, "db.username", dbUsernameInput.getText());
-            boolean dbPass = setValue(path, "db.password", String.valueOf(newPassword));
-            if (dbPath && dbUser && dbPass && controller.testDBConnection()) {
+            boolean dbAvailable = controller.testDBConnection(
+                    dbURLInput.getText(),
+                    dbUsernameInput.getText(),
+                    dbPasswordInput.getText()
+            );
+            if(dbAvailable){
                 tryDBConnectionButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white;");
                 tryDBConnectionButton.setText("Verbindung erfolgreich");
             } else {
@@ -124,24 +126,6 @@ class Settings {
             return ("Einstellungen konnten nicht geladen werden.");
         }
         return value;
-    }
-
-    // Source - https://stackoverflow.com/a/62851268
-    public boolean setValue(String path, String key, String value) {
-        Properties props = new Properties();
-        File f = new File(path);
-        try {
-            final FileInputStream configStream = new FileInputStream(f);
-            props.load(configStream);
-            configStream.close();
-            props.setProperty(key, value);
-            final FileOutputStream output = new FileOutputStream(f);
-            props.store(output, "");
-            output.close();
-            return true;
-        } catch (IOException ex) {
-            return false;
-        }
     }
 
     public boolean isSetButtonUsed() {

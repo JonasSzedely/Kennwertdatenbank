@@ -14,7 +14,7 @@ class AddProject {
      * @param project an object of type Project
      * @param SQL_PROJECT_DATA the list of project data definied in the controller
      */
-    public static String add(Controller controller, Project project, String[] SQL_PROJECT_DATA) {
+    static String add(Controller controller, Project project, String[] SQL_PROJECT_DATA) {
 
         ArrayList<Object> values = new ArrayList<>(List.of(project.getAttributes()));
 
@@ -95,7 +95,7 @@ class AddProject {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            AppLogger.error("SQL-DB problem when adding Project: " + project.getProjectNr() + " Version " + project.getVersion() + e.getMessage());
             return "SQL-Fehler: " + e.getMessage();
         }
 

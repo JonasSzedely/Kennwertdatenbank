@@ -314,86 +314,6 @@ class MiddlePane {
         );
     }
 
-    /**
-     * Creates a line for the project containing the version number, next version button and focus checkbox.
-     *
-     * @param project the project
-     * @return HBox
-     */
-    private HBox projectVersion(Project project) {
-        Region spacerVersion = new Region();
-        HBox.setHgrow(spacerVersion, Priority.ALWAYS);
-
-        HBox projectVersion = new HBox(10);
-        projectVersion.setPadding(new Insets(0, 10, 0, 0));
-        projectVersion.setMinHeight(CELL_HEIGHT);
-        projectVersion.setMaxHeight(CELL_HEIGHT);
-        projectVersion.setPrefHeight(CELL_HEIGHT);
-        projectVersion.setAlignment(Pos.CENTER_LEFT);
-        projectVersion.getChildren().addAll(labelFactory.getLabel(
-                        project.getVersion(),
-                        LabelFactory.LabelType.TEXT, false, true),
-                spacerVersion,
-                nextVersionButton(project),
-                focusContainer(project)
-        );
-        projectVersion.setStyle("-fx-border-color: #cccccc; -fx-border-width: 0 0 1 0;");
-
-        return projectVersion;
-    }
-
-    /**
-     * Creates a button to create a new version of the project.
-     *
-     * @param project the project
-     * @return Button
-     */
-    private Button nextVersionButton(Project project) {
-        //adding next version of Project
-        Button nextVersionButton = new Button("+");
-        nextVersionButton.setPadding(new Insets(0));
-        nextVersionButton.setOnAction(event -> {
-            ProjectInputWindow nextVersion = new ProjectInputWindow(controller, project, ProjectInputWindow.Type.NEXT);
-            try {
-                Stage newStage = StageFactory.createStage("Neue Version");
-                nextVersion.start(newStage);
-                if (nextVersion.getAddButtonStatus()) {
-                    ProjectList.refreshProjectList();
-                }
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
-        nextVersionButton.setTooltip(new Tooltip("Neue Version erstellen"));
-        nextVersionButton.getTooltip().setShowDelay(Duration.millis(TOOL_TIP_TIME));
-        nextVersionButton.setMinSize(BUTTON_SIZE, BUTTON_SIZE);
-        nextVersionButton.setMaxSize(BUTTON_SIZE, BUTTON_SIZE);
-        nextVersionButton.setPrefSize(BUTTON_SIZE, BUTTON_SIZE);
-
-        return nextVersionButton;
-    }
-
-    /**
-     * Create a checkbox used to sort the project to the beginning.
-     *
-     * @param project the project
-     * @return HBox
-     */
-    private HBox focusContainer(Project project) {
-        CheckBox focus = new CheckBox();
-        focus.setTooltip(new Tooltip("Projekt als erstes anzeigen"));
-        focus.getTooltip().setShowDelay(Duration.millis(TOOL_TIP_TIME));
-        focus.selectedProperty().bindBidirectional(project.pinnedProperty());
-        focus.setPadding(new Insets(0));
-
-        HBox focusContainer = new HBox(focus);
-        focusContainer.setAlignment(Pos.CENTER);
-        focusContainer.setMinSize(BUTTON_SIZE, BUTTON_SIZE);
-        focusContainer.setMaxSize(BUTTON_SIZE, BUTTON_SIZE);
-        focusContainer.setPrefSize(BUTTON_SIZE, BUTTON_SIZE);
-
-        return focusContainer;
-    }
 
     /**
      * Creates a line for the project containing the project number, modify button and delete button.
@@ -424,6 +344,91 @@ class MiddlePane {
     }
 
     /**
+     * Creates a line for the project containing the version number, next version button and focus checkbox.
+     *
+     * @param project the project
+     * @return HBox
+     */
+    private HBox projectVersion(Project project) {
+        Region spacerVersion = new Region();
+        HBox.setHgrow(spacerVersion, Priority.ALWAYS);
+
+        HBox projectVersion = new HBox(10);
+        projectVersion.setPadding(new Insets(0, 10, 0, 0));
+        projectVersion.setMinHeight(CELL_HEIGHT);
+        projectVersion.setMaxHeight(CELL_HEIGHT);
+        projectVersion.setPrefHeight(CELL_HEIGHT);
+        projectVersion.setAlignment(Pos.CENTER_LEFT);
+        projectVersion.getChildren().addAll(labelFactory.getLabel(
+                        project.getVersion(),
+                        LabelFactory.LabelType.TEXT, false, true),
+                spacerVersion,
+                nextVersionButton(project),
+                focusContainer(project)
+        );
+        projectVersion.setStyle("-fx-border-color: #cccccc; -fx-border-width: 0 0 1 0;");
+
+        return projectVersion;
+    }
+
+    /**
+     * Create a checkbox used to sort the project to the beginning.
+     *
+     * @param project the project
+     * @return HBox
+     */
+    private HBox focusContainer(Project project) {
+        CheckBox focus = new CheckBox();
+        focus.setTooltip(new Tooltip("Projekt als erstes anzeigen"));
+        focus.getTooltip().setShowDelay(Duration.millis(TOOL_TIP_TIME));
+        focus.selectedProperty().bindBidirectional(project.pinnedProperty());
+        focus.setPadding(new Insets(0));
+
+        HBox focusContainer = new HBox(focus);
+        focusContainer.setAlignment(Pos.CENTER);
+        focusContainer.setMinSize(BUTTON_SIZE, BUTTON_SIZE);
+        focusContainer.setMaxSize(BUTTON_SIZE, BUTTON_SIZE);
+        focusContainer.setPrefSize(BUTTON_SIZE, BUTTON_SIZE);
+
+        return focusContainer;
+    }
+
+    /**
+     * Creates a button to create a new version of the project.
+     *
+     * @param project the project
+     * @return Button
+     */
+    private Button nextVersionButton(Project project) {
+        //adding next version of Project
+        Button nextVersionButton = new Button("+");
+        nextVersionButton.setPadding(new Insets(0));
+        nextVersionButton.setOnAction(event -> {
+            if (!controller.isDatabaseAvailable()) {
+                NoDBConnection.show();
+                return;
+            }
+            ProjectInputWindow nextVersion = new ProjectInputWindow(controller, project, ProjectInputWindow.Type.NEXT);
+            try {
+                Stage newStage = StageFactory.createStage("Neue Version");
+                nextVersion.start(newStage);
+                if (nextVersion.getAddButtonStatus()) {
+                    ProjectList.refreshProjectList();
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+        nextVersionButton.setTooltip(new Tooltip("Neue Version erstellen"));
+        nextVersionButton.getTooltip().setShowDelay(Duration.millis(TOOL_TIP_TIME));
+        nextVersionButton.setMinSize(BUTTON_SIZE, BUTTON_SIZE);
+        nextVersionButton.setMaxSize(BUTTON_SIZE, BUTTON_SIZE);
+        nextVersionButton.setPrefSize(BUTTON_SIZE, BUTTON_SIZE);
+
+        return nextVersionButton;
+    }
+
+    /**
      * Create a button to delete the project.
      *
      * @param project the project
@@ -432,6 +437,10 @@ class MiddlePane {
     private Button deleteProjectButton(Project project) {
         Button deleteProjectButton = new Button("\uD83D\uDDD1");
         deleteProjectButton.setOnAction(event -> {
+            if (!controller.isDatabaseAvailable()) {
+                NoDBConnection.show();
+                return;
+            }
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
             alert.setTitle("Projekt löschen");
             alert.setHeaderText("Bitte bestätigen:");
@@ -468,6 +477,10 @@ class MiddlePane {
         //Modify-Project-Button, opens a new ProjectInputWindow
         Button modifyProjectButton = new Button("⟲");
         modifyProjectButton.setOnAction(event -> {
+            if (!controller.isDatabaseAvailable()) {
+                NoDBConnection.show();
+                return;
+            }
             ProjectInputWindow modify = new ProjectInputWindow(controller, project, ProjectInputWindow.Type.MODIFY);
             try {
                 Stage newStage = StageFactory.createStage("Projekt bearbeiten");
