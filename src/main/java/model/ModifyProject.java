@@ -24,6 +24,8 @@ class ModifyProject {
                         "bathroom_nr = ?," +
                         "hnf = ?," +
                         "gf = ?," +
+                        "parcelsize = ?," +
+                        "landscapedarea = ?," +
                         "volume_underground = ?," +
                         "volume_above_ground = ?," +
                         "facadearea = ?," +
@@ -54,22 +56,23 @@ class ModifyProject {
             pstmt.setInt(10, project.getBathroomNr());
             pstmt.setInt(11, project.getHnf());
             pstmt.setInt(12, project.getGf());
-            pstmt.setInt(13, project.getVolumeUnderground());
-            pstmt.setInt(14, project.getVolumeAboveGround());
-            pstmt.setInt(15, project.getFacadeArea());
-            pstmt.setInt(16, project.getWindowArea());
-            pstmt.setString(17, project.getFacadeType());
-            pstmt.setString(18, project.getWindowType());
-            pstmt.setString(19, project.getRoofType());
-            pstmt.setString(20, project.getHeatingType());
-            pstmt.setString(21, project.getCoolingType());
-            pstmt.setString(22, project.getVentilationTypeApartments());
-            pstmt.setString(23, project.getVentilationTypeUg());
-            pstmt.setString(24, project.getCoNo());
-            pstmt.setString(25, project.getSpecial());
-
-            pstmt.setInt(26, project.getProjectNr());
-            pstmt.setInt(27, project.getVersion());
+            pstmt.setInt(13, project.getParcelSize());
+            pstmt.setInt(14, project.getLandscapedArea());
+            pstmt.setInt(15, project.getVolumeUnderground());
+            pstmt.setInt(16, project.getVolumeAboveGround());
+            pstmt.setInt(17, project.getFacadeArea());
+            pstmt.setInt(18, project.getWindowArea());
+            pstmt.setString(19, project.getFacadeType());
+            pstmt.setString(20, project.getWindowType());
+            pstmt.setString(21, project.getRoofType());
+            pstmt.setString(22, project.getHeatingType());
+            pstmt.setString(23, project.getCoolingType());
+            pstmt.setString(24, project.getVentilationTypeApartments());
+            pstmt.setString(25, project.getVentilationTypeUg());
+            pstmt.setString(26, project.getCoNo());
+            pstmt.setString(27, project.getSpecial());
+            pstmt.setInt(28, project.getProjectNr());
+            pstmt.setInt(29, project.getVersion());
 
             // execute the INSERT statement and check if it was successful
             if (pstmt.executeUpdate() > 0) {

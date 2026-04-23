@@ -82,9 +82,6 @@ class ProjectInputWindow extends Application {
         formListeners = new ArrayList<>();
         /*
         Each element in the array represents an input field with a description.
-        There are 3 types: number, text, dropdown
-        Each element requires the following values (only type number requires the validation parameters)
-        LABEL ; NAME ; EXAMPLE TEXT ; WARNING ; TYPE ; VALIDATION-PARAMETER MIN ; VALIDATION-PARAMETER MAX
         */
         addInputNumber("projectNr", "Projekt Nummer", "10000", "Keine gültige Zahl!", 10000, 99999);
         addInputText("address", "Adresse", "Musterstrasse 5", "Bitte Adresse eingeben!", 22);
@@ -97,8 +94,10 @@ class ProjectInputWindow extends Application {
         addDropdown("calculationPhase", "Gerechnete Phasen ab", "2|31|32|33|41|5", "Bitte auswählen!");
         addInputNumber("apartmentsNr", "Anzahl Wohnungen", "15", "Keine gültige Zahl!", 1, 2147483647);
         addInputNumber("bathroomNr", "Anzahl Nasszellen", "33", "Keine gültige Zahl!", 1, 2147483647);
-        addInputNumber("hnf", "HNF in m²", "3456", "Keine gültige Zahl!", 1, 2147483647);
+        addInputNumber("hnf", "HNF inkl. Reduit in m²", "3456", "Keine gültige Zahl!", 1, 2147483647);
         addInputNumber("gf", "GF in m²", "3456", "Keine gültige Zahl!", 1, 2147483647);
+        addInputNumber("parcelSize", "Grundstücksfläche in m2", "3456", "Keine gültige Zahl!", 1,2147483647);
+        addInputNumber("landscapedArea", "Umgebungsfläche in m2", "3456", "Keine gültige Zahl!", 1,2147483647);
         addInputNumber("volumeUnderground", "Volumen unterirdisch m³", "3456", "Keine gültige Zahl!", 1, 2147483647);
         addInputNumber("volumeAboveUnderground", "Volumen überirdisch m³", "4567", "Keine gültige Zahl!", 1, 2147483647);
         addInputNumber("facadearea", "Fassadenfläche in m²", "12345", "Keine gültige Zahl!", 1, 2147483647);
@@ -113,7 +112,6 @@ class ProjectInputWindow extends Application {
         addDropdown("coNO", "CO/NO-Anlage", "Ja|Nein|Unklar", "Bitte auswählen!");
         addInputText("special", "Spezielles", "Spezielle Projekt Eigenschaften", "Ungültiger Eingabe!", 65);
         addInputText("dataPath", "BKP Dateipfad", "C:\\Benutzer\\Name\\Downloads\\kv.csv", "Kein gültiger Pfad!", 260);
-
 
         //adding the forms to the GridPane
         List<String> keys = new ArrayList<>(forms.keySet());
@@ -237,6 +235,8 @@ class ProjectInputWindow extends Application {
         forms.get("bathroomNr").setInputFieldText(String.valueOf(project.getBathroomNr()));
         forms.get("hnf").setInputFieldText(String.valueOf(project.getHnf()));
         forms.get("gf").setInputFieldText(String.valueOf(project.getGf()));
+        forms.get("parcelSize").setInputFieldText(String.valueOf(project.getParcelSize()));
+        forms.get("landscapedArea").setInputFieldText(String.valueOf(project.getLandscapedArea()));
         forms.get("volumeUnderground").setInputFieldText(String.valueOf(project.getVolumeUnderground()));
         forms.get("volumeAboveUnderground").setInputFieldText(String.valueOf(project.getVolumeAboveGround()));
         forms.get("facadearea").setInputFieldText(String.valueOf(project.getFacadeArea()));
@@ -268,6 +268,8 @@ class ProjectInputWindow extends Application {
                 Integer.parseInt(forms.get("bathroomNr").getInput()),
                 Integer.parseInt(forms.get("hnf").getInput()),
                 Integer.parseInt(forms.get("gf").getInput()),
+                Integer.parseInt(forms.get("parcelSize").getInput()),
+                Integer.parseInt(forms.get("landscapedArea").getInput()),
                 Integer.parseInt(forms.get("volumeUnderground").getInput()),
                 Integer.parseInt(forms.get("volumeAboveUnderground").getInput()),
                 Integer.parseInt(forms.get("facadearea").getInput()),
@@ -299,6 +301,8 @@ class ProjectInputWindow extends Application {
         project.setBathroomNr(Integer.parseInt(forms.get("bathroomNr").getInput()));
         project.setHnf(Integer.parseInt(forms.get("hnf").getInput()));
         project.setGf(Integer.parseInt(forms.get("gf").getInput()));
+        project.setParcelSize(Integer.parseInt(forms.get("parcelSize").getInput()));
+        project.setLandscapedArea(Integer.parseInt(forms.get("landscapedArea").getInput()));
         project.setVolumeUnderground(Integer.parseInt(forms.get("volumeUnderground").getInput()));
         project.setVolumeAboveGround(Integer.parseInt(forms.get("volumeAboveUnderground").getInput()));
         project.setFacadeArea(Integer.parseInt(forms.get("facadearea").getInput()));

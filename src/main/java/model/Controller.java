@@ -8,7 +8,6 @@ import java.util.*;
 public class Controller {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private TreeMap<Integer, Project> PROJECTS;
-    private boolean dbAvailable = false;
     private StringBuilder STRING_BUILDER = new StringBuilder();
     private final String[] SQL_PROJECT_DATA = {
             "project_nr,int",
@@ -25,6 +24,8 @@ public class Controller {
             "bathroom_nr,int",
             "hnf,int",
             "gf,int",
+            "parcelsize, int",
+            "landscapedarea, int",
             "volume_underground,int",
             "volume_above_ground,int",
             "facadearea,int",
@@ -58,8 +59,6 @@ public class Controller {
             System.err.println("Controller läuft im Offline-Modus");
             return;
         }
-
-        dbAvailable = true;
         PROJECTS = getProjects();
     }
 
@@ -90,7 +89,6 @@ public class Controller {
 
         try (Connection conn = connectorDB(); Statement stmt = conn.createStatement()) {
             stmt.executeUpdate(sql);
-            dbAvailable = true;
             PROJECTS = getProjects();
             System.out.println("Tabelle erfolgreich erstellt oder schon vorhanden.");
             return true;

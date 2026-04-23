@@ -64,6 +64,8 @@ class GetProjects {
                         rs.getInt("bathroom_nr"),
                         rs.getInt("hnf"),
                         rs.getInt("gf"),
+                        rs.getInt("parcelsize"),
+                        rs.getInt("landscapedarea"),
                         rs.getInt("volume_underground"),
                         rs.getInt("volume_above_ground"),
                         rs.getInt("facadearea"),

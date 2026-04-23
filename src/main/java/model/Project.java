@@ -21,6 +21,8 @@ public class Project {
     private int bathroomNr;
     private int hnf;
     private int gf;
+    private int parcelSize;
+    private int landscapedArea;
     private int volumeUnderground;
     private int volumeAboveGround;
     private int facadeArea;
@@ -41,7 +43,7 @@ public class Project {
 
     public Project(int projectNr, int version, String address, int plz, String location, String owner, String propertyType,
                    String constructionType, int document_phase, int calculationPhase, int apartmentsNr, int bathroomNr,
-                   int hnf, int gf, int volumeUnderground, int volumeAboveGround, int facadeArea, int windowArea,
+                   int hnf, int gf, int parcelSize, int landscapedArea, int volumeUnderground, int volumeAboveGround, int facadeArea, int windowArea,
                    String facadeType, String windowType, String roofType, String heatingType, String coolingType,
                    String ventilationTypeApartments, String ventilationTypeUg, String coNo, String special,
                    ProjectData projectData) {
@@ -59,6 +61,8 @@ public class Project {
         this.bathroomNr = bathroomNr;
         this.hnf = hnf;
         this.gf = gf;
+        this.parcelSize = parcelSize;
+        this.landscapedArea = landscapedArea;
         this.volumeUnderground = volumeUnderground;
         this.volumeAboveGround = volumeAboveGround;
         this.facadeArea = facadeArea;
@@ -79,6 +83,8 @@ public class Project {
     public List<Calculation> calculations() {
         return List.of(
                 calc("Bausumme", chf(data.getTotalCost())),
+                calc("Bausumme exkl. 29", chf(data.getTotalCost()-data.getBKP(29))),
+                calc("BKP 1", chf(data.getBKP(1))),
                 calc("BKP 2", chf(data.getBKP(2))),
                 calc("BKP 211 + 212", chf(data.getBKP(211) + data.getBKP(212))),
                 calc("BKP 23 (o. PV/E-Mob.)", chf(data.getBKP(23) - data.getBKP(2331) - data.getBKP(2332))),
@@ -90,39 +96,47 @@ public class Project {
 
                 Calculation.SEPARATOR,
 
-                calc("BKP 1-5/m3", perM3(data.getTotalCost(), getVolume())),
-                calc("BKP 1-5/HNF", perM2(data.getTotalCost(), hnf)),
+                calc("BKP 1-5/m3", perM2M3(data.getTotalCost(), getVolume())),
+                calc("BKP 1-5/HNF", perM2M3(data.getTotalCost(), hnf)),
                 calc("BKP 1-5/WHG", perUnit(data.getTotalCost(), apartmentsNr)),
 
                 Calculation.SEPARATOR,
 
-                calc("BKP 2/m3", perM3(data.getBKP(2), getVolume())),
-                calc("BKP 2/HNF", perM2(data.getBKP(2), hnf)),
+                calc("BKP 2/m3", perM2M3(data.getBKP(2), getVolume())),
+                calc("BKP 2 exkl. 29/m3", perM2M3((data.getBKP(2)-data.getBKP(29)), getVolume())),
+                calc("BKP 2/HNF", perM2M3(data.getBKP(2), hnf)),
                 calc("BKP 2/WHG", perUnit(data.getBKP(2), apartmentsNr)),
+                calc("BKP 211/m3", perM2M3(data.getBKP(211), getVolume())),
 
                 Calculation.SEPARATOR,
 
-                calc("BKP 211/m3", perM3(data.getBKP(211), getVolume())),
+                calc("BKP 230/m3", perM2M3(data.getBKP(230), getVolume())),
+                calc("BKP 230/HNF", perM2M3(data.getBKP(230), hnf)),
+                calc("BKP 242/HNF", perM2M3(data.getBKP(242), hnf)),
+                calc("BKP 244/HNF", perM2M3(data.getBKP(244), hnf)),
+                calc("BKP 250-257/HNF", perM2M3(data.getRange(250, 25799), hnf)),
 
                 Calculation.SEPARATOR,
 
-                calc("BKP 230/m3", perM3(data.getBKP(230), getVolume())),
-                calc("BKP 230/HNF", perM2(data.getBKP(230), hnf)),
-                calc("BKP 242/HNF", perM2(data.getBKP(242), hnf)),
-                calc("BKP 244/HNF", perM2(data.getBKP(244), hnf)),
-                calc("BKP 250-257/HNF", perM2(data.getRange(250, 25799), hnf)),
+                calc("Ausbau 1/HNF", perM2M3(data.getBKP(27), hnf)),
+                calc("Ausbau 2/HNF", perM2M3(data.getBKP(28), hnf)),
+                calc("Ausbau 1+2/HNF", perM2M3(data.getBKP(27) + data.getBKP(28), hnf)),
 
                 Calculation.SEPARATOR,
 
-                calc("Ausbau 1/HNF", perM2(data.getBKP(27), hnf)),
-                calc("Ausbau 2/HNF", perM2(data.getBKP(28), hnf)),
-                calc("Ausbau 1+2/HNF", perM2(data.getBKP(27) + data.getBKP(28), hnf)),
+                calc("BKP4 / Grundstücksf.", perM2M3(data.getBKP(4), parcelSize)),
+                calc("BKP4 / Umgebungsf.", perM2M3(data.getBKP(4), landscapedArea)),
 
                 Calculation.SEPARATOR,
 
                 calc("HNF/WHG", String.format(swissLocale, "%,d m²", hnf / apartmentsNr)),
                 calc("Verhältnis UG/OG", String.format("%.2f", (double) volumeUnderground / volumeAboveGround)),
-                calc("Fenster Anteil", (int) ((double) windowArea / facadeArea * 100) + " %")
+                calc("Fenster Anteil", (int) ((double) windowArea / facadeArea * 100) + " %"),
+                calc("BKP1 % Anteil", (int) ((double) data.getBKP(1)/data.getTotalCost() * 100) + "%"),
+                calc("BKP2 % Anteil", (int) ((double) data.getBKP(2)/data.getTotalCost() * 100) + "%"),
+                calc("BKP3 % Anteil", (int) ((double) data.getBKP(3)/data.getTotalCost() * 100) + "%"),
+                calc("BKP4 % Anteil", (int) ((double) data.getBKP(4)/data.getTotalCost() * 100) + "%"),
+                calc("BKP5 % Anteil", (int) ((double) data.getBKP(5)/data.getTotalCost() * 100) + "%")
         );
     }
 
@@ -134,16 +148,12 @@ public class Project {
         return String.format(swissLocale, "%,d Fr.", amount);
     }
 
-    private String perM3(int value, int volume) {
-        return String.format(swissLocale, "%,d", value / volume);
-    }
-
-    private String perM2(int value, int area) {
-        return String.format(swissLocale, "%,d", value / area);
+    private String perM2M3(int value, int volume) {
+        return String.format(swissLocale, "%,d Fr.", value / volume);
     }
 
     private String perUnit(int value, int units) {
-        return String.format(swissLocale, "%,d", value / units);
+        return String.format(swissLocale, "%,d Fr.", value / units);
     }
 
     public BooleanProperty pinnedProperty() {
@@ -290,6 +300,8 @@ public class Project {
                 bathroomNr,
                 hnf,
                 gf,
+                parcelSize,
+                landscapedArea,
                 volumeUnderground,
                 volumeAboveGround,
                 facadeArea,
@@ -413,5 +425,21 @@ public class Project {
 
     public void setData(ProjectData data) {
         this.data = data;
+    }
+
+    public int getParcelSize() {
+        return parcelSize;
+    }
+
+    public void setParcelSize(int parcelSize) {
+        this.parcelSize = parcelSize;
+    }
+
+    public int getLandscapedArea() {
+        return landscapedArea;
+    }
+
+    public void setLandscapedArea(int landscapedArea) {
+        this.landscapedArea = landscapedArea;
     }
 }
