@@ -15,9 +15,10 @@ import java.sql.SQLException;
 class DB {
 
     private final DBConfig config;
+    private Boolean connectionAvailableCache = null;
 
     DB() {
-        this.config = new DBConfig(); // lädt db.properties einmalig
+        this.config = new DBConfig();
     }
 
     Connection connect() throws SQLException {
@@ -34,27 +35,33 @@ class DB {
     }
 
     boolean isConnectionAvailable() {
-        try (Connection conn = connect()) {
-            return conn != null && !conn.isClosed();
-        } catch (SQLException e) {
-            return false;
+        if (connectionAvailableCache != null) {
+            return connectionAvailableCache;
         }
+        try (Connection conn = connect()) {
+            connectionAvailableCache = conn != null && !conn.isClosed();
+        } catch (SQLException e) {
+            connectionAvailableCache = false;
+        }
+        return connectionAvailableCache;
     }
 
     boolean isConnectionAvailable(String url, String username, String password) {
         try (Connection conn = DriverManager.getConnection(url, username, password)) {
-            return conn != null && !conn.isClosed();
+            connectionAvailableCache = conn != null && !conn.isClosed();
+            return connectionAvailableCache;
         } catch (SQLException e) {
+            connectionAvailableCache = false;
             return false;
         }
     }
 
-
     boolean setConfig(String url, String username, String password) {
+        connectionAvailableCache = null;
         return config.update(url, username, password);
     }
 
-    String getURL()      {
+    String getURL() {
         return config.getDbUrl();
     }
 

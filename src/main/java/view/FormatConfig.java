@@ -9,6 +9,6 @@ public final class FormatConfig {
     }
 
     public static Locale numberFormat() {
-        return Locale.of("de", "CH");
+        return NUMBER_FORMAT;
     }
 }

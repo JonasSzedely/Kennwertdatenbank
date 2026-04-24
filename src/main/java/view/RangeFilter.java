@@ -3,6 +3,7 @@ package view;
 import javafx.scene.control.*;
 import javafx.util.Duration;
 import javafx.util.converter.NumberStringConverter;
+import model.AppLogger;
 import model.Project;
 import org.controlsfx.control.RangeSlider;
 
@@ -24,15 +25,6 @@ class RangeFilter {
     private final Function<Project, Integer> valueExtractor;
     private FilterChangeListener changeListener;
 
-    /**
-     * Creates a new RangeFilter with UI elements
-     *
-     * @param titel          the text that will be displayed in the titel Label
-     * @param resetText      the text that will be displayed in the reset Button
-     * @param valueExtractor
-     * @param minSupplier
-     * @param maxSupplier
-     */
     public RangeFilter(String titel, String resetText, Function<Project, Integer> valueExtractor, Supplier<Integer> minSupplier, Supplier<Integer> maxSupplier) {
         this.titel = new Label(titel);
         this.reset = new Button(resetText);
@@ -42,8 +34,8 @@ class RangeFilter {
         this.valueExtractor = valueExtractor;
         this.minSupplier = minSupplier;
         this.maxSupplier = maxSupplier;
-        NumberFormat integerFormat = NumberFormat.getIntegerInstance(FormatConfig.numberFormat()); //formatter to format numbers in swiss style (#'###)
-        integerFormat.setMaximumFractionDigits(0); //set the formatter to display only integers
+        NumberFormat integerFormat = NumberFormat.getIntegerInstance(FormatConfig.numberFormat());
+        integerFormat.setMaximumFractionDigits(0);
         this.minFormatter = new TextFormatter<>(new NumberStringConverter(integerFormat), minSupplier.get());
         this.maxFormatter = new TextFormatter<>(new NumberStringConverter(integerFormat), maxSupplier.get());
         this.minTextField.setTextFormatter(minFormatter);
@@ -59,24 +51,20 @@ class RangeFilter {
 
         setRange();
 
-        //listener when reset button was pressed
         reset.setOnAction(event -> {
             slider.setLowValue(slider.getMin());
             slider.setHighValue(slider.getMax());
             notifyFilterChanged();
         });
 
-        //listener when slider low value is changed
         slider.lowValueProperty().addListener((obs, oldValue, newValue) -> {
             minFormatter.setValue(newValue.intValue());
         });
 
-        //listener when slider heigh value is changed
         slider.highValueProperty().addListener((obs, oldValue, newValue) -> {
             maxFormatter.setValue(newValue.intValue());
         });
 
-        //listener for minimum text field on focus
         minTextField.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
             if (!isNowFocused && wasFocused) {
                 try {
@@ -92,11 +80,11 @@ class RangeFilter {
                     }
                     notifyFilterChanged();
                 } catch (NumberFormatException ex) {
+                    AppLogger.error(ex.getMessage());
                 }
             }
         });
 
-        //listener for minimum text field on enter
         minTextField.setOnAction(e -> {
             try {
                 int value = minFormatter.getValue().intValue();
@@ -114,7 +102,6 @@ class RangeFilter {
             }
         });
 
-        //listener for maximum text field on focus
         maxTextField.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
             if (!isNowFocused && wasFocused) {
                 try {
@@ -130,11 +117,11 @@ class RangeFilter {
                     }
                     notifyFilterChanged();
                 } catch (NumberFormatException ex) {
+                    AppLogger.error(ex.getMessage());
                 }
             }
         });
 
-        //listener for maximum text field on enter
         maxTextField.setOnAction(e -> {
             try {
                 int value = maxFormatter.getValue().intValue();
@@ -149,25 +136,23 @@ class RangeFilter {
                 }
                 notifyFilterChanged();
             } catch (NumberFormatException ex) {
+                AppLogger.error(ex.getMessage());
             }
         });
 
-        //listener when slider low value was set
-        slider.lowValueChangingProperty().addListener((obs, wasChangin, isChanging) -> {
-            if (!isChanging && wasChangin) {
+        slider.lowValueChangingProperty().addListener((obs, wasChanging, isChanging) -> {
+            if (!isChanging && wasChanging) {
                 minFormatter.setValue(slider.getLowValue());
                 notifyFilterChanged();
             }
         });
 
-        //listener when slider heigh value was set
-        slider.highValueChangingProperty().addListener((obs, wasChangin, isChanging) -> {
-            if (!isChanging && wasChangin) {
+        slider.highValueChangingProperty().addListener((obs, wasChanging, isChanging) -> {
+            if (!isChanging && wasChanging) {
                 maxFormatter.setValue(slider.getHighValue());
                 notifyFilterChanged();
             }
         });
-
     }
 
     public void setOnFilterChanged(FilterChangeListener listener) {
@@ -180,11 +165,6 @@ class RangeFilter {
         }
     }
 
-    /**
-     * Creates a test-function
-     *
-     * @return returns the value as int
-     */
     public Predicate<Project> getPredicate() {
         return project -> {
             int value = valueExtractor.apply(project);
@@ -192,9 +172,6 @@ class RangeFilter {
         };
     }
 
-    /**
-     * sets the range (min to max) of the range-slider, must be updatet when a new project is added.
-     */
     public void setRange() {
         int min = minSupplier.get();
         int max = maxSupplier.get();
@@ -205,49 +182,14 @@ class RangeFilter {
         notifyFilterChanged();
     }
 
-    /**
-     *
-     * @return the titel Label element
-     */
-    public Label getTitelLabel() {
-        return titel;
-    }
-
-    /**
-     *
-     * @return the reset Button element
-     */
-    public Button getResetButton() {
-        return reset;
-    }
-
-    /**
-     *
-     * @return the range-slider element
-     */
-    public RangeSlider getSlider() {
-        return slider;
-    }
-
-    /**
-     *
-     * @return the min TextField element
-     */
-    public TextField getMinTextField() {
-        return minTextField;
-    }
-
-    /**
-     *
-     * @return the max TextField element
-     */
-    public TextField getMaxTextField() {
-        return maxTextField;
-    }
+    public Label getTitelLabel() { return titel; }
+    public Button getResetButton() { return reset; }
+    public RangeSlider getSlider() { return slider; }
+    public TextField getMinTextField() { return minTextField; }
+    public TextField getMaxTextField() { return maxTextField; }
 
     @FunctionalInterface
     public interface FilterChangeListener {
         void onFilterChanged();
     }
-
 }

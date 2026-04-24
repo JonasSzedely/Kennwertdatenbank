@@ -2,12 +2,13 @@ package model;
 
 import java.io.*;
 import java.util.Properties;
+
 public class DBConfig {
 
     private static final String PROPERTIES_PATH = System.getProperty("user.dir") + "/db.properties";
     private static final String DEFAULT_URL = "jdbc:postgresql://localhost:5432/kennwertdatenbank";
     private static final String DEFAULT_USERNAME = "postgres";
-    private static final String DEFAULT_PASSWORD  = "password";
+    private static final String DEFAULT_PASSWORD = "password";
 
     private final Properties properties = new Properties();
 
@@ -32,7 +33,7 @@ public class DBConfig {
     }
 
     private void setDefaults() {
-        properties.setProperty("db.url",      DEFAULT_URL);
+        properties.setProperty("db.url", DEFAULT_URL);
         properties.setProperty("db.username", DEFAULT_USERNAME);
         properties.setProperty("db.password", DEFAULT_PASSWORD);
     }
@@ -58,18 +59,20 @@ public class DBConfig {
         return saveToFile(new File(PROPERTIES_PATH));
     }
 
-    public String getDbUrl()      {
+    public String getDbUrl() {
         return properties.getProperty("db.url");
     }
+
     public String getDbUsername() {
         return properties.getProperty("db.username");
     }
+
     public String getDbPassword() {
         return properties.getProperty("db.password");
     }
 
     public boolean update(String url, String username, String password) {
-        properties.setProperty("db.url",      url);
+        properties.setProperty("db.url", url);
         properties.setProperty("db.username", username);
         properties.setProperty("db.password", password);
         return save();
