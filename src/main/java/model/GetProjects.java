@@ -2,7 +2,6 @@ package model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.sql.Connection;
@@ -21,15 +20,17 @@ class GetProjects {
      * It returns them as a TreeMap of Projects.
      * The key is made from project number * 100 + version number.
      */
-    public static TreeMap<Integer, Project> get(Controller controller, String[] SQL_PROJECT_DATA) {
+    public static TreeMap<Integer, Project> get(Controller controller) {
 
         TreeMap<Integer, Project> PROJECTS = new TreeMap<>();
 
         STRING_BUILDER.append("SELECT ");
-        for (int i = 0; i < SQL_PROJECT_DATA.length - 1; i++) {
-            STRING_BUILDER.append(SQL_PROJECT_DATA[i].split(",")[0]).append(", ");
+        for (int i = 0; i < ProjectValues.values().length; i++) {
+            ProjectValues value = ProjectValues.values()[i];
+            STRING_BUILDER.append(value.getSqlColumn()).append(", ");
         }
-        STRING_BUILDER.append(SQL_PROJECT_DATA[SQL_PROJECT_DATA.length - 1].split(",")[0]).append(" FROM projects WHERE active = true ORDER BY project_nr");
+        STRING_BUILDER.append("data FROM projects WHERE active = true ORDER BY project_nr");
+
         String sql = STRING_BUILDER.toString();
         STRING_BUILDER = new StringBuilder();
 
@@ -41,47 +42,27 @@ class GetProjects {
             while (rs.next()) {
                 String data = rs.getString("data");
 
-                Map<String, Integer> jsonMap = OBJECT_MAPPER.readValue(data, new TypeReference<Map<String, Integer>>() {
+                Map<String, Integer> jsonMap = OBJECT_MAPPER.readValue(data, new TypeReference<>() {
                 });
 
                 TreeMap<Integer, Integer> map = new TreeMap<>(new BKPComparator());
                 jsonMap.forEach((k, v) -> map.put(Integer.parseInt(k), v));
 
-                ProjectData projectData = new ProjectData(map);
+                ProjectData projectData = new ProjectData();
+                projectData.set(map);
 
-                Project project = new Project(
-                        rs.getInt("project_nr"),
-                        rs.getInt("version"),
-                        rs.getString("address"),
-                        rs.getInt("plz"),
-                        rs.getString("location"),
-                        rs.getString("owner"),
-                        rs.getString("property_type"),
-                        rs.getString("construction_type"),
-                        rs.getInt("document_phase"),
-                        rs.getInt("calculation_phase"),
-                        rs.getInt("apartments_nr"),
-                        rs.getInt("bathroom_nr"),
-                        rs.getInt("hnf"),
-                        rs.getInt("gf"),
-                        rs.getInt("parcelsize"),
-                        rs.getInt("landscapedarea"),
-                        rs.getInt("volume_underground"),
-                        rs.getInt("volume_above_ground"),
-                        rs.getInt("facadearea"),
-                        rs.getInt("windowarea"),
-                        rs.getString("facade_type"),
-                        rs.getString("window_type"),
-                        rs.getString("roof_type"),
-                        rs.getString("heating_type"),
-                        rs.getString("cooling_type"),
-                        rs.getString("ventilation_type_apartments"),
-                        rs.getString("ventilation_type_ug"),
-                        rs.getString("co_no"),
-                        rs.getString("special"),
-                        projectData
-                );
-                PROJECTS.put((project.getProjectNr() * 100) + project.getVersion(), project);
+                Project project = new Project();
+                project.setData(projectData);
+
+                for (int i = 0; i < ProjectValues.values().length; i++) {
+                    ProjectValues value = ProjectValues.values()[i];
+                    project.set(value, getData(rs, value.getSqlColumn(), value.getType()));
+                }
+
+                int number = project.get(ProjectValues.PROJECT_NR);
+                int version = project.get(ProjectValues.VERSION);
+
+                PROJECTS.put(((number * 100) + version), project);
             }
         } catch (SQLException e) {
             AppLogger.error("SQL-DB Problem: " + e);
@@ -91,4 +72,9 @@ class GetProjects {
         }
         return PROJECTS;
     }
+
+    private static <T> T getData(ResultSet rs, String column, Class<?> type) throws SQLException {
+        return (T) rs.getObject(column, type);
+    }
+
 }

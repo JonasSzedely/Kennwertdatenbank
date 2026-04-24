@@ -102,7 +102,7 @@ class TopPane {
             dialog.setHeaderText("Daten exportieren");
             dialog.setContentText("Zielordner für Expor eingeben:");
             dialog.getEditor().setPromptText("C:\\Users\\Name\\Downloads");
-            Platform.runLater(() -> dialog.getDialogPane().requestFocus()); //von claude.ai (needed because focus is set after the dialog is rendered
+            Platform.runLater(() -> dialog.getDialogPane().requestFocus()); //needed because focus is set after the dialog is rendered
             Optional<String> result = dialog.showAndWait();
 
             if (result.isPresent()) {

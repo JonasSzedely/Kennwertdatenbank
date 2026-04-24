@@ -4,88 +4,54 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.sql.*;
-import java.util.*;
 
 class AddProject {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     /**
      * This method inserts a new row into the products table.
+     *
      * @param project an object of type Project
-     * @param SQL_PROJECT_DATA the list of project data definied in the controller
      */
-    static String add(Controller controller, Project project, String[] SQL_PROJECT_DATA) {
+    static String add(Controller controller, Project project) {
 
-        ArrayList<Object> values = new ArrayList<>(List.of(project.getAttributes()));
+        // Version vor dem INSERT setzen
+        project.set(ProjectValues.VERSION, ProjectVersion.get(controller, project.get(ProjectValues.PROJECT_NR)));
 
-        if (values.size() != SQL_PROJECT_DATA.length) {
-            return "Projekt konnte nicht hinzugefügt werden. Datenfehler, bitte Support kontaktieren.";
+        // INSERT SQL aufbauen
+        StringBuilder sb = new StringBuilder("INSERT INTO projects(");
+        for (ProjectValues value : ProjectValues.values()) {
+            sb.append(value.getSqlColumn()).append(",");
         }
-        // set the latest version
-        values.set(1,ProjectVersion.get(controller, project.getProjectNr()));
+        sb.append("data) VALUES(");
+        sb.repeat("?,", ProjectValues.values().length);
+        sb.append("?)");
 
-        // prepare SQL-Statement
-        StringBuilder sqlBuilder = new StringBuilder("INSERT INTO projects(");
-
-        // compute SQL_PROJECT_DATA
-        for (int i = 0; i < SQL_PROJECT_DATA.length - 1; i++) {
-            sqlBuilder.append(SQL_PROJECT_DATA[i].split(",")[0]).append(",");
-        }
-        sqlBuilder.append(SQL_PROJECT_DATA[SQL_PROJECT_DATA.length - 1].split(",")[0]);
-        sqlBuilder.append(") VALUES(");
-
-        for (int i = 0; i < values.size() - 1; i++) {
-            sqlBuilder.append("?,");
-        }
-        sqlBuilder.append("?)");
-
-        String sql = sqlBuilder.toString();
+        String sql = sb.toString();
 
         try (Connection conn = controller.connectorDB();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            for (int i = 0; i < values.size(); i++) {
-                Object value = values.get(i);
-                String[] parts = SQL_PROJECT_DATA[i].split(",", 2);
-                String columnName = parts[0];
-                String dataType = parts[1];
-
-                if (value == null) {
-                    pstmt.setNull(i + 1, Types.NULL);
-                    continue;
-                }
-
-                switch (dataType) {
-                    case "int":
-                        if (value instanceof Number) {
-                            pstmt.setInt(i + 1, ((Number) value).intValue());
-                        } else {
-                            return "Datenfehler bei " + columnName + ": erwartet Integer, bekommen " + value.getClass().getSimpleName();
-                        }
-                        break;
-
-                    case "string":
-                        if (value instanceof String) {
-                            pstmt.setString(i + 1, (String) value);
-                        } else {
-                            pstmt.setString(i + 1, String.valueOf(value));
-                        }
-                        break;
-
-                    case "json":
-                        try {
-                            String jsonString = OBJECT_MAPPER.writeValueAsString(project.getData().getData());
-                            pstmt.setObject(i + 1, jsonString, Types.OTHER);
-                        } catch (JsonProcessingException e) {
-                            return "JSON-Konvertierungsfehler bei " + columnName + ": " + e.getMessage();
-                        }
-                        break;
-
-                    default:
-                        return "Datenfehler, unbekannter Datentyp: " + dataType + " für Spalte " + columnName;
+            int index = 1;
+            for (ProjectValues value : ProjectValues.values()) {
+                Object val = project.get(value);
+                if (val == null) {
+                    pstmt.setNull(index++, Types.NULL);
+                } else if (value.getType() == Integer.class) {
+                    pstmt.setInt(index++, (Integer) val);
+                } else {
+                    pstmt.setString(index++, (String) val);
                 }
             }
-            //insert into DB
+
+            // data-Spalte (JSON) separat – gleiche Logik wie GetProjects
+            try {
+                String jsonString = OBJECT_MAPPER.writeValueAsString(project.getData().getData());
+                pstmt.setObject(index, jsonString, Types.OTHER);
+            } catch (JsonProcessingException e) {
+                return "JSON-Konvertierungsfehler: " + e.getMessage();
+            }
+
             int insertedRow = pstmt.executeUpdate();
             if (insertedRow > 0) {
                 ResultSet rs = pstmt.getGeneratedKeys();
@@ -95,7 +61,7 @@ class AddProject {
             }
 
         } catch (SQLException e) {
-            AppLogger.error("SQL-DB problem when adding Project: " + project.getProjectNr() + " Version " + project.getVersion() + e.getMessage());
+            AppLogger.error("SQL-DB problem when adding Project: " + e.getMessage());
             return "SQL-Fehler: " + e.getMessage();
         }
 

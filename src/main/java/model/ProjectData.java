@@ -11,10 +11,15 @@ public class ProjectData {
     private TreeMap<Integer, Integer> map = new TreeMap<>(new BKPComparator());
 
     /**
+     * Creat empty ProjectData.
+     */
+    public ProjectData () {}
+
+    /**
      * Imports Project BKP numbers from a CSV
      * Formatting: BKP-number;valueInCHF
      */
-    public ProjectData (String filePath) {
+    public void set(String filePath){
         loadFromCsv(filePath);
     }
 
@@ -22,7 +27,7 @@ public class ProjectData {
      * Imports Project BKP numbers from a TreeMap<Integer, Integer>
      * Formatting: BKP-number;valueInCHF
      */
-    public ProjectData(TreeMap<Integer,Integer> map){
+    public void set(TreeMap<Integer,Integer> map){
         this.map = map;
     }
 

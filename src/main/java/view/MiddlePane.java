@@ -8,17 +8,26 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import model.Calculation;
-import model.Controller;
-import model.Project;
+import model.*;
 
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Optional;
+import java.util.*;
 
 class MiddlePane {
     private static final int MAX_CACHE_SIZE = 50;
+
+    // Handled by dedicated projectHead() / projectVersion() rows
+    private static final ProjectValues[] HEAD_FIELDS = {
+            ProjectValues.PROJECT_NR,
+            ProjectValues.VERSION
+    };
+
+    // Not shown individually: BATHROOM_NR is hidden, volumes are merged into one row
+    private static final ProjectValues[] SKIPPED_FIELDS = {
+            ProjectValues.BATHROOM_NR,
+            ProjectValues.VOLUME_UNDERGROUND,
+            ProjectValues.VOLUME_ABOVE_GROUND
+    };
+
     private final Controller controller;
     private final LinkedHashMap<Integer, VBox> cellCache = new LinkedHashMap<>();
     private final double CELL_WIDTH = 150;
@@ -37,21 +46,14 @@ class MiddlePane {
         this.labelFactory = new LabelFactory(CELL_HEIGHT, CELL_WIDTH);
     }
 
-    /**
-     * creates the middle pane
-     *
-     * @return HBox
-     */
     HBox get() {
         HBox middlePane = new HBox();
         VBox.setVgrow(middlePane, Priority.ALWAYS);
         middlePane.setId("middle-pane");
 
-        ProjectList.refreshProjectList();
+        //ProjectList.refreshProjectList();
         updateSorting();
 
-        // left side of the middle pane
-        // scroll pane for row labels
         ScrollPane leftScroll = new ScrollPane();
         leftScroll.setFitToHeight(true);
         leftScroll.setMinWidth(150);
@@ -65,20 +67,15 @@ class MiddlePane {
         rowLabels.prefWidthProperty().bind(leftScroll.widthProperty());
         leftScroll.setContent(rowLabels);
 
-        // project pane
-        // pane to know the space the projects have
         Pane totalWidthSpacer = new Pane();
 
-        // container for the projects
         projectsContainer = new HBox(CELL_GAP);
         projectsContainer.setFillHeight(true);
 
-        // overlay two panes to enable virtual scrolling
         StackPane stackPane = new StackPane();
         stackPane.setAlignment(Pos.TOP_LEFT);
         stackPane.getChildren().addAll(totalWidthSpacer, projectsContainer);
 
-        // scroll pane for projects
         rightScroll = new ScrollPane(stackPane);
         rightScroll.setFitToHeight(true);
         rightScroll.setFitToWidth(false);
@@ -86,16 +83,10 @@ class MiddlePane {
         rightScroll.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
         rightScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
 
-        //synchronize scrolling of left and right scrollPane
         leftScroll.vvalueProperty().bindBidirectional(rightScroll.vvalueProperty());
-
-        //update cells while scrolling right
         rightScroll.hvalueProperty().addListener(observable -> updateVisibleCells());
-
-        //update cells while scrolling left
         rightScroll.widthProperty().addListener(observable -> updateVisibleCells());
 
-        //update cells when projects get updated
         ProjectList.getSortedProjects().addListener((ListChangeListener<Project>) change -> {
             double totalWidth = ProjectList.getSortedProjects().size() * (CELL_WIDTH + CELL_GAP);
             totalWidthSpacer.setPrefWidth(totalWidth);
@@ -104,7 +95,6 @@ class MiddlePane {
             updateVisibleCells();
         });
 
-        //right side of the middle pane
         VBox middleRightPane = new VBox(10);
         middleRightPane.setAlignment(Pos.TOP_RIGHT);
         middleRightPane.setMinWidth(250);
@@ -112,7 +102,7 @@ class MiddlePane {
         middleRightPane.setStyle("-fx-border-color: lightgray; -fx-border-width: 1 1 1 1;");
 
         middlePane.getChildren().addAll(leftScroll, rightScroll, middleRightPane);
-        ProjectList.refreshProjectList();
+        //ProjectList.refreshProjectList();
         return middlePane;
     }
 
@@ -120,49 +110,60 @@ class MiddlePane {
         rowLabels = new VBox();
 
         ProjectList.getProjectList().addListener((ListChangeListener<Project>) change -> {
-            rowLabels.getChildren().clear();
-            rowLabels.getChildren().addAll(
-                    labelFactory.getLabel("Projekt-Nr.", LabelFactory.LabelType.TEXT, true, false),
-                    labelFactory.getLabel("Version", LabelFactory.LabelType.TEXT, true, false),
-                    labelFactory.getLabel("Adresse", LabelFactory.LabelType.TEXT, true, false),
-                    labelFactory.getLabel("PLZ", LabelFactory.LabelType.TEXT, true, false),
-                    labelFactory.getLabel("Ort", LabelFactory.LabelType.TEXT, true, false),
-                    labelFactory.getLabel("Bauherr", LabelFactory.LabelType.TEXT, true, false),
-                    labelFactory.getLabel("Gebäudenutzung", LabelFactory.LabelType.TEXT, true, false),
-                    labelFactory.getLabel("Art des Bauvorhaben", LabelFactory.LabelType.TEXT, true, false),
-                    labelFactory.getLabel("Planstand", LabelFactory.LabelType.TEXT, true, false),
-                    labelFactory.getLabel("Gerechnete Phasen", LabelFactory.LabelType.TEXT, true, false),
-                    labelFactory.getLabel("Anzahl Wohnungen", LabelFactory.LabelType.TEXT, true, false),
-                    //rowLabel()("Anzahl Nasszellen"),
-                    labelFactory.getLabel("HNF inkl. Reduit in m²", LabelFactory.LabelType.TEXT, true, false),
-                    labelFactory.getLabel("GF in m²", LabelFactory.LabelType.TEXT, true, false),
-                    labelFactory.getLabel("Grundstücksfläche in m²", LabelFactory.LabelType.TEXT, true, false),
-                    labelFactory.getLabel("Umgebungsfläche in m²", LabelFactory.LabelType.TEXT, true, false),
-                    labelFactory.getLabel("SIA m³", LabelFactory.LabelType.TEXT, true, false),
-                    //rowLabel()("unten"),
-                    //rowLabel()("oben"),
-                    labelFactory.getLabel("Fassaden-Typ", LabelFactory.LabelType.TEXT, true, false),
-                    labelFactory.getLabel("Fenster-Typ", LabelFactory.LabelType.TEXT, true, false),
-                    labelFactory.getLabel("Dach-Art", LabelFactory.LabelType.TEXT, true, false),
-                    labelFactory.getLabel("Heizung", LabelFactory.LabelType.TEXT, true, false),
-                    labelFactory.getLabel("Kühlung", LabelFactory.LabelType.TEXT, true, false),
-                    labelFactory.getLabel("Lüftung WHG", LabelFactory.LabelType.TEXT, true, false),
-                    labelFactory.getLabel("Lüftung TG", LabelFactory.LabelType.TEXT, true, false),
-                    labelFactory.getLabel("CO/NO Anlage", LabelFactory.LabelType.TEXT, true, false),
-                    labelFactory.getLabel("Spezielles", LabelFactory.LabelType.TALL, true, false),
-                    labelFactory.getLabel("", LabelFactory.LabelType.TEXT, true, false)
-            );
-            HBox noScroll = new HBox();
-            noScroll.setMinHeight(15);
-
-            for (int i = 0; i < ProjectList.getProjectList().getFirst().getCalculations().size(); i++) {
-                String labelName = ProjectList.getProjectList().getFirst().getCalculations().get(i).getName();
-                rowLabels.getChildren().add(labelFactory.getLabel(labelName, LabelFactory.LabelType.TEXT, true, false));
-            }
-            rowLabels.getChildren().add(noScroll);
+            fillRowLabels();
         });
 
+        // Einmalig beim Start befüllen
+        fillRowLabels();
+
         return rowLabels;
+    }
+
+    private void fillRowLabels() {
+        rowLabels.getChildren().clear();
+
+        if (ProjectList.getProjectList().isEmpty()) return;
+
+        for (ProjectValues field : HEAD_FIELDS) {
+            rowLabels.getChildren().add(
+                    labelFactory.getLabel(field.getLabel(), LabelFactory.LabelType.TEXT, true, false)
+            );
+        }
+
+        for (ProjectValues field : ProjectValues.values()) {
+            if (isHeadField(field) || isSkippedField(field)) continue;
+
+            // Immer TEXT — Labels sind immer Strings, nie Numbers
+            LabelFactory.LabelType labelType = (field == ProjectValues.SPECIAL)
+                    ? LabelFactory.LabelType.TALL
+                    : LabelFactory.LabelType.TEXT;
+
+            rowLabels.getChildren().add(
+                    labelFactory.getLabel(field.getLabel(), labelType, true, false)
+            );
+
+            if (field == ProjectValues.LANDSCAPED_AREA) {
+                rowLabels.getChildren().add(
+                        labelFactory.getLabel("SIA m³", LabelFactory.LabelType.TEXT, true, false)
+                );
+            }
+        }
+
+        rowLabels.getChildren().add(
+                labelFactory.getLabel("", LabelFactory.LabelType.TEXT, true, false)
+        );
+
+        Project first = ProjectList.getProjectList().getFirst();
+        List<Calculation> calculations = new ProjectCalculations(first).getCalculations();
+        for (Calculation calculation : calculations) {
+            rowLabels.getChildren().add(
+                    labelFactory.getLabel(calculation.getName(), LabelFactory.LabelType.TEXT, true, false)
+            );
+        }
+
+        HBox noScroll = new HBox();
+        noScroll.setMinHeight(15);
+        rowLabels.getChildren().add(noScroll);
     }
 
     private HBox statistics() {
@@ -172,10 +173,7 @@ class MiddlePane {
         grid.getColumnConstraints().add(new ColumnConstraints(150));
 
         Label statisticsTitel = new Label("Statistik");
-        statisticsTitel.setStyle(
-                "-fx-font-size: 20px; " +
-                        "-fx-font-weight: bold; "
-        );
+        statisticsTitel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
         Label nrOfProjects = new Label("Anzahl Projekte:");
         Label nrOfProjectsValue = new Label(String.valueOf(ProjectList.getProjectList().size()));
         Label averageRatioUG = new Label("⌀ Verhältnis UG/OG:");
@@ -203,13 +201,11 @@ class MiddlePane {
     private void updateVisibleCells() {
         if (rightScroll == null || projectsContainer == null) return;
 
-        double scrollPaneWidth = rightScroll.getWidth() - (rightScroll.getVbarPolicy() != ScrollPane.ScrollBarPolicy.NEVER ? SCROLLBAR_WIDTH : 0); // Scrollbar-Breite abziehen
+        double scrollPaneWidth = rightScroll.getWidth()
+                - (rightScroll.getVbarPolicy() != ScrollPane.ScrollBarPolicy.NEVER ? SCROLLBAR_WIDTH : 0);
         double totalWidth = ProjectList.getSortedProjects().size() * (CELL_WIDTH + CELL_GAP);
-
-        // hvalue between 0 und 1 → calculate to Pixel
         double scrollOffset = rightScroll.getHvalue() * Math.max(0, totalWidth - scrollPaneWidth);
 
-        // Welche Indizes sind sichtbar?
         int firstVisible = Math.max(0, (int) (scrollOffset / (CELL_WIDTH + CELL_GAP)));
         int lastVisible = Math.min(
                 ProjectList.getSortedProjects().size() - 1,
@@ -218,7 +214,6 @@ class MiddlePane {
 
         projectsContainer.getChildren().clear();
 
-        //left spacer: moves the visible cells to the correct position
         if (firstVisible > 0) {
             Pane leftSpacer = new Pane();
             leftSpacer.setPrefWidth(firstVisible * (CELL_WIDTH + CELL_GAP));
@@ -226,7 +221,6 @@ class MiddlePane {
             projectsContainer.getChildren().add(leftSpacer);
         }
 
-        //render only visible cells, fetch them from cache
         for (int i = firstVisible; i <= lastVisible; i++) {
             VBox cell = cellCache.get(i);
             if (cell == null) {
@@ -238,12 +232,6 @@ class MiddlePane {
         }
     }
 
-    /**
-     * creates the visual elements for a project
-     *
-     * @param project the project to get rendered
-     * @return project as VBox
-     */
     private VBox projectCells(Project project) {
         VBox projectBox = new VBox();
         projectBox.setMinWidth(CELL_WIDTH);
@@ -251,52 +239,89 @@ class MiddlePane {
         projectBox.setMaxWidth(CELL_WIDTH);
         projectBox.setStyle("-fx-border-color: lightgray; -fx-border-width: 0 1 0 0;");
 
-        // Update sorting when the pinned property changes (from claude.ai)
         project.pinnedProperty().addListener(observable -> {
             PauseTransition pause = new PauseTransition(Duration.millis(500));
             pause.setOnFinished(event -> updateSorting());
             pause.play();
         });
 
-        projectBox.getChildren().addAll(
-                projectHead(project),
-                projectVersion(project),
-                labelFactory.getLabel(project.getAddress(), LabelFactory.LabelType.TEXT, true, true),
-                labelFactory.getLabel(String.valueOf(project.getPlz()), LabelFactory.LabelType.TEXT, true, true),
-                labelFactory.getLabel(project.getLocation(), LabelFactory.LabelType.TEXT, true, true),
-                labelFactory.getLabel(project.getOwner(), LabelFactory.LabelType.TEXT, true, true),
-                labelFactory.getLabel(project.getPropertyType(), LabelFactory.LabelType.TEXT, true, true),
-                labelFactory.getLabel(project.getConstructionType(), LabelFactory.LabelType.TEXT, true, true),
-                labelFactory.getLabel(project.getDocumentPhase(), LabelFactory.LabelType.TEXT, true, true),
-                labelFactory.getLabel(project.getCalculationPhase() + " - 5", LabelFactory.LabelType.TEXT, true, true),
-                labelFactory.getLabel(project.getApartmentsNr(), LabelFactory.LabelType.TEXT, true, true),
-                labelFactory.getLabel(project.getHnf(), LabelFactory.LabelType.NUMBER, true, true),
-                labelFactory.getLabel(project.getGf(), LabelFactory.LabelType.NUMBER, true, true),
-                labelFactory.getLabel(project.getParcelSize(), LabelFactory.LabelType.NUMBER, true, true),
-                labelFactory.getLabel(project.getLandscapedArea(), LabelFactory.LabelType.NUMBER, true, true),
-                labelFactory.getLabel(project.getVolume(), LabelFactory.LabelType.NUMBER, true, true),
-                labelFactory.getLabel(project.getFacadeType(), LabelFactory.LabelType.TEXT, true, true),
-                labelFactory.getLabel(project.getWindowType(), LabelFactory.LabelType.TEXT, true, true),
-                labelFactory.getLabel(project.getRoofType(), LabelFactory.LabelType.TEXT, true, true),
-                labelFactory.getLabel(project.getHeatingType(), LabelFactory.LabelType.TEXT, true, true),
-                labelFactory.getLabel(project.getCoolingType(), LabelFactory.LabelType.TEXT, true, true),
-                labelFactory.getLabel(project.getVentilationTypeApartments(), LabelFactory.LabelType.TEXT, true, true),
-                labelFactory.getLabel(project.getVentilationTypeUg(), LabelFactory.LabelType.TEXT, true, true),
-                labelFactory.getLabel(project.getCoNo(), LabelFactory.LabelType.TEXT, true, true),
-                labelFactory.getLabel(project.getSpecial(), LabelFactory.LabelType.TALL, true, true),
+        // Dedicated head rows for PROJECT_NR and VERSION
+        projectBox.getChildren().add(projectHead(project));
+        projectBox.getChildren().add(projectVersion(project));
+
+        // All remaining fields, dynamically from enum
+        for (ProjectValues field : ProjectValues.values()) {
+            if (isHeadField(field) || isSkippedField(field)) {
+                continue;
+            }
+
+            LabelFactory.LabelType labelType = getLabelType(field);
+
+            if (field == ProjectValues.CALCULATION_PHASE) {
+                int phase = project.get(field);
+                projectBox.getChildren().add(
+                        labelFactory.getLabel(phase + " - 5", LabelFactory.LabelType.TEXT, true, true)
+                );
+            } else if (labelType == LabelFactory.LabelType.NUMBER) {
+                int value = project.get(field);
+                projectBox.getChildren().add(
+                        labelFactory.getLabel(value, labelType, true, true)
+                );
+            } else {
+                String value = project.get(field);
+                projectBox.getChildren().add(
+                        labelFactory.getLabel(value, labelType, true, true)
+                );
+            }
+
+            if (field == ProjectValues.LANDSCAPED_AREA) {
+                int volumeUG = project.get(ProjectValues.VOLUME_UNDERGROUND);
+                int volumeAG = project.get(ProjectValues.VOLUME_ABOVE_GROUND);
+                projectBox.getChildren().add(
+                        labelFactory.getLabel(volumeUG + volumeAG, LabelFactory.LabelType.NUMBER, true, true)
+                );
+            }
+        }
+
+        // Empty separator row
+        projectBox.getChildren().add(
                 labelFactory.getLabel("", LabelFactory.LabelType.TEXT, true, true)
         );
 
-        for (Calculation calc : project.getCalculations()) {
-            projectBox.getChildren().add(labelFactory.getLabel(calc.getCalculation(), LabelFactory.LabelType.TEXT, true, true));
+        List<Calculation> calculations = new ProjectCalculations(project).getCalculations();
+        for (Calculation calculation : calculations) {
+            projectBox.getChildren().add(
+                    labelFactory.getLabel(calculation.getCalculation(), LabelFactory.LabelType.TEXT, true, true)
+            );
         }
 
         return projectBox;
     }
 
     /**
-     * Wenn der Cache zu groß wird, werden die ältesten Einträge entfernt
+     * Returns the LabelType for a given field.
+     * SPECIAL uses TALL, numeric fields use NUMBER, everything else TEXT.
      */
+    private LabelFactory.LabelType getLabelType(ProjectValues field) {
+        if (field == ProjectValues.SPECIAL) return LabelFactory.LabelType.TALL;
+        if (field.getType() == Integer.class) return LabelFactory.LabelType.NUMBER;
+        return LabelFactory.LabelType.TEXT;
+    }
+
+    private boolean isHeadField(ProjectValues field) {
+        for (ProjectValues f : HEAD_FIELDS) {
+            if (f == field) return true;
+        }
+        return false;
+    }
+
+    private boolean isSkippedField(ProjectValues field) {
+        for (ProjectValues f : SKIPPED_FIELDS) {
+            if (f == field) return true;
+        }
+        return false;
+    }
+
     private void evictCacheIfNeeded() {
         while (cellCache.size() > MAX_CACHE_SIZE) {
             Iterator<Integer> it = cellCache.keySet().iterator();
@@ -307,24 +332,14 @@ class MiddlePane {
         }
     }
 
-    /**
-     * sorts the project list (from claude.ai)
-     */
     private void updateSorting() {
         ProjectList.getSortedProjects().setComparator(
-                Comparator.comparing(Project::isPinned).reversed() // true first
-                        .thenComparing(Project::getProjectNr) // project number
-                        .thenComparing(Project::getVersion) // version
+                Comparator.comparing(Project::isPinned).reversed()
+                        .thenComparing(p -> (int) p.get(ProjectValues.PROJECT_NR))
+                        .thenComparing(p -> (int) p.get(ProjectValues.VERSION))
         );
     }
 
-
-    /**
-     * Creates a line for the project containing the project number, modify button and delete button.
-     *
-     * @param project the project
-     * @return HBox
-     */
     private HBox projectHead(Project project) {
         Region spacerHead = new Region();
         HBox.setHgrow(spacerHead, Priority.ALWAYS);
@@ -336,7 +351,7 @@ class MiddlePane {
         projectHead.setPrefHeight(CELL_HEIGHT);
         projectHead.setAlignment(Pos.CENTER_LEFT);
         projectHead.getChildren().addAll(
-                labelFactory.getLabel(project.getProjectNr(),
+                labelFactory.getLabel((int) project.get(ProjectValues.PROJECT_NR),
                         LabelFactory.LabelType.TEXT, false, true),
                 spacerHead,
                 modifyProjectButton(project),
@@ -347,12 +362,6 @@ class MiddlePane {
         return projectHead;
     }
 
-    /**
-     * Creates a line for the project containing the version number, next version button and focus checkbox.
-     *
-     * @param project the project
-     * @return HBox
-     */
     private HBox projectVersion(Project project) {
         Region spacerVersion = new Region();
         HBox.setHgrow(spacerVersion, Priority.ALWAYS);
@@ -363,8 +372,8 @@ class MiddlePane {
         projectVersion.setMaxHeight(CELL_HEIGHT);
         projectVersion.setPrefHeight(CELL_HEIGHT);
         projectVersion.setAlignment(Pos.CENTER_LEFT);
-        projectVersion.getChildren().addAll(labelFactory.getLabel(
-                        project.getVersion(),
+        projectVersion.getChildren().addAll(
+                labelFactory.getLabel((int) project.get(ProjectValues.VERSION),
                         LabelFactory.LabelType.TEXT, false, true),
                 spacerVersion,
                 nextVersionButton(project),
@@ -375,12 +384,6 @@ class MiddlePane {
         return projectVersion;
     }
 
-    /**
-     * Create a checkbox used to sort the project to the beginning.
-     *
-     * @param project the project
-     * @return HBox
-     */
     private HBox focusContainer(Project project) {
         CheckBox focus = new CheckBox();
         focus.setTooltip(new Tooltip("Projekt als erstes anzeigen"));
@@ -397,14 +400,7 @@ class MiddlePane {
         return focusContainer;
     }
 
-    /**
-     * Creates a button to create a new version of the project.
-     *
-     * @param project the project
-     * @return Button
-     */
     private Button nextVersionButton(Project project) {
-        //adding next version of Project
         Button nextVersionButton = new Button("+");
         nextVersionButton.setPadding(new Insets(0));
         nextVersionButton.setOnAction(event -> {
@@ -432,12 +428,6 @@ class MiddlePane {
         return nextVersionButton;
     }
 
-    /**
-     * Create a button to delete the project.
-     *
-     * @param project the project
-     * @return Button
-     */
     private Button deleteProjectButton(Project project) {
         Button deleteProjectButton = new Button("\uD83D\uDDD1");
         deleteProjectButton.setOnAction(event -> {
@@ -448,10 +438,15 @@ class MiddlePane {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
             alert.setTitle("Projekt löschen");
             alert.setHeaderText("Bitte bestätigen:");
-            alert.setContentText("Löschen von Projekt Nr. " + project.getProjectNr() + " Version " + project.getVersion() + "?");
+            alert.setContentText("Löschen von Projekt Nr. "
+                    + project.get(ProjectValues.PROJECT_NR)
+                    + " Version " + project.get(ProjectValues.VERSION) + "?");
             Optional<ButtonType> buttonType = alert.showAndWait();
             if (buttonType.isPresent() && buttonType.get().equals(ButtonType.OK)) {
-                String message = controller.deleteProject(project.getProjectNr(), project.getVersion());
+                String message = controller.deleteProject(
+                        project.get(ProjectValues.PROJECT_NR),
+                        project.get(ProjectValues.VERSION)
+                );
                 ProjectList.refreshProjectList();
 
                 Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -471,14 +466,7 @@ class MiddlePane {
         return deleteProjectButton;
     }
 
-    /**
-     * Create a button to modify the project.
-     *
-     * @param project the project
-     * @return Button
-     */
     private Button modifyProjectButton(Project project) {
-        //Modify-Project-Button, opens a new ProjectInputWindow
         Button modifyProjectButton = new Button("⟲");
         modifyProjectButton.setOnAction(event -> {
             if (!controller.isDatabaseAvailable()) {

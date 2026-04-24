@@ -16,7 +16,8 @@ public class AppLogger {
     private static Logger logger;
     private static LocalDate currentDate;
 
-    private AppLogger() {}
+    private AppLogger() {
+    }
 
     private static synchronized Logger getLogger() {
         LocalDate today = LocalDate.now();

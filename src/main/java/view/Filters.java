@@ -16,6 +16,7 @@ import javafx.scene.layout.HBox;
 import javafx.util.Duration;
 import model.Controller;
 import model.Project;
+import model.ProjectValues;
 import org.controlsfx.control.ToggleSwitch;
 
 class Filters {
@@ -40,7 +41,18 @@ class Filters {
         outerPane.setPadding(new Insets(20, 0, 20, 0));
 
         GridPane filterBox = new GridPane(10, 10);
-        filterBox.getColumnConstraints().addAll(new ColumnConstraints(100), new ColumnConstraints(100), new ColumnConstraints(2), new ColumnConstraints(100), new ColumnConstraints(100), new ColumnConstraints(2), new ColumnConstraints(100), new ColumnConstraints(100), new ColumnConstraints(2), new ColumnConstraints(100), new ColumnConstraints(100));
+        filterBox.getColumnConstraints().addAll(
+                new ColumnConstraints(100),
+                new ColumnConstraints(100),
+                new ColumnConstraints(2),
+                new ColumnConstraints(100),
+                new ColumnConstraints(100),
+                new ColumnConstraints(2),
+                new ColumnConstraints(100),
+                new ColumnConstraints(100),
+                new ColumnConstraints(2),
+                new ColumnConstraints(100),
+                new ColumnConstraints(100));
 
         //filter project number
         TextField filterProjectNr = new TextField();
@@ -51,8 +63,9 @@ class Filters {
 
         //filter project type
         ComboBox<String> projectTypeFilter = new ComboBox<>();
-        ObservableList<String> options = FXCollections.observableArrayList("Alle Gebäudenutzer", "Miete", "Stockwerkeigentum");
-        projectTypeFilter.setItems(options);
+        String[] projectTypes = ProjectValues.PROPERTY_TYPE.getOptions().split("\\|");
+        ObservableList<String> projectTypeList = FXCollections.observableArrayList(projectTypes);
+        projectTypeFilter.setItems(projectTypeList);
         projectTypeFilter.setPromptText("Gebäudenutzer");
         filterBox.add(projectTypeFilter, 0, 1);
         projectTypeFilter.setTooltip(new Tooltip("Nach Gebäudenutzer filtern"));
@@ -60,8 +73,9 @@ class Filters {
 
         //filter construction Type
         ComboBox<String> constructionTypeFilter = new ComboBox<>();
-        ObservableList<String> optionsConstructionType = FXCollections.observableArrayList("Alle Bauvorhaben", "Neubau", "Sanierung", "Umbau", "Anbau", "Ausbau");
-        constructionTypeFilter.setItems(optionsConstructionType);
+        String[] constructionType = ProjectValues.CONSTRUCTION_TYPE.getOptions().split("\\|");
+        ObservableList<String> constructionTypeList = FXCollections.observableArrayList(constructionType);
+        constructionTypeFilter.setItems(constructionTypeList);
         constructionTypeFilter.setPromptText("Bauvorhaben");
         filterBox.add(constructionTypeFilter, 0, 2);
         constructionTypeFilter.setTooltip(new Tooltip("Nach Bauvorhaben Art filtern"));
@@ -107,7 +121,7 @@ class Filters {
         apartmentNrFilter = new RangeFilter(
                 "Wohnungen",
                 "Reset",
-                Project::getApartmentsNr,
+                project -> project.get(ProjectValues.APARTMENTS_NR),
                 controller::getMinApartments,
                 controller::getMaxApartments
         );
@@ -127,7 +141,8 @@ class Filters {
         volumeFilter = new RangeFilter(
                 "Volumen",
                 "Reset",
-                Project::getVolume,
+                project -> (int) project.get(ProjectValues.VOLUME_UNDERGROUND)
+                        + (int) project.get(ProjectValues.VOLUME_ABOVE_GROUND),
                 controller::getMinVolume,
                 controller::getMaxVolume
         );
@@ -170,8 +185,7 @@ class Filters {
     }
 
     /**
-     * used to update the projects
-     *
+     * filter projects
      * @param filterProjectNr        input filter for project number
      * @param versionFilter          input filter for version
      * @param constructionTypeFilter input filter for construction type
@@ -182,7 +196,6 @@ class Filters {
                               ComboBox<String> constructionTypeFilter,
                               ComboBox<String> projectTypeFilter) {
 
-        //predicate methode von claude.ai
         ProjectList.setPredicate(project -> {
             String selectedConstructionType = constructionTypeFilter.getSelectionModel().getSelectedItem();
             String selectedProjectType = projectTypeFilter.getSelectionModel().getSelectedItem();
@@ -198,16 +211,32 @@ class Filters {
                 return matchSumFilter && matchApartmentFilter && matchVolumeFilter;
             }
 
-            boolean matchProjectNrFilter = isEmpty(filterProjectNr) || String.valueOf(project.getProjectNr()).contains(filterProjectNr.getText().toLowerCase());
-            boolean matchConstructionType = selectedConstructionType == null || selectedConstructionType.equals("Alle Bauvorhaben") || String.valueOf(project.getConstructionType()).contains(selectedConstructionType);
-            boolean matchProjectType = selectedProjectType == null || selectedProjectType.equals("Alle Gebäudenutzer") || String.valueOf(project.getPropertyType()).contains(selectedProjectType);
+            int projectNr = project.get(ProjectValues.PROJECT_NR);
+            int version = project.get(ProjectValues.VERSION);
+            String constructionType = project.get(ProjectValues.CONSTRUCTION_TYPE);
+            String propertyType = project.get(ProjectValues.PROPERTY_TYPE);
 
+            boolean matchProjectNrFilter = isEmpty(filterProjectNr)
+                    || String.valueOf(projectNr).contains(filterProjectNr.getText().trim());
+            boolean matchConstructionType = selectedConstructionType == null
+                    || selectedConstructionType.equals("Alle Bauvorhaben")
+                    || constructionType.contains(selectedConstructionType);
+            boolean matchProjectType = selectedProjectType == null
+                    || selectedProjectType.equals("Alle Gebäudenutzer")
+                    || propertyType.contains(selectedProjectType);
 
-            int baseKey = project.getProjectNr() * 100;
-            int currentKey = baseKey + project.getVersion();
-            boolean matchVersionFilter = !versionFilter.isSelected() || ProjectList.getTreeMap().subMap(currentKey + 1, baseKey + 100).isEmpty();
+            int baseKey = projectNr * 100;
+            int currentKey = baseKey + version;
+            boolean matchVersionFilter = !versionFilter.isSelected()
+                    || ProjectList.getTreeMap().subMap(currentKey + 1, baseKey + 100).isEmpty();
 
-            return matchProjectNrFilter && matchVersionFilter && matchVolumeFilter && matchConstructionType && matchProjectType && matchSumFilter && matchApartmentFilter;
+            return matchProjectNrFilter
+                    && matchVersionFilter
+                    && matchVolumeFilter
+                    && matchConstructionType
+                    && matchProjectType
+                    && matchSumFilter
+                    && matchApartmentFilter;
         });
     }
 

@@ -3,6 +3,7 @@ package model;
 public class Calculation {
     String name;
     String calculation;
+
     Calculation(String name, String calculation) {
         this.name = name;
         this.calculation = calculation;
@@ -10,7 +11,7 @@ public class Calculation {
 
     public static final Calculation SEPARATOR = new Calculation("", "");
 
-    public String getName(){
+    public String getName() {
         return name;
     }
 

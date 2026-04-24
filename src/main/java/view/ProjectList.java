@@ -22,16 +22,11 @@ class ProjectList {
     private static final LinkedHashMap<Integer, VBox> cellCache = new LinkedHashMap<>();
     private static Controller controller = null;
 
-
     public ProjectList(Controller controller) {
         ProjectList.controller = controller;
         refreshProjectList();
     }
 
-
-    /**
-     * retrieves the projects from the backend (database) and updates the lists for the UI
-     */
     public static void refreshProjectList() {
         data.clear();
         data.putAll(controller.getProjects());

@@ -1,46 +1,11 @@
 package model;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.sql.*;
-import java.util.*;
+import java.util.TreeMap;
 
 public class Controller {
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private TreeMap<Integer, Project> PROJECTS;
     private StringBuilder STRING_BUILDER = new StringBuilder();
-    private final String[] SQL_PROJECT_DATA = {
-            "project_nr,int",
-            "version,int",
-            "address,string",
-            "plz,int",
-            "location,string",
-            "owner,string",
-            "property_type,string",
-            "construction_type,string",
-            "document_phase,int",
-            "calculation_phase,int",
-            "apartments_nr,int",
-            "bathroom_nr,int",
-            "hnf,int",
-            "gf,int",
-            "parcelsize, int",
-            "landscapedarea, int",
-            "volume_underground,int",
-            "volume_above_ground,int",
-            "facadearea,int",
-            "windowarea,int",
-            "facade_type,string",
-            "window_type,string",
-            "roof_type,string",
-            "heating_type,string",
-            "cooling_type,string",
-            "ventilation_type_apartments,string",
-            "ventilation_type_ug,string",
-            "co_no,string",
-            "special,string",
-            "data,json"
-    };
     private int minTotalCost;
     private int maxTotalCost;
     private int minApartments;
@@ -49,12 +14,10 @@ public class Controller {
     private int averageWindowRatio;
     private int minVolume;
     private int maxVolume;
-    private DB database = new DB();
+    private final DB database = new DB();
 
-
-    public Controller(){
+    public Controller() {
         PROJECTS = new TreeMap<>();
-
         if (!initializeDatabase()) {
             System.err.println("Controller läuft im Offline-Modus");
             return;
@@ -63,25 +26,20 @@ public class Controller {
     }
 
     public boolean initializeDatabase() {
+        if (!isDatabaseAvailable()) {
+            return false;
+        }
         STRING_BUILDER.append("CREATE TABLE IF NOT EXISTS projects(");
 
-        //construct SQL-table based on array SQL_PROJECT_DATA
-        for (String str : SQL_PROJECT_DATA) {
-            String[] parts = str.split(",", 2);
-            STRING_BUILDER.append(parts[0]);
-
-            switch (parts[1]) {
-                case "int":
-                    STRING_BUILDER.append(" INT NOT NULL,");
-                    break;
-                case "string":
-                    STRING_BUILDER.append(" VARCHAR(255) NOT NULL,");
-                    break;
-                case "json":
-                    STRING_BUILDER.append(" JSONB NOT NULL,");
-                    break;
+        for (ProjectValues value : ProjectValues.values()) {
+            STRING_BUILDER.append(value.getSqlColumn());
+            if (value.getType() == Integer.class) {
+                STRING_BUILDER.append(" INT NOT NULL,");
+            } else {
+                STRING_BUILDER.append(" VARCHAR(255) NOT NULL,");
             }
         }
+        STRING_BUILDER.append("data JSONB NOT NULL,");
         STRING_BUILDER.append("active BOOLEAN NOT NULL DEFAULT true, CHECK (project_nr > 9999), PRIMARY KEY(project_nr, version))");
 
         String sql = STRING_BUILDER.toString();
@@ -98,10 +56,6 @@ public class Controller {
         }
     }
 
-    /**
-     * check if DB-connection is available
-     * @return boolean
-     */
     public boolean isDatabaseAvailable() {
         return database.isConnectionAvailable();
     }
@@ -114,53 +68,34 @@ public class Controller {
         return database.connect();
     }
 
-    public boolean testDBConnection() {
-        return database.isConnectionAvailable();
-    }
-
-    /**
-     * Add a new Project to the DB.
-     * @param project an object of type Project is needed
-     */
-    public String addProject(Project project){
+    public String addProject(Project project) {
         if (isDatabaseAvailable()) {
-            return AddProject.add(this, project, SQL_PROJECT_DATA);
-        } else {
-            return "Keine Datenbankverbindung verfügbar. Projekte können nicht hinzugefügt werden.";
+            return AddProject.add(this, project);
         }
+        return "Keine Datenbankverbindung verfügbar. Projekte können nicht hinzugefügt werden.";
     }
 
-    /**
-     * Modify an existing Project in the DB.
-     * @param project an object of type Project is needed
-     */
-    public String modifyProjects(Project project){
+    public String modifyProject(Project project) {
         if (isDatabaseAvailable()) {
             return ModifyProject.modify(this, project);
-        } else {
-            return "Keine Datenbankverbindung verfügbar. Projekte kann nicht geändert werden.";
         }
+        return "Keine Datenbankverbindung verfügbar. Projekte kann nicht geändert werden.";
     }
 
-    /**
-     * This method does delete a project in the DB. This cannot be undone.
-     * @param projectNr the project number of the project to be deleted.
-     * @param version the version number of the project to be deleted.
-     * @return if the project was deleted.
-     */
-    public String deleteProject(int projectNr, int version){
+    public String deleteProject(int projectNr, int version) {
         if (!isDatabaseAvailable()) {
             return "Keine Datenbankverbindung verfügbar. Projekte kann nicht gelöscht werden.";
         }
-        String sql = ("UPDATE projects SET active = false WHERE project_nr = ? AND version = ?");
-        try (Connection conn =  database.connect(); PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        String sql = "UPDATE projects SET active = false WHERE project_nr = ? AND version = ?";
+        try (Connection conn = database.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setInt(1, projectNr);
             pstmt.setInt(2, version);
             int editedRow = pstmt.executeUpdate();
             if (editedRow > 0) {
                 ResultSet rs = pstmt.getGeneratedKeys();
                 if (rs.next()) {
-                    return "Projekt Nr. " + rs.getInt(1) + " version Nr. " + rs.getInt(2) + " wurde entfernt";
+                    return "Projekt Nr. " + rs.getInt(1) + " Version Nr. " + rs.getInt(2) + " wurde entfernt";
                 }
             }
         } catch (SQLException e) {
@@ -170,21 +105,24 @@ public class Controller {
         return "Projekt konnte nicht entfernt werden";
     }
 
-    /**
-     * Returns the project list as TreeMap
-     * Key = project number * 100 + version number.
-     */
     public TreeMap<Integer, Project> getProjects() {
         if (!isDatabaseAvailable()) {
             return PROJECTS;
         }
         PROJECTS = new TreeMap<>();
-        PROJECTS = GetProjects.get(this, SQL_PROJECT_DATA);
+        PROJECTS = GetProjects.get(this);
         return PROJECTS;
     }
 
+    /**
+     * Builds the map key from project_nr and version.
+     * Example: project 10001, version 2 → "10001-2"
+     */
+    public static String buildKey(int projectNr, int version) {
+        return projectNr + "-" + version;
+    }
 
-    public void calculate(){
+    public void calculate() {
         minTotalCost = Integer.MAX_VALUE;
         maxTotalCost = 0;
         minApartments = Integer.MAX_VALUE;
@@ -201,75 +139,55 @@ public class Controller {
 
         for (Project project : PROJECTS.values()) {
             int cost = project.getData().getTotalCost();
-            int apartments = project.getApartmentsNr();
-            int volume = project.getVolume();
-            averageRatioUG += (double) project.getVolumeUnderground() / project.getVolumeAboveGround();
+            int apartments = project.get(ProjectValues.APARTMENTS_NR);
+            int volumeUG = project.get(ProjectValues.VOLUME_UNDERGROUND);
+            int volumeAG = project.get(ProjectValues.VOLUME_ABOVE_GROUND);
+            int volume = volumeUG + volumeAG;
+            int windowArea = project.get(ProjectValues.WINDOW_AREA);
+            int facadeArea = project.get(ProjectValues.FACADE_AREA);
+
+            averageRatioUG += (double) volumeUG / volumeAG;
             minTotalCost = Math.min(cost, minTotalCost);
             maxTotalCost = Math.max(cost, maxTotalCost);
             minApartments = Math.min(apartments, minApartments);
             maxApartments = Math.max(apartments, maxApartments);
-            averageWindowRatio += (int) (((double) project.getWindowArea() / (double) project.getFacadeArea()) * 100);
+            averageWindowRatio += (int) (((double) windowArea / (double) facadeArea) * 100);
             minVolume = Math.min(volume, minVolume);
             maxVolume = Math.max(volume, maxVolume);
         }
         averageRatioUG /= PROJECTS.size();
         averageWindowRatio /= PROJECTS.size();
-
     }
 
-    /**
-     * @return the highest volume of all projects.
-     */
-    public int getMinVolume(){
+    public int getMinVolume() {
         return minVolume;
     }
 
-    /**
-     * @return the lowest volume of all projects.
-     */
-    public int getMaxVolume(){
+    public int getMaxVolume() {
         return maxVolume;
     }
 
-    /**
-     * @return the lowest project total cost of all projects.
-     */
-    public int getMinTotalCost(){
+    public int getMinTotalCost() {
         return minTotalCost;
     }
 
-    /**
-     * @return the highest project total cost of all projects.
-     */
-    public int getMaxTotalCost(){
+    public int getMaxTotalCost() {
         return maxTotalCost;
     }
 
-    /**
-     * @return the lowest number of Apartment of all projects.
-     */
-    public int getMinApartments(){
+    public int getMinApartments() {
         return minApartments;
     }
 
-    /**
-     * @return the highest number of Apartment of all projects.
-     */
-    public int getMaxApartments(){
+    public int getMaxApartments() {
         return maxApartments;
     }
 
-    /**
-     * @return the average ration UG to OG as double.
-     */
-    public double getAverageRatioUG(){
+    public double getAverageRatioUG() {
         return averageRatioUG;
     }
 
-    /**
-     * @return the average window to fassade are ratio for all projects.
-     */
-    public int getAverageWindowRatio(){
+    public int getAverageWindowRatio() {
         return averageWindowRatio;
     }
 
@@ -285,9 +203,7 @@ public class Controller {
         return database.getPassword();
     }
 
-
-    public boolean setDBConfig(String url, String username, String password){
+    public boolean setDBConfig(String url, String username, String password) {
         return database.setConfig(url, username, password);
     }
-
 }

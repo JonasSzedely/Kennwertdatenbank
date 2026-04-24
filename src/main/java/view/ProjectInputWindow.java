@@ -12,14 +12,13 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import model.Controller;
-import model.Project;
 import model.ProjectData;
+import model.Project;
+import model.ProjectValues;
 
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-
+import java.util.EnumMap;
 
 class ProjectInputWindow extends Application {
 
@@ -28,27 +27,20 @@ class ProjectInputWindow extends Application {
     private Project project;
     private Button addButton;
     private boolean addButtonUsed = false;
-    private LinkedHashMap<String, Form> forms;
+    private EnumMap<ProjectValues, Form> forms;
     private ArrayList<FormListener> formListeners;
+    private Form dataPathForm;
+    private FormListener dataPathListener;
     private Stage stage;
-    /**
-     * Creates a new Window that allows to add a project to the Database.
-     * It validates the input before it can be added, and flags wrong inputs in the UI.
-     *
-     * @param controller pass the controller class object.
-     */
+
+    // VERSION is managed internally and never shown in the form
+    private static final ProjectValues[] SKIPPED = {ProjectValues.VERSION};
+
     public ProjectInputWindow(Controller controller, Type type) {
         this.controller = controller;
         this.type = type;
     }
 
-    /**
-     * Creates a new Window that allows to edit a project.
-     * It validates the input before it can be added, and flags wrong inputs in the UI.
-     *
-     * @param controller pass the controller class object.
-     * @param project    the project to be edited.
-     */
     public ProjectInputWindow(Controller controller, Project project, Type type) {
         this.controller = controller;
         this.project = project;
@@ -69,126 +61,109 @@ class ProjectInputWindow extends Application {
         title.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
         switch (type) {
             case NEW -> title.setText("Neues Projekt hinzufügen");
-            case MODIFY ->
-                    title.setText("Projekt Nr. " + project.getProjectNr() + " Version " + project.getVersion() + " bearbeiten");
-            case NEXT -> title.setText("Neue Version von Projekt Nr. " + project.getProjectNr() + " hinzufügen");
+            case MODIFY -> title.setText("Projekt Nr. " + project.get(ProjectValues.PROJECT_NR)
+                    + " Version " + project.get(ProjectValues.VERSION) + " bearbeiten");
+            case NEXT -> title.setText("Neue Version von Projekt Nr. "
+                    + project.get(ProjectValues.PROJECT_NR) + " hinzufügen");
         }
 
         GridPane gridPane = new GridPane(10, 10);
-        gridPane.setPadding(new Insets(20, 20, 20, 20));
+        gridPane.setPadding(new Insets(20));
         gridPane.setAlignment(Pos.CENTER);
-        gridPane.getColumnConstraints().addAll(new ColumnConstraints(150), new ColumnConstraints(200), new ColumnConstraints(150), new ColumnConstraints(150), new ColumnConstraints(200), new ColumnConstraints(150));
-        forms = new LinkedHashMap<>();
+        gridPane.getColumnConstraints().addAll(
+                new ColumnConstraints(150), new ColumnConstraints(200), new ColumnConstraints(150),
+                new ColumnConstraints(150), new ColumnConstraints(200), new ColumnConstraints(150)
+        );
+
+        forms = new EnumMap<>(ProjectValues.class);
         formListeners = new ArrayList<>();
-        /*
-        Each element in the array represents an input field with a description.
-        */
-        addInputNumber("projectNr", "Projekt Nummer", "10000", "Keine gültige Zahl!", 10000, 99999);
-        addInputText("address", "Adresse", "Musterstrasse 5", "Bitte Adresse eingeben!", 22);
-        addInputNumber("plz", "Postleitzahl", "8001", "Keine gültige Zahl!", 1000, 9999);
-        addInputText("location", "Ort", "Zürich", "Bitte Ortschaft eingeben!", 22);
-        addInputText("owner", "Bauherr", "Marcel Muster", "Bitte Name eingeben!", 22);
-        addDropdown("propertyType", "Gebäudenutzungen", "Miete|Stockwerkeigentum|Gewerbe/Industrie|Wohnen+Gewerbe", "Bitte auswählen!");
-        addDropdown("constructionType", "Art des Bauvorhaben", "Neubau|Sanierung|Umbau|Anbau|Ausbau", "Bitte auswählen!");
-        addDropdown("documentPhase", "Planungsstand", "2|31|32|33|41|5", "Bitte auswählen!");
-        addDropdown("calculationPhase", "Gerechnete Phasen ab", "2|31|32|33|41|5", "Bitte auswählen!");
-        addInputNumber("apartmentsNr", "Anzahl Wohnungen", "15", "Keine gültige Zahl!", 1, 2147483647);
-        addInputNumber("bathroomNr", "Anzahl Nasszellen", "33", "Keine gültige Zahl!", 1, 2147483647);
-        addInputNumber("hnf", "HNF inkl. Reduit in m²", "3456", "Keine gültige Zahl!", 1, 2147483647);
-        addInputNumber("gf", "GF in m²", "3456", "Keine gültige Zahl!", 1, 2147483647);
-        addInputNumber("parcelSize", "Grundstücksfläche in m2", "3456", "Keine gültige Zahl!", 1,2147483647);
-        addInputNumber("landscapedArea", "Umgebungsfläche in m2", "3456", "Keine gültige Zahl!", 1,2147483647);
-        addInputNumber("volumeUnderground", "Volumen unterirdisch m³", "3456", "Keine gültige Zahl!", 1, 2147483647);
-        addInputNumber("volumeAboveUnderground", "Volumen überirdisch m³", "4567", "Keine gültige Zahl!", 1, 2147483647);
-        addInputNumber("facadearea", "Fassadenfläche in m²", "12345", "Keine gültige Zahl!", 1, 2147483647);
-        addInputNumber("windowarea", "Fensterfläche in m²", "6789", "Keine gültige Zahl!", 1, 2147483647);
-        addDropdown("facadeType", "Fassade", "AWD-Standard|AWD-Hochwertig|Zweischallen-Mauerwerk|Hinterlüftet-Holz|Hinterlüftete-Stein|Hinterlüftete-Metall", "Bitte auswählen!");
-        addDropdown("windowType", "Fenster", "Kunststoff|Kunststoff-Metall|Metall|Holz|Holz-Metall", "Bitte auswählen!");
-        addDropdown("roofType", "Dach", "Flachdach|Steildach|Flach-Steildach-Kombi", "Bitte auswählen!");
-        addDropdown("heatingType", "Heizung", "Luft-Luft|Luft-Wasser|Erdsonde|Gas|Öl|Pellet|Fernerwärme|Unklar", "Bitte auswählen!");
-        addDropdown("coolingType", "Kühlung", "keine|FreeCooling|Unklar", "Bitte auswählen!");
-        addDropdown("ventilationTypeApartments", "Lüftung Wohnungen", "keine|Abluft|KWL zentral|KWL je Whg|Unklar", "Bitte auswählen!");
-        addDropdown("ventilationTypeUG", "Lüftung UG", "natürlich|Abluft|Zu- & Abluft|Unklar", "Bitte auswählen!");
-        addDropdown("coNO", "CO/NO-Anlage", "Ja|Nein|Unklar", "Bitte auswählen!");
-        addInputText("special", "Spezielles", "Spezielle Projekt Eigenschaften", "Ungültiger Eingabe!", 65);
-        addInputText("dataPath", "BKP Dateipfad", "C:\\Benutzer\\Name\\Downloads\\kv.csv", "Kein gültiger Pfad!", 260);
 
-        //adding the forms to the GridPane
-        List<String> keys = new ArrayList<>(forms.keySet());
-        String midKey = keys.get((keys.size() - 1) / 2);
-        int j = 0, k = 0;
-        for (String name : keys) {
-            if (name.equals(midKey)) {
-                k = 3;
-                j = 0;
-            } else if (name.equals("dataPath")) {
-                k = 0;
+        // Build forms dynamically from enum
+        for (ProjectValues field : ProjectValues.values()) {
+            if (isSkipped(field)) continue;
+
+            if (field.isDropdown()) {
+                forms.put(field, new DropdownForm(field.getLabel(), field.getOptions(), "Bitte auswählen!"));
+                formListeners.add(new FormListener((DropdownForm) forms.get(field)));
+            } else if (field.getType() == Integer.class) {
+                forms.put(field, new InputForm(field.getLabel(), "", "Keine gültige Zahl!"));
+                formListeners.add(new FormListener((InputForm) forms.get(field), field.getMin(), field.getMax()));
+            } else {
+                forms.put(field, new InputForm(field.getLabel(), "", "Bitte Eingabe machen!"));
+                formListeners.add(new FormListener((InputForm) forms.get(field), field.getMax()));
             }
-
-            gridPane.add(forms.get(name).getLabel(), k, j);
-            gridPane.add(forms.get(name).getInputField(), k + 1, j);
-            gridPane.add(forms.get(name).getInvalidLabel(), k + 2, j);
-
-            if (name.equals("dataPath")) {
-                GridPane.setColumnSpan(forms.get(name).getInputField(), 4);
-                GridPane.setColumnIndex(forms.get(name).getInvalidLabel(), 5);
-            }
-            j++;
         }
 
-        //Creates a button to add the new project to the DB.
-        //The button checks whether the input in the form is valid and passes the data to the controller.
+        // DataPath is a UI-only field (not in enum), placed full-width at the bottom
+        dataPathForm = new InputForm("BKP Dateipfad", "C:\\Benutzer\\Name\\Downloads\\kv.csv", "Kein gültiger Pfad!");
+        dataPathListener = new FormListener((InputForm) dataPathForm, 260);
+
+        // Place forms in grid: left half then right half
+        ProjectValues[] keys = forms.keySet().toArray(new ProjectValues[0]);
+        int half = (keys.length + 1) / 2;
+
+        for (int i = 0; i < keys.length; i++) {
+            ProjectValues field = keys[i];
+            Form form = forms.get(field);
+            int col = (i < half) ? 0 : 3;
+            int row = (i < half) ? i : i - half;
+
+            gridPane.add(form.getLabel(), col, row);
+            gridPane.add(form.getInputField(), col + 1, row);
+            gridPane.add(form.getInvalidLabel(), col + 2, row);
+        }
+
+        // DataPath at the bottom, spanning both columns
+        int dataRow = half + 1;
+        gridPane.add(dataPathForm.getLabel(), 0, dataRow);
+        gridPane.add(dataPathForm.getInputField(), 1, dataRow);
+        GridPane.setColumnSpan(dataPathForm.getInputField(), 4);
+        gridPane.add(dataPathForm.getInvalidLabel(), 5, dataRow);
+
+        // Configure button and type-specific behaviour
         addButton = new Button();
 
         switch (type) {
             case NEW -> {
-                //Adding a new Project to the DB
                 addButton.setText("Projekt hinzufügen");
                 addButton.setOnAction(event -> {
                     if (validate()) {
-                        String message = addProject();
-                        confirmationWindow("Projekt hinzugefügt", message);
+                        confirmationWindow("Projekt hinzugefügt", addProject());
                     }
                 });
             }
             case MODIFY -> {
-                //Modifying a Project in the DB
                 addButton.setText("Projekt anpassen");
                 fillFields();
-                forms.get("projectNr").getInputField().setDisable(true);
-                forms.get("dataPath").setInputFieldText("Projekt Kosten können nicht überschrieben werden. Bitte neues Projekt anlegen.");
-                forms.get("dataPath").getInputField().setDisable(true);
-
+                forms.get(ProjectValues.PROJECT_NR).getInputField().setDisable(true);
+                dataPathForm.setInputFieldText("Projektkosten können nicht überschrieben werden. Bitte neue Version anlegen.");
+                dataPathForm.getInputField().setDisable(true);
                 addButton.setOnAction(event -> {
                     if (validate()) {
-                        String message = modifyProject();
-                        confirmationWindow("Projekt angepasst", message);
+                        confirmationWindow("Projekt angepasst", modifyProject());
                     }
                 });
             }
             case NEXT -> {
-                //Adding a new version of the Project to the DB
                 addButton.setText("Neue Version hinzufügen");
                 fillFields();
-                forms.get("projectNr").getInputField().setDisable(true);
-
+                forms.get(ProjectValues.PROJECT_NR).getInputField().setDisable(true);
                 addButton.setOnAction(event -> {
                     if (validate()) {
-                        String message = addProject();
-                        confirmationWindow("Neue Version von Projekt Nr. \" + project.getProjectNr() + \" hinzugefügt", message);
+                        confirmationWindow("Neue Version von Projekt Nr. "
+                                + project.get(ProjectValues.PROJECT_NR) + " hinzugefügt", addProject());
                     }
                 });
             }
         }
 
         addButton.prefWidthProperty().bind(gridPane.widthProperty());
-        gridPane.add(addButton, 0, (forms.size() / 2) + 1);
+        gridPane.add(addButton, 0, dataRow + 1);
         GridPane.setColumnSpan(addButton, 5);
 
         outerPane.getChildren().addAll(title, gridPane);
         Scene scene = new Scene(outerPane);
 
-        //adding CSS to the Scene
         URL cssResource = getClass().getResource("/style.css");
         if (cssResource != null) {
             scene.getStylesheets().add(cssResource.toExternalForm());
@@ -202,132 +177,66 @@ class ProjectInputWindow extends Application {
         stage.showAndWait();
     }
 
-    private void addInputNumber(String name, String label, String placeholder, String error, int min, int max) {
-        forms.put(name, new InputForm(label, placeholder, error));
-        formListeners.add(new FormListener((InputForm) forms.get(name), min, max));
-    }
-
-    private void addInputText(String name, String label, String placeholder, String error, int maxLength) {
-        forms.put(name, new InputForm(label, placeholder, error));
-        formListeners.add(new FormListener((InputForm) forms.get(name), maxLength));
-    }
-
-    private void addDropdown(String name, String label, String options, String error) {
-        forms.put(name, new DropdownForm(label, options, error));
-        formListeners.add(new FormListener((DropdownForm) forms.get(name)));
-    }
-
-    public boolean getAddButtonStatus() {
-        return addButtonUsed;
-    }
-
     private void fillFields() {
-        forms.get("projectNr").setInputFieldText(String.valueOf(project.getProjectNr()));
-        forms.get("address").setInputFieldText(project.getAddress());
-        forms.get("plz").setInputFieldText(String.valueOf(project.getPlz()));
-        forms.get("location").setInputFieldText(project.getLocation());
-        forms.get("owner").setInputFieldText(project.getOwner());
-        forms.get("propertyType").setInputFieldText(project.getPropertyType());
-        forms.get("constructionType").setInputFieldText(project.getConstructionType());
-        forms.get("documentPhase").setInputFieldText(String.valueOf(project.getDocumentPhase()));
-        forms.get("calculationPhase").setInputFieldText(String.valueOf(project.getCalculationPhase()));
-        forms.get("apartmentsNr").setInputFieldText(String.valueOf(project.getApartmentsNr()));
-        forms.get("bathroomNr").setInputFieldText(String.valueOf(project.getBathroomNr()));
-        forms.get("hnf").setInputFieldText(String.valueOf(project.getHnf()));
-        forms.get("gf").setInputFieldText(String.valueOf(project.getGf()));
-        forms.get("parcelSize").setInputFieldText(String.valueOf(project.getParcelSize()));
-        forms.get("landscapedArea").setInputFieldText(String.valueOf(project.getLandscapedArea()));
-        forms.get("volumeUnderground").setInputFieldText(String.valueOf(project.getVolumeUnderground()));
-        forms.get("volumeAboveUnderground").setInputFieldText(String.valueOf(project.getVolumeAboveGround()));
-        forms.get("facadearea").setInputFieldText(String.valueOf(project.getFacadeArea()));
-        forms.get("windowarea").setInputFieldText(String.valueOf(project.getWindowArea()));
-        forms.get("facadeType").setInputFieldText(project.getFacadeType());
-        forms.get("windowType").setInputFieldText(project.getWindowType());
-        forms.get("roofType").setInputFieldText(project.getRoofType());
-        forms.get("heatingType").setInputFieldText(project.getHeatingType());
-        forms.get("coolingType").setInputFieldText(project.getCoolingType());
-        forms.get("ventilationTypeApartments").setInputFieldText(project.getVentilationTypeApartments());
-        forms.get("ventilationTypeUG").setInputFieldText(project.getVentilationTypeUg());
-        forms.get("coNO").setInputFieldText(project.getCoNo());
-        forms.get("special").setInputFieldText(project.getSpecial());
+        for (ProjectValues field : forms.keySet()) {
+            Object value = project.get(field);
+            if (value != null) {
+                forms.get(field).setInputFieldText(String.valueOf(value));
+            }
+        }
     }
 
     private String addProject() {
-        Project project = new Project(
-                Integer.parseInt(forms.get("projectNr").getInput()),
-                1,
-                forms.get("address").getInput(),
-                Integer.parseInt(forms.get("plz").getInput()),
-                forms.get("location").getInput(),
-                forms.get("owner").getInput(),
-                forms.get("propertyType").getInput(),
-                forms.get("constructionType").getInput(),
-                Integer.parseInt(forms.get("documentPhase").getInput()),
-                Integer.parseInt(forms.get("calculationPhase").getInput()),
-                Integer.parseInt(forms.get("apartmentsNr").getInput()),
-                Integer.parseInt(forms.get("bathroomNr").getInput()),
-                Integer.parseInt(forms.get("hnf").getInput()),
-                Integer.parseInt(forms.get("gf").getInput()),
-                Integer.parseInt(forms.get("parcelSize").getInput()),
-                Integer.parseInt(forms.get("landscapedArea").getInput()),
-                Integer.parseInt(forms.get("volumeUnderground").getInput()),
-                Integer.parseInt(forms.get("volumeAboveUnderground").getInput()),
-                Integer.parseInt(forms.get("facadearea").getInput()),
-                Integer.parseInt(forms.get("windowarea").getInput()),
-                forms.get("facadeType").getInput(),
-                forms.get("windowType").getInput(),
-                forms.get("roofType").getInput(),
-                forms.get("heatingType").getInput(),
-                forms.get("coolingType").getInput(),
-                forms.get("ventilationTypeApartments").getInput(),
-                forms.get("ventilationTypeUG").getInput(),
-                forms.get("coNO").getInput(),
-                forms.get("special").getInput(),
-                new ProjectData(forms.get("dataPath").getInput().replaceAll("\"", "").trim())
-        );
-        return controller.addProject(project);
+        Project newProject = new Project();
+        for (ProjectValues field : forms.keySet()) {
+            setFieldOnProject(newProject, field, forms.get(field).getInput());
+        }
+        newProject.set(ProjectValues.VERSION, 1);
+        ProjectData data = new ProjectData();
+        data.set(dataPathForm.getInput().replaceAll("\"", "").trim());
+        newProject.setData(data);
+        return controller.addProject(newProject);
     }
 
     private String modifyProject() {
-        project.setAddress(forms.get("address").getInput());
-        project.setPlz(Integer.parseInt(forms.get("plz").getInput()));
-        project.setLocation(forms.get("location").getInput());
-        project.setOwner(forms.get("owner").getInput());
-        project.setPropertyType(forms.get("propertyType").getInput());
-        project.setConstructionType(forms.get("constructionType").getInput());
-        project.setDocumentPhase(Integer.parseInt(forms.get("documentPhase").getInput()));
-        project.setCalculationPhase(Integer.parseInt(forms.get("calculationPhase").getInput()));
-        project.setApartmentsNr(Integer.parseInt(forms.get("apartmentsNr").getInput()));
-        project.setBathroomNr(Integer.parseInt(forms.get("bathroomNr").getInput()));
-        project.setHnf(Integer.parseInt(forms.get("hnf").getInput()));
-        project.setGf(Integer.parseInt(forms.get("gf").getInput()));
-        project.setParcelSize(Integer.parseInt(forms.get("parcelSize").getInput()));
-        project.setLandscapedArea(Integer.parseInt(forms.get("landscapedArea").getInput()));
-        project.setVolumeUnderground(Integer.parseInt(forms.get("volumeUnderground").getInput()));
-        project.setVolumeAboveGround(Integer.parseInt(forms.get("volumeAboveUnderground").getInput()));
-        project.setFacadeArea(Integer.parseInt(forms.get("facadearea").getInput()));
-        project.setWindowArea(Integer.parseInt(forms.get("windowarea").getInput()));
-        project.setFacadeType(forms.get("facadeType").getInput());
-        project.setWindowType(forms.get("windowType").getInput());
-        project.setRoofType(forms.get("roofType").getInput());
-        project.setHeatingType(forms.get("heatingType").getInput());
-        project.setCoolingType(forms.get("coolingType").getInput());
-        project.setVentilationTypeApartments(forms.get("ventilationTypeApartments").getInput());
-        project.setVentilationTypeUg(forms.get("ventilationTypeUG").getInput());
-        project.setCoNo(forms.get("coNO").getInput());
-        project.setSpecial(forms.get("special").getInput());
+        for (ProjectValues field : forms.keySet()) {
+            if (forms.get(field).getInputField().isDisabled()) continue;
+            setFieldOnProject(project, field, forms.get(field).getInput());
+        }
+        return controller.modifyProject(project);
+    }
 
-        return controller.modifyProjects(project);
+    private void setFieldOnProject(Project target, ProjectValues field, String input) {
+        if (field.getType() == Integer.class) {
+            target.set(field, Integer.parseInt(input));
+        } else {
+            target.set(field, input);
+        }
     }
 
     private boolean validate() {
-        boolean inputIsValid = false;
-        for (FormListener formListener : formListeners) {
-            formListener.validate();
-            inputIsValid = formListener.isValid();
-            formListener.setInvalidLabel(!inputIsValid);
+        boolean allValid = true;
+        for (FormListener listener : formListeners) {
+            listener.validate();
+            boolean valid = listener.isValid();
+            listener.setInvalidLabel(!valid);
+            if (!valid) allValid = false;
         }
-        return inputIsValid;
+        // DataPath is only required when not in MODIFY mode (cost data cannot be changed)
+        if (type != Type.MODIFY) {
+            dataPathListener.validate();
+            boolean valid = dataPathListener.isValid();
+            dataPathListener.setInvalidLabel(!valid);
+            if (!valid) allValid = false;
+        }
+        return allValid;
+    }
+
+    private boolean isSkipped(ProjectValues field) {
+        for (ProjectValues skipped : SKIPPED) {
+            if (field == skipped) return true;
+        }
+        return false;
     }
 
     private void confirmationWindow(String title, String message) {
@@ -338,6 +247,10 @@ class ProjectInputWindow extends Application {
         alert.showAndWait();
         addButtonUsed = true;
         stage.close();
+    }
+
+    public boolean getAddButtonStatus() {
+        return addButtonUsed;
     }
 
     enum Type {
