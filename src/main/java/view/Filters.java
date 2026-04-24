@@ -61,25 +61,29 @@ class Filters {
         filterProjectNr.setTooltip(new Tooltip("Nach Projektnummer filtern"));
         filterProjectNr.getTooltip().setShowDelay(Duration.millis(TOOL_TIP_TIME));
 
+        //filter construction Type
+        ComboBox<String> constructionTypeFilter = new ComboBox<>();
+        String[] constructionType = ProjectValues.CONSTRUCTION_TYPE.getOptions().split("\\|");
+        ObservableList<String> constructionTypeList = FXCollections.observableArrayList(constructionType);
+        constructionTypeList.addFirst("Alle Bauvorhaben");
+        constructionTypeFilter.setItems(constructionTypeList);
+        constructionTypeFilter.setPromptText("Bauvorhaben");
+        filterBox.add(constructionTypeFilter, 0, 2);
+        constructionTypeFilter.setTooltip(new Tooltip("Nach Bauvorhaben Art filtern"));
+        constructionTypeFilter.getTooltip().setShowDelay(Duration.millis(TOOL_TIP_TIME));
+
         //filter project type
         ComboBox<String> projectTypeFilter = new ComboBox<>();
         String[] projectTypes = ProjectValues.PROPERTY_TYPE.getOptions().split("\\|");
         ObservableList<String> projectTypeList = FXCollections.observableArrayList(projectTypes);
+        projectTypeList.addFirst("Alle Gebäudenutzer");
         projectTypeFilter.setItems(projectTypeList);
         projectTypeFilter.setPromptText("Gebäudenutzer");
         filterBox.add(projectTypeFilter, 0, 1);
         projectTypeFilter.setTooltip(new Tooltip("Nach Gebäudenutzer filtern"));
         projectTypeFilter.getTooltip().setShowDelay(Duration.millis(TOOL_TIP_TIME));
 
-        //filter construction Type
-        ComboBox<String> constructionTypeFilter = new ComboBox<>();
-        String[] constructionType = ProjectValues.CONSTRUCTION_TYPE.getOptions().split("\\|");
-        ObservableList<String> constructionTypeList = FXCollections.observableArrayList(constructionType);
-        constructionTypeFilter.setItems(constructionTypeList);
-        constructionTypeFilter.setPromptText("Bauvorhaben");
-        filterBox.add(constructionTypeFilter, 0, 2);
-        constructionTypeFilter.setTooltip(new Tooltip("Nach Bauvorhaben Art filtern"));
-        constructionTypeFilter.getTooltip().setShowDelay(Duration.millis(TOOL_TIP_TIME));
+
 
         Separator verticalLine1 = new Separator(Orientation.VERTICAL);
         filterBox.add(verticalLine1, 2, 0);
