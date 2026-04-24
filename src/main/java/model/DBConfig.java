@@ -3,7 +3,8 @@ package model;
 import java.io.*;
 import java.util.Properties;
 
-public class DBConfig {
+
+class DBConfig {
 
     private static final String PROPERTIES_PATH = System.getProperty("user.dir") + "/db.properties";
     private static final String DEFAULT_URL = "jdbc:postgresql://localhost:5432/kennwertdatenbank";
@@ -12,7 +13,7 @@ public class DBConfig {
 
     private final Properties properties = new Properties();
 
-    public DBConfig() {
+    DBConfig() {
         load();
     }
 

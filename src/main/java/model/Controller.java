@@ -1,6 +1,7 @@
 package model;
 
 import java.sql.*;
+import java.util.HashSet;
 import java.util.TreeMap;
 
 public class Controller {
@@ -22,6 +23,7 @@ public class Controller {
             System.err.println("Controller läuft im Offline-Modus");
             return;
         }
+        checkAndRepairColumns();
         PROJECTS = getProjects();
     }
 
@@ -114,14 +116,6 @@ public class Controller {
         return PROJECTS;
     }
 
-    /**
-     * Builds the map key from project_nr and version.
-     * Example: project 10001, version 2 → "10001-2"
-     */
-    public static String buildKey(int projectNr, int version) {
-        return projectNr + "-" + version;
-    }
-
     public void calculate() {
         minTotalCost = Integer.MAX_VALUE;
         maxTotalCost = 0;
@@ -141,12 +135,12 @@ public class Controller {
             int cost = project.getData().getTotalCost();
             int apartments = project.get(ProjectValues.APARTMENTS_NR);
             int volumeUG = project.get(ProjectValues.VOLUME_UNDERGROUND);
-            int volumeAG = project.get(ProjectValues.VOLUME_ABOVE_GROUND);
-            int volume = volumeUG + volumeAG;
+            int volumeOG = project.get(ProjectValues.VOLUME_ABOVE_GROUND);
+            int volume = volumeUG + volumeOG;
             int windowArea = project.get(ProjectValues.WINDOW_AREA);
             int facadeArea = project.get(ProjectValues.FACADE_AREA);
 
-            averageRatioUG += (double) volumeUG / volumeAG;
+            averageRatioUG += (double) volumeUG / volumeOG;
             minTotalCost = Math.min(cost, minTotalCost);
             maxTotalCost = Math.max(cost, maxTotalCost);
             minApartments = Math.min(apartments, minApartments);
@@ -157,6 +151,54 @@ public class Controller {
         }
         averageRatioUG /= PROJECTS.size();
         averageWindowRatio /= PROJECTS.size();
+    }
+
+    public void checkAndRepairColumns() {
+        if (!isDatabaseAvailable()) {
+            System.err.println("Keine DB-Verbindung für Spaltenprüfung.");
+        }
+        HashSet<String> existingColumns = new HashSet<>();
+        try (Connection conn = connectorDB()) {
+            DatabaseMetaData meta = conn.getMetaData();
+
+            try (ResultSet rs = meta.getColumns(null, null, "projects", null)) {
+                while (rs.next()) {
+                    existingColumns.add(rs.getString("COLUMN_NAME"));
+                }
+            }
+
+            for (ProjectValues value : ProjectValues.values()) {
+                String colName = value.getSqlColumn().toLowerCase();
+
+                if (!existingColumns.contains(colName)) {
+                    String defaultVal = value.getType() == Integer.class ? "-1" : "'xyz'";
+                    String colType   = value.getType() == Integer.class ? "INT" : "VARCHAR(255)";
+
+                    String sql = "ALTER TABLE projects ADD COLUMN IF NOT EXISTS "
+                            + colName + " " + colType + " NOT NULL DEFAULT " + defaultVal;
+
+                    try (Statement stmt = conn.createStatement()) {
+                        stmt.executeUpdate(sql);
+                    }
+                }
+            }
+
+            if (!existingColumns.contains("data")){
+                String sql = "ALTER TABLE projects ADD COLUMN IF NOT EXISTS data JSONB NOT NULL DEFAULT '{}'";
+                try (Statement stmt = conn.createStatement()) {
+                    stmt.executeUpdate(sql);
+                }
+            }
+
+            if (!existingColumns.contains("active")){
+                String sql = "ALTER TABLE projects ADD COLUMN IF NOT EXISTS active BOOLEAN NOT NULL DEFAULT true";
+                try (Statement stmt = conn.createStatement()) {
+                    stmt.executeUpdate(sql);
+                }
+            }
+        } catch (SQLException e) {
+            AppLogger.error("Spaltenprüfung fehlgeschlagen: " + e.getMessage());
+        }
     }
 
     public int getMinVolume() {

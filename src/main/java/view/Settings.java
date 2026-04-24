@@ -9,12 +9,9 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import model.Controller;
-import model.DBConfig;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -43,7 +40,10 @@ class Settings {
         dbPasswordInput.setText(controller.getDBPassword());
         AtomicReference<String> newPassword = new AtomicReference<>(controller.getDBPassword());
 
-        dbPasswordInput.textProperty().addListener((observable, oldValue, newValue) -> newPassword.set(newValue));
+        dbPasswordInput.textProperty().addListener(
+                (observable, oldValue, newValue)
+                        -> newPassword.set(newValue)
+        );
 
         Button setSettingsButton = new Button("Einstellungen speichern");
         setSettingsButton.setOnAction(event -> {
@@ -72,7 +72,7 @@ class Settings {
                     dbUsernameInput.getText(),
                     dbPasswordInput.getText()
             );
-            if(dbAvailable){
+            if (dbAvailable) {
                 tryDBConnectionButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white;");
                 tryDBConnectionButton.setText("Verbindung erfolgreich");
             } else {
