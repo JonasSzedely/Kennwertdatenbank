@@ -5,20 +5,21 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.sql.*;
 
-class AddProject {
+class AddProjectService {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     /**
      * This method inserts a new row into the products table.
-     *
      * @param project an object of type Project
      */
     static String add(Controller controller, Project project) {
+        DBService database = new DBService();
+        if (!database.isConnectionAvailable()) {
+            System.err.println("Keine Datenbankverbindung verfügbar.");
+        }
 
-        // Version vor dem INSERT setzen
         project.set(ProjectValues.VERSION, ProjectVersion.get(controller, project.get(ProjectValues.PROJECT_NR)));
 
-        // INSERT SQL aufbauen
         StringBuilder sb = new StringBuilder("INSERT INTO projects(");
         for (ProjectValues value : ProjectValues.values()) {
             sb.append(value.getSqlColumn()).append(",");

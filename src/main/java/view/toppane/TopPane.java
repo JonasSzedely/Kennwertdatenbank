@@ -184,18 +184,15 @@ class TopPane {
                     Stage newStage = StageFactory.createStage("Einstellungen");
                     options.start(newStage);
                     if (options.isSetButtonUsed()) {
-                        //DBConfig.loadProperties();
-                        if (controller.initializeDatabase()) {
-                            ProjectList.refreshProjectList();
-                            Alert success = new Alert(Alert.AlertType.INFORMATION);
-                            success.setTitle("Datenbankverbindung");
-                            success.setHeaderText("Verbindung erfolgreich");
-                            success.setContentText("Die Datenbankverbindung wurde erfolgreich wiederhergestellt.");
-                            success.show();
-                        } else {
-                            ProjectList.refreshProjectList();
-                            DatabaseWarning.show();
-                        }
+                        ProjectList.refreshProjectList();
+                        Alert success = new Alert(Alert.AlertType.INFORMATION);
+                        success.setTitle("Datenbankverbindung");
+                        success.setHeaderText("Verbindung erfolgreich");
+                        success.setContentText("Die Datenbankverbindung wurde erfolgreich wiederhergestellt.");
+                        success.show();
+                    } else {
+                        ProjectList.refreshProjectList();
+                        DatabaseWarning.show();
                     }
                 } catch (Exception e) {
                     throw new RuntimeException(e);

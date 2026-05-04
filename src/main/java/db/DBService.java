@@ -12,12 +12,12 @@ import java.sql.SQLException;
  * code from: https://neon.com/postgresql/postgresql-jdbc/connecting-to-postgresql-database
  */
 
-class DB {
+class DBService {
 
     private final DBConfig config;
     private Boolean connectionAvailableCache = null;
 
-    DB() {
+    DBService() {
         this.config = new DBConfig();
     }
 

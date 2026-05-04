@@ -2,16 +2,18 @@ package model;
 
 import java.sql.*;
 
-class ModifyProject {
+class ModifyProjectService {
 
     public static String modify(Controller controller, Project project) {
+        DBService database = new DBService();
+        if (!database.isConnectionAvailable()) {
+            return ("Keine Datenbankverbindung verfügbar.");
+        }
 
-        // UPDATE SQL dynamisch aufbauen – gleiche Logik wie GetProjects
         StringBuilder sb = new StringBuilder("UPDATE projects SET ");
 
         boolean first = true;
         for (ProjectValues value : ProjectValues.values()) {
-            // PROJECT_NR und VERSION kommen in die WHERE-Klausel, nicht in SET
             if (value == ProjectValues.PROJECT_NR || value == ProjectValues.VERSION) {
                 continue;
             }
@@ -32,7 +34,6 @@ class ModifyProject {
 
             int index = 1;
 
-            // SET-Werte binden
             for (ProjectValues value : ProjectValues.values()) {
                 if (value == ProjectValues.PROJECT_NR || value == ProjectValues.VERSION) {
                     continue;
@@ -40,7 +41,6 @@ class ModifyProject {
                 pstmt.setObject(index++, project.get(value));
             }
 
-            // WHERE-Werte binden
             pstmt.setObject(index++, project.get(ProjectValues.PROJECT_NR));
             pstmt.setObject(index,   project.get(ProjectValues.VERSION));
 

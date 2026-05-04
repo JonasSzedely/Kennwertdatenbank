@@ -11,7 +11,7 @@ import java.sql.Statement;
 import java.util.Map;
 import java.util.TreeMap;
 
-class GetProjects {
+class GetProjectsService {
     private static StringBuilder STRING_BUILDER = new StringBuilder();
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
@@ -21,6 +21,10 @@ class GetProjects {
      * The key is made from project number * 100 + version number.
      */
     public static TreeMap<Integer, Project> get(Controller controller) {
+        DBService database = new DBService();
+        if (!database.isConnectionAvailable()) {
+            System.err.println("Keine Datenbankverbindung verfügbar.");
+        }
 
         TreeMap<Integer, Project> PROJECTS = new TreeMap<>();
 

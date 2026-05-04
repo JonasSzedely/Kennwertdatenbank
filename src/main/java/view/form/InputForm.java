@@ -36,7 +36,6 @@ class InputForm implements Form {
         return validateText;
     }
 
-
     @Override
     public Label getLabel() {
         return label;

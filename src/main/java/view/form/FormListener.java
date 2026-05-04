@@ -1,5 +1,9 @@
 package view;
 
+import view.form.DropdownForm;
+import view.form.Form;
+import view.form.InputForm;
+
 import java.util.regex.Pattern;
 
 import static view.FormListener.Type.*;
@@ -120,7 +124,7 @@ class FormListener {
                 isValid = !(form.getInput().isEmpty()
                         || form.getInput().length() > max
                         || form.getInput().length() < min
-                        || !Pattern.compile(format).matcher(form.getInput()).find()); //Pattern matcher from claude.ai
+                        || !Pattern.compile(format).matcher(form.getInput()).find());
                 if (form.getInput().length() > max) {
                     form.getInvalidLabel().setText("Maximal " + max + " Zeichen (" + characters + ")");
                 } else if (!Pattern.compile(format).matcher(form.getInput()).find()) {
