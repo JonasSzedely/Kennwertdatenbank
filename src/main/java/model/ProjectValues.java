@@ -7,7 +7,7 @@ public enum ProjectValues {
     PLZ("plz", "PLZ", Integer.class, "", 1000, 9999),
     LOCATION("location", "Ort", String.class, "", 1, 22),
     OWNER("owner", "Eigentümer", String.class, "", 1, 22),
-    PROPERTY_TYPE("property_type", "Liegenschaftsart", String.class, "Miete|Stockwerkeigentum|Gewerbe/Industrie|Wohnen+Gewerbe", 0, 0),
+    PROPERTY_TYPE("property_type", "Nutzung", String.class, "Miete|Stockwerkeigentum|Gewerbe/Industrie|Wohnen+Gewerbe", 0, 0),
     CONSTRUCTION_TYPE("construction_type", "Bauart", String.class, "Neubau|Sanierung|Umbau|Anbau|Ausbau", 0, 0),
     DOCUMENT_PHASE("document_phase", "Planungsphase", Integer.class, "2|31|32|33|41|5", 0, 0),
     CALCULATION_PHASE("calculation_phase", "Kalkulationsphase", Integer.class, "2|31|32|33|41|5", 0, 0),
@@ -26,7 +26,7 @@ public enum ProjectValues {
     ROOF_TYPE("roof_type", "Dach", String.class, "Flachdach|Steildach|Flach-Steildach-Kombi", 0, 0),
     HEATING_TYPE("heating_type", "Heizung", String.class, "Luft-Luft|Luft-Wasser|Erdsonde|Gas|Öl|Pellet|Fernwärme|Unklar", 0, 0),
     COOLING_TYPE("cooling_type", "Kühlung", String.class, "keine|FreeCooling|Unklar", 0, 0),
-    VENTILATION_TYPE_APARTMENTS("ventilation_type_apartments", "Lüftung Wohnungen", String.class, "keine|Abluft|KWL zentral|KWL je Whg|Unklar", 0, 0),
+    VENTILATION_TYPE_APARTMENTS("ventilation_type_apartments", "Lüftung Wohnungen", String.class, "keine|Abluft|KWL zentral|KWL je WHG|Unklar", 0, 0),
     VENTILATION_TYPE_UG("ventilation_type_ug", "Lüftung UG", String.class, "natürlich|Abluft|Zu- & Abluft|Unklar", 0, 0),
     CO_NO("co_no", "CO/NO-Anlage", String.class, "Ja|Nein|Unklar", 0, 0),
     SPECIAL("special", "Spezielles", String.class, "", 1, 65);

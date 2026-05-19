@@ -1,11 +1,13 @@
-package model;
+package services;
+
+import model.AppLogger;
+import db.DBConnection;
 
 import java.sql.*;
 
-public class DeleteProjectService {
+class DeleteProjectService {
 
-    static String delete(int projectNr, int version) {
-        DBService database = new DBService();
+    static String delete(int projectNr, int version, DBConnection database) {
         if (!database.isConnectionAvailable()) {
             return ("Keine Datenbankverbindung verfügbar.");
         }

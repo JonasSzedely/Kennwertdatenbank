@@ -19,10 +19,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class PDFCreator {
-
-    private SortedList<Project> sortedProjects;
-    private boolean addButtonUsed = false;
+public class CreatePDF {
 
     private final Color HEADER_COLOR = Color.decode("#052048");
     private final float HEADER_HEIGHT = 60f;
@@ -32,22 +29,19 @@ public class PDFCreator {
     private final float CELL_HEIGHT = 15f;
     private final float SPECIAL_CELL_HEIGHT = 30f;
     private final int LABEL_PADDING = 3;
-    private int MAX_PROJECTS_TO_EXPORT = 8;
+    private final int MAX_PROJECTS_TO_EXPORT = 8;
 
     private String title;
-    private String path;
     private Image logo;
     private final float PADDING = 20f;
     private final float TITLE_HEIGHT = 14f;
     private final float TITLE_OFFSET = 0.3f;
 
-    public PDFCreator() {
+    public CreatePDF() {
     }
 
     public String create(SortedList<Project> sortedProjects, String title, String path) {
-        this.sortedProjects = sortedProjects;
         this.title = title;
-        this.path = path;
         Document document = new Document(PageSize.A3);
         document.setMargins(20, 20, HEADER_HEIGHT + 20, 40);
 

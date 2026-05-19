@@ -1,6 +1,7 @@
-package view;
+package view.middlepane;
 
-import javafx.animation.PauseTransition;
+import api.DataService;
+import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -8,11 +9,17 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import model.*;
+import model.Calculation;
+import model.Project;
+import model.ProjectCalculations;
+import model.ProjectValues;
+import view.ProjectInputWindow;
+import view.ProjectList;
+import view.StageFactory;
 
 import java.util.*;
 
-class MiddlePane {
+public class MiddlePane {
     private static final int MAX_CACHE_SIZE = 50;
 
     // Handled by dedicated projectHead() / projectVersion() rows
@@ -28,8 +35,8 @@ class MiddlePane {
             ProjectValues.VOLUME_ABOVE_GROUND
     };
 
-    private final Controller controller;
-    private final LinkedHashMap<Integer, VBox> cellCache = new LinkedHashMap<>();
+    private final DataService service;
+    private final LinkedHashMap<Project, VBox> cellCache = new LinkedHashMap<>();
     private final double CELL_WIDTH = 150;
     private final double CELL_HEIGHT = 30;
     private final double CELL_GAP = 0;
@@ -41,17 +48,16 @@ class MiddlePane {
     private HBox projectsContainer;
     private VBox rowLabels;
 
-    MiddlePane(Controller controller) {
-        this.controller = controller;
+    public MiddlePane(DataService service) {
+        this.service = service;
         this.labelFactory = new LabelFactory(CELL_HEIGHT, CELL_WIDTH);
     }
 
-    HBox get() {
+    public HBox get() {
         HBox middlePane = new HBox();
         VBox.setVgrow(middlePane, Priority.ALWAYS);
         middlePane.setId("middle-pane");
 
-        //ProjectList.refreshProjectList();
         updateSorting();
 
         ScrollPane leftScroll = new ScrollPane();
@@ -87,22 +93,29 @@ class MiddlePane {
         rightScroll.hvalueProperty().addListener(observable -> updateVisibleCells());
         rightScroll.widthProperty().addListener(observable -> updateVisibleCells());
 
+
         ProjectList.getSortedProjects().addListener((ListChangeListener<Project>) change -> {
             double totalWidth = ProjectList.getSortedProjects().size() * (CELL_WIDTH + CELL_GAP);
             totalWidthSpacer.setPrefWidth(totalWidth);
             totalWidthSpacer.setMinWidth(totalWidth);
-            cellCache.clear();
+
+            while (change.next()) {
+                if (change.wasAdded() || change.wasRemoved()) {
+                    cellCache.clear();
+                    break;
+                }
+            }
             updateVisibleCells();
         });
 
         VBox middleRightPane = new VBox(10);
         middleRightPane.setAlignment(Pos.TOP_RIGHT);
         middleRightPane.setMinWidth(250);
-        middleRightPane.getChildren().add(statistics());
+        middleRightPane.getChildren().add(new Statistics().get());
         middleRightPane.setStyle("-fx-border-color: lightgray; -fx-border-width: 1 1 1 1;");
 
         middlePane.getChildren().addAll(leftScroll, rightScroll, middleRightPane);
-        //ProjectList.refreshProjectList();
+
         return middlePane;
     }
 
@@ -113,7 +126,7 @@ class MiddlePane {
             fillRowLabels();
         });
 
-        // Einmalig beim Start befüllen
+        // fill at start
         fillRowLabels();
 
         return rowLabels;
@@ -122,7 +135,9 @@ class MiddlePane {
     private void fillRowLabels() {
         rowLabels.getChildren().clear();
 
-        if (ProjectList.getProjectList().isEmpty()) return;
+        if (ProjectList.getProjectList().isEmpty()) {
+            return;
+        }
 
         for (ProjectValues field : HEAD_FIELDS) {
             rowLabels.getChildren().add(
@@ -133,7 +148,6 @@ class MiddlePane {
         for (ProjectValues field : ProjectValues.values()) {
             if (isHeadField(field) || isSkippedField(field)) continue;
 
-            // Immer TEXT — Labels sind immer Strings, nie Numbers
             LabelFactory.LabelType labelType = (field == ProjectValues.SPECIAL)
                     ? LabelFactory.LabelType.TALL
                     : LabelFactory.LabelType.TEXT;
@@ -166,38 +180,6 @@ class MiddlePane {
         rowLabels.getChildren().add(noScroll);
     }
 
-    private HBox statistics() {
-        HBox outerPane = new HBox(10);
-        outerPane.setPadding(new Insets(10));
-        GridPane grid = new GridPane(10, 10);
-        grid.getColumnConstraints().add(new ColumnConstraints(150));
-
-        Label statisticsTitel = new Label("Statistik");
-        statisticsTitel.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
-        Label nrOfProjects = new Label("Anzahl Projekte:");
-        Label nrOfProjectsValue = new Label(String.valueOf(ProjectList.getProjectList().size()));
-        Label averageRatioUG = new Label("⌀ Verhältnis UG/OG:");
-        Label averageRatioUGValue = new Label(String.format("%.2f", controller.getAverageRatioUG()));
-        Label averageWindowRatio = new Label("⌀ Anteil Fenster/Fassade:");
-        Label averageWindowRatioValue = new Label(controller.getAverageWindowRatio() + " %");
-
-        grid.add(statisticsTitel, 0, 0);
-        grid.add(nrOfProjects, 0, 1);
-        grid.add(nrOfProjectsValue, 1, 1);
-        grid.add(averageRatioUG, 0, 2);
-        grid.add(averageRatioUGValue, 1, 2);
-        grid.add(averageWindowRatio, 0, 3);
-        grid.add(averageWindowRatioValue, 1, 3);
-
-        ProjectList.getProjectList().addListener((ListChangeListener<Project>) change -> {
-            nrOfProjectsValue.setText(String.valueOf(ProjectList.getProjectList().size()));
-            averageRatioUGValue.setText(String.format("%.2f", controller.getAverageRatioUG()));
-        });
-
-        outerPane.getChildren().add(grid);
-        return outerPane;
-    }
-
     private void updateVisibleCells() {
         if (rightScroll == null || projectsContainer == null) return;
 
@@ -222,10 +204,11 @@ class MiddlePane {
         }
 
         for (int i = firstVisible; i <= lastVisible; i++) {
-            VBox cell = cellCache.get(i);
+            Project project = ProjectList.getSortedProjects().get(i);
+            VBox cell = cellCache.get(project); // nach Project statt Index
             if (cell == null) {
-                cell = projectCells(ProjectList.getSortedProjects().get(i));
-                cellCache.put(i, cell);
+                cell = projectCells(project);
+                cellCache.put(project, cell);
                 evictCacheIfNeeded();
             }
             projectsContainer.getChildren().add(cell);
@@ -238,12 +221,6 @@ class MiddlePane {
         projectBox.setPrefWidth(CELL_WIDTH);
         projectBox.setMaxWidth(CELL_WIDTH);
         projectBox.setStyle("-fx-border-color: lightgray; -fx-border-width: 0 1 0 0;");
-
-        project.pinnedProperty().addListener(observable -> {
-            PauseTransition pause = new PauseTransition(Duration.millis(500));
-            pause.setOnFinished(event -> updateSorting());
-            pause.play();
-        });
 
         // Dedicated head rows for PROJECT_NR and VERSION
         projectBox.getChildren().add(projectHead(project));
@@ -324,7 +301,7 @@ class MiddlePane {
 
     private void evictCacheIfNeeded() {
         while (cellCache.size() > MAX_CACHE_SIZE) {
-            Iterator<Integer> it = cellCache.keySet().iterator();
+            Iterator<Project> it = cellCache.keySet().iterator();
             if (it.hasNext()) {
                 it.next();
                 it.remove();
@@ -386,10 +363,15 @@ class MiddlePane {
 
     private HBox focusContainer(Project project) {
         CheckBox focus = new CheckBox();
+        focus.setSelected(project.isPinned());
         focus.setTooltip(new Tooltip("Projekt als erstes anzeigen"));
         focus.getTooltip().setShowDelay(Duration.millis(TOOL_TIP_TIME));
-        focus.selectedProperty().bindBidirectional(project.pinnedProperty());
         focus.setPadding(new Insets(0));
+
+        focus.selectedProperty().addListener((obs, oldVal, newVal) -> {
+            project.setPinned(newVal);
+            updateSorting();
+        });
 
         HBox focusContainer = new HBox(focus);
         focusContainer.setAlignment(Pos.CENTER);
@@ -403,12 +385,12 @@ class MiddlePane {
     private Button nextVersionButton(Project project) {
         Button nextVersionButton = new Button("+");
         nextVersionButton.setPadding(new Insets(0));
+        service.onDbAvailableChanged(e -> {
+            Platform.runLater(() -> nextVersionButton.setDisable(!service.isDBAvailable()));
+        });
+
         nextVersionButton.setOnAction(event -> {
-            if (!controller.isDatabaseAvailable()) {
-                NoDBConnection.show();
-                return;
-            }
-            ProjectInputWindow nextVersion = new ProjectInputWindow(controller, project, ProjectInputWindow.Type.NEXT);
+            ProjectInputWindow nextVersion = new ProjectInputWindow(service, project, ProjectInputWindow.Type.NEXT);
             try {
                 Stage newStage = StageFactory.createStage("Neue Version");
                 nextVersion.start(newStage);
@@ -430,11 +412,11 @@ class MiddlePane {
 
     private Button deleteProjectButton(Project project) {
         Button deleteProjectButton = new Button("\uD83D\uDDD1");
+        service.onDbAvailableChanged(e -> {
+            Platform.runLater(() -> deleteProjectButton.setDisable(!service.isDBAvailable()));
+        });
+
         deleteProjectButton.setOnAction(event -> {
-            if (!controller.isDatabaseAvailable()) {
-                NoDBConnection.show();
-                return;
-            }
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
             alert.setTitle("Projekt löschen");
             alert.setHeaderText("Bitte bestätigen:");
@@ -443,7 +425,7 @@ class MiddlePane {
                     + " Version " + project.get(ProjectValues.VERSION) + "?");
             Optional<ButtonType> buttonType = alert.showAndWait();
             if (buttonType.isPresent() && buttonType.get().equals(ButtonType.OK)) {
-                String message = controller.deleteProject(
+                String message = service.deleteProject(
                         project.get(ProjectValues.PROJECT_NR),
                         project.get(ProjectValues.VERSION)
                 );
@@ -468,12 +450,12 @@ class MiddlePane {
 
     private Button modifyProjectButton(Project project) {
         Button modifyProjectButton = new Button("⟲");
+        service.onDbAvailableChanged(e -> {
+            Platform.runLater(() -> modifyProjectButton.setDisable(!service.isDBAvailable()));
+        });
+
         modifyProjectButton.setOnAction(event -> {
-            if (!controller.isDatabaseAvailable()) {
-                NoDBConnection.show();
-                return;
-            }
-            ProjectInputWindow modify = new ProjectInputWindow(controller, project, ProjectInputWindow.Type.MODIFY);
+            ProjectInputWindow modify = new ProjectInputWindow(service, project, ProjectInputWindow.Type.MODIFY);
             try {
                 Stage newStage = StageFactory.createStage("Projekt bearbeiten");
                 modify.start(newStage);

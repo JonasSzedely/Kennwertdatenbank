@@ -1,8 +1,10 @@
-package view;
+package view.bottompane;
 
+import api.DataService;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.beans.binding.Bindings;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -16,8 +18,9 @@ import java.time.format.DateTimeFormatter;
 
 public class BottomPane {
 
-    BottomPane() {
-
+    DataService dataService;
+    public BottomPane(DataService dataService) {
+        this.dataService = dataService;
     }
 
     /**
@@ -25,7 +28,7 @@ public class BottomPane {
      *
      * @return HBox
      */
-    HBox get() {
+    public HBox get() {
         HBox bottomPane = new HBox();
         bottomPane.setMinHeight(30);
         bottomPane.setPadding(new Insets(0, 20, 0, 20));
@@ -36,6 +39,22 @@ public class BottomPane {
         Label version = new Label("Version: " + SoftwareVersion.get());
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        Label dbStatus = new Label();
+
+        dataService.onDbAvailableChanged( e -> {
+            if(dataService.isDBAvailable()){
+                dbStatus.textProperty().set("● Datenbank verbunden");
+                dbStatus.styleProperty().set("-fx-text-fill: #00c853;");
+            } else {
+                dbStatus.textProperty().set("● Keine Datenbankverbindung");
+                dbStatus.styleProperty().set("-fx-text-fill: #ff1744;");
+            }
+        });
+
+        Region spacer2 = new Region();
+        spacer2.setMaxWidth(20);
+        spacer2.setPrefWidth(20);
 
         Label dateTimeLabel = new Label();
         dateTimeLabel.setAlignment(Pos.CENTER);
@@ -48,7 +67,7 @@ public class BottomPane {
         timeline.play();
         dateTimeLabel.setText(ZonedDateTime.now().format(formatter));
 
-        bottomPane.getChildren().addAll(version, spacer, dateTimeLabel);
+        bottomPane.getChildren().addAll(version, spacer, dbStatus, spacer2, dateTimeLabel);
         return bottomPane;
     }
 }

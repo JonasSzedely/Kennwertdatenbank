@@ -1,4 +1,6 @@
-package model;
+package db;
+
+import model.AppLogger;
 
 import java.io.*;
 import java.util.Properties;

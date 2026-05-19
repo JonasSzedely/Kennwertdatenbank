@@ -1,15 +1,11 @@
-package view;
-
-import view.form.DropdownForm;
-import view.form.Form;
-import view.form.InputForm;
+package view.form;
 
 import java.util.regex.Pattern;
 
-import static view.FormListener.Type.*;
+import static view.form.FormListener.Type.*;
 
 
-class FormListener {
+public class FormListener {
 
     private final Form form;
     private final Type type;

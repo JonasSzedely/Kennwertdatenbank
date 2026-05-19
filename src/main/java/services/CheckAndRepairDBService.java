@@ -1,13 +1,16 @@
-package model;
+package services;
+
+import db.DBConnection;
+import model.AppLogger;
+import model.ProjectValues;
 
 import java.sql.*;
 import java.util.HashSet;
 
 
-class CheckAndRepairDB {
+class CheckAndRepairDBService {
 
-    static String check() {
-        DBService database = new DBService();
+    static String check(DBConnection database) {
         if (!database.isConnectionAvailable()) {
             return ("Keine Datenbankverbindung verfügbar.");
         }

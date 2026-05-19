@@ -6,19 +6,19 @@ This Programm can be used to import projects from "Messerli Bauadministration" a
 <ins>Installation</ins>  
 1. Install your PostgreSQL18 Server.
 2. Create a database on your server.
-3. Run the software, go to Settings and enter the DB credentials.
-4. The software will create the DB setup.
+3. Run the software, go to Settings and enter the db credentials.
+4. The software will create the db setup.
 
 <ins>Roadmap</ins>  
 Several Features could be implemented in the Future, some of them are listed bellow:
-~~- Option to export PDFs~~
-~~- Option to export excel~~
-- Backend RestApi to enhance security for the SQL server.
+🗸 Option to export PDFs
+🗸 Option to export excel
 - Option to show difference to a target project.
-- Option to create/add new calculations in the UI.
+- Backend REST API to enhance security for the SQL server.
 - Frontend as a website or rebuilt in a modern framework.
+- Option to create/add new calculations in the UI.
 
-<ins>Authors and acknowledgment</ins>  
+<ins>Authors</ins>  
 Jonas Szedely
 
 <ins>License</ins>

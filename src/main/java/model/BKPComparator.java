@@ -2,7 +2,7 @@ package model;
 
 import java.util.Comparator;
 
-class BKPComparator implements Comparator<Integer> {
+public class BKPComparator implements Comparator<Integer> {
 
     @Override
     public int compare(Integer d1, Integer d2) {

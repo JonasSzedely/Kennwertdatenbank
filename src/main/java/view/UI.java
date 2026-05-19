@@ -11,12 +11,16 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import model.AppLogger;
-import model.Controller;
+import services.KWDControllerService;
+import view.bottompane.BottomPane;
+import view.middlepane.MiddlePane;
+import view.toppane.TopPane;
 
 import java.net.URL;
 
-
 public class UI extends Application {
+    KWDControllerService service;
+
     @Override
     public void start(Stage primaryStage) {
 
@@ -28,15 +32,16 @@ public class UI extends Application {
         primaryStage.show();
 
         try {
-            Controller controller = new Controller();
-            new ProjectList(controller);
+            service = new KWDControllerService();
+            new ProjectList(service);
+            new UICalculations();
 
             VBox outerPane = new VBox();
             outerPane.setPadding(new Insets(5));
 
-            HBox topPane = new TopPane(controller).get();
-            HBox middlePane = new MiddlePane(controller).get();
-            HBox bottomPane = new BottomPane().get();
+            HBox topPane = new TopPane(service, service).get();
+            HBox middlePane = new MiddlePane(service).get();
+            HBox bottomPane = new BottomPane(service).get();
 
             outerPane.getChildren().addAll(topPane, middlePane, bottomPane);
 
@@ -55,12 +60,25 @@ public class UI extends Application {
             StageFactory.setName(primaryStage, "Kennwertdatenbank");
             primaryStage.setMaximized(true);
 
-            if (!controller.isDatabaseAvailable()) {
+            if (!service.isDBAvailable()) {
                 DatabaseWarning.show();
             }
+
         } catch (Exception e) {
             AppLogger.error(e.getMessage());
         }
+
+        service.onDbAvailableChanged(o -> {
+            if (!service.isDBAvailable()) {
+                DatabaseWarning.show();
+            }
+        });
+
+        service.onDbChanged(o -> {
+            if (service.isDBAvailable()) {
+                ProjectList.refreshProjectList();
+            }
+        });
     }
 
     /**

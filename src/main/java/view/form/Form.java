@@ -1,9 +1,9 @@
-package view;
+package view.form;
 
 import javafx.scene.control.Control;
 import javafx.scene.control.Label;
 
-interface Form {
+public interface Form {
     Label getLabel();
 
     Control getInputField();

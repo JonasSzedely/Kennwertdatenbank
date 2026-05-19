@@ -96,7 +96,6 @@ public class AppLogger {
                     .append(" | ")
                     .append(record.getMessage());
 
-            // Exception-Stacktrace anhängen wenn vorhanden
             if (record.getThrown() != null) {
                 sb.append("\n  Exception: ").append(record.getThrown());
                 for (StackTraceElement el : record.getThrown().getStackTrace()) {

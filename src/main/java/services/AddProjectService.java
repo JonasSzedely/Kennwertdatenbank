@@ -1,7 +1,9 @@
-package model;
+package services;
 
+import db.DBConnection;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import model.*;
 
 import java.sql.*;
 
@@ -12,13 +14,12 @@ class AddProjectService {
      * This method inserts a new row into the products table.
      * @param project an object of type Project
      */
-    static String add(Controller controller, Project project) {
-        DBService database = new DBService();
+    static String add(Project project, DBConnection database) {
         if (!database.isConnectionAvailable()) {
             System.err.println("Keine Datenbankverbindung verfügbar.");
         }
 
-        project.set(ProjectValues.VERSION, ProjectVersion.get(controller, project.get(ProjectValues.PROJECT_NR)));
+        project.set(ProjectValues.VERSION, ProjectVersion.get(project.get(ProjectValues.PROJECT_NR)));
 
         StringBuilder sb = new StringBuilder("INSERT INTO projects(");
         for (ProjectValues value : ProjectValues.values()) {
@@ -30,7 +31,7 @@ class AddProjectService {
 
         String sql = sb.toString();
 
-        try (Connection conn = controller.connectorDB();
+        try (Connection conn = database.connect();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             int index = 1;

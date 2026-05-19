@@ -1,5 +1,6 @@
 package view;
 
+import api.DataService;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -11,18 +12,21 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import model.Controller;
 import model.ProjectData;
 import model.Project;
 import model.ProjectValues;
+import view.form.DropdownForm;
+import view.form.Form;
+import view.form.FormListener;
+import view.form.InputForm;
 
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.EnumMap;
 
-class ProjectInputWindow extends Application {
+public class ProjectInputWindow extends Application {
 
-    private final Controller controller;
+    private final DataService controller;
     private final Type type;
     private Project project;
     private Button addButton;
@@ -33,15 +37,15 @@ class ProjectInputWindow extends Application {
     private FormListener dataPathListener;
     private Stage stage;
 
-    // VERSION is managed internally and never shown in the form
+    // vlaues that can be skipped and will be processed in another way
     private static final ProjectValues[] SKIPPED = {ProjectValues.VERSION};
 
-    public ProjectInputWindow(Controller controller, Type type) {
+    public ProjectInputWindow(DataService controller, Type type) {
         this.controller = controller;
         this.type = type;
     }
 
-    public ProjectInputWindow(Controller controller, Project project, Type type) {
+    public ProjectInputWindow(DataService controller, Project project, Type type) {
         this.controller = controller;
         this.project = project;
         this.type = type;
@@ -253,7 +257,7 @@ class ProjectInputWindow extends Application {
         return addButtonUsed;
     }
 
-    enum Type {
+    public enum Type {
         NEW,
         MODIFY,
         NEXT

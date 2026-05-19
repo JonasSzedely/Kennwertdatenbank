@@ -29,7 +29,7 @@ public class CreateExcel {
         this.filePath = filePath;
     }
 
-    public void export() throws IOException {
+    public void create() throws IOException {
         String fileName = "Kennwertdatenbank_"
                 + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy_HH-mm-ss"))
                 + ".xlsx";

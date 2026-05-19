@@ -1,4 +1,4 @@
-package view;
+package view.toppane;
 
 import javafx.application.Application;
 import javafx.collections.transformation.SortedList;
@@ -15,7 +15,9 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import model.Project;
-import pdf.PDFCreator;
+import view.form.FormListener;
+import view.StageFactory;
+import view.form.*;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -143,7 +145,7 @@ class CreatePDF extends Application {
             if (validate()) {
                 MAX_PROJECTS_TO_EXPORT = Integer.parseInt(forms.get("nOfProj").getInput());
                 String pdfPath = forms.get("path").getInput().replaceAll("\"", "");
-                PDFCreator creator = new PDFCreator();
+                pdf.CreatePDF creator = new pdf.CreatePDF();
                 String message = creator.create(
                         sortedProjects,
                         forms.get("title").getInput(),

@@ -1,5 +1,6 @@
-package view;
+package view.toppane;
 
+import api.DatabaseService;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -8,7 +9,7 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import model.Controller;
+import services.KWDControllerService;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -16,10 +17,10 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
 
 class Settings {
-    private final Controller controller;
+    private final DatabaseService controller;
     private boolean setButtonUsed = false;
 
-    public Settings(Controller controller) {
+    public Settings(DatabaseService controller) {
         this.controller = controller;
     }
 

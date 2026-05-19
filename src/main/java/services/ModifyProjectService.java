@@ -1,11 +1,13 @@
-package model;
+package services;
+
+import db.DBConnection;
+import model.*;
 
 import java.sql.*;
 
 class ModifyProjectService {
 
-    public static String modify(Controller controller, Project project) {
-        DBService database = new DBService();
+    static String modify(Project project, DBConnection database) {
         if (!database.isConnectionAvailable()) {
             return ("Keine Datenbankverbindung verfügbar.");
         }
@@ -29,7 +31,7 @@ class ModifyProjectService {
 
         String sql = sb.toString();
 
-        try (Connection conn = controller.connectorDB();
+        try (Connection conn = database.connect();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             int index = 1;

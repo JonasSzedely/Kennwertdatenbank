@@ -1,4 +1,6 @@
-package model;
+package db;
+
+import model.AppLogger;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -12,16 +14,15 @@ import java.sql.SQLException;
  * code from: https://neon.com/postgresql/postgresql-jdbc/connecting-to-postgresql-database
  */
 
-class DBService {
+public class DBConnection {
 
     private final DBConfig config;
-    private Boolean connectionAvailableCache = null;
 
-    DBService() {
+    public DBConnection() {
         this.config = new DBConfig();
     }
 
-    Connection connect() throws SQLException {
+    public Connection connect() throws SQLException {
         try {
             return DriverManager.getConnection(
                     config.getDbUrl(),
@@ -34,42 +35,35 @@ class DBService {
         }
     }
 
-    boolean isConnectionAvailable() {
-        if (connectionAvailableCache != null) {
-            return connectionAvailableCache;
-        }
+    public boolean isConnectionAvailable() {
         try (Connection conn = connect()) {
-            connectionAvailableCache = conn != null && !conn.isClosed();
+            return conn != null && !conn.isClosed();
         } catch (SQLException e) {
-            connectionAvailableCache = false;
-        }
-        return connectionAvailableCache;
-    }
-
-    boolean isConnectionAvailable(String url, String username, String password) {
-        try (Connection conn = DriverManager.getConnection(url, username, password)) {
-            connectionAvailableCache = conn != null && !conn.isClosed();
-            return connectionAvailableCache;
-        } catch (SQLException e) {
-            connectionAvailableCache = false;
             return false;
         }
     }
 
-    boolean setConfig(String url, String username, String password) {
-        connectionAvailableCache = null;
+    public boolean isConnectionAvailable(String url, String username, String password) {
+        try (Connection conn = DriverManager.getConnection(url, username, password)) {
+            return conn != null && !conn.isClosed();
+        } catch (SQLException e) {
+            return false;
+        }
+    }
+
+    public boolean setConfig(String url, String username, String password) {
         return config.update(url, username, password);
     }
 
-    String getURL() {
+    public String getURL() {
         return config.getDbUrl();
     }
 
-    String getUsername() {
+    public String getUsername() {
         return config.getDbUsername();
     }
 
-    String getPassword() {
+    public String getPassword() {
         return config.getDbPassword();
     }
 }

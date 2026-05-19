@@ -1,9 +1,10 @@
-package view;
+package view.middlepane;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.text.TextAlignment;
+import view.FormatConfig;
 
 class LabelFactory {
     private final double cellHeight;

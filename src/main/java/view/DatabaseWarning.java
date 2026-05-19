@@ -2,7 +2,7 @@ package view;
 
 import javafx.scene.control.Alert;
 
-class DatabaseWarning {
+public class DatabaseWarning {
     public static void show() {
         Alert warning = new Alert(Alert.AlertType.WARNING);
         warning.setTitle("Datenbankverbindung");

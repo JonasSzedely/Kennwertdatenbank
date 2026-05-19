@@ -1,10 +1,10 @@
-package view;
+package view.bottompane;
 
 import java.io.InputStream;
 import java.util.Properties;
 
 class SoftwareVersion {
-    public static String get() {
+    static String get() {
         try (InputStream is = SoftwareVersion.class.getClassLoader().getResourceAsStream("version.properties")) {
             if (is == null) return "unbekannt";
 

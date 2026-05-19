@@ -1,16 +1,18 @@
 package model;
 
+import db.DBConnection;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-class ProjectVersion {
+public class ProjectVersion {
+    public static int get(int projectNr){
+        DBConnection database = new DBConnection();
 
-    public static int get(Controller controller, int projectNr){
-        try (Connection conn = controller.connectorDB();
-             PreparedStatement pstmt = conn.prepareStatement("SELECT MAX(version) FROM projects WHERE project_nr = ?")) {
-
+        try(Connection conn = database.connect();
+            PreparedStatement pstmt = conn.prepareStatement("SELECT MAX(version) FROM projects WHERE " + ProjectValues.PROJECT_NR.getSqlColumn() + " = ?")){
             pstmt.setInt(1, projectNr);
             ResultSet rs = pstmt.executeQuery();
 

@@ -1,4 +1,4 @@
-package view;
+package view.form;
 
 import javafx.scene.control.Control;
 import javafx.scene.control.Label;
@@ -6,7 +6,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.paint.Color;
 
 
-class InputForm implements Form {
+public class InputForm implements Form {
     private final String name;
     private final String example;
     private final String validateText;
@@ -18,7 +18,7 @@ class InputForm implements Form {
         this.name = name;
         this.example = example;
         this.validateText = validateText;
-        this.label = new Label(this.name);
+        this.label = new Label(name);
         this.input = new TextField();
         this.invalid = new Label(this.validateText);
         input.setPromptText(this.example);

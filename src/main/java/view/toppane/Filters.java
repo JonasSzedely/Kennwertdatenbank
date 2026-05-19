@@ -1,5 +1,6 @@
-package view;
+package view.toppane;
 
+import api.DataService;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -14,19 +15,20 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.util.Duration;
-import model.Controller;
 import model.Project;
 import model.ProjectValues;
 import org.controlsfx.control.ToggleSwitch;
+import view.ProjectList;
+import view.UICalculations;
 
 class Filters {
-    private final Controller controller;
+    private final DataService controller;
     private final int TOOL_TIP_TIME = 200;
     private RangeFilter sumFilter;
     private RangeFilter apartmentNrFilter;
     private RangeFilter volumeFilter;
 
-    public Filters(Controller controller) {
+    public Filters(DataService controller) {
         this.controller = controller;
     }
 
@@ -106,8 +108,8 @@ class Filters {
                 "Bausumme",
                 "Reset",
                 project -> project.getData().getTotalCost(),
-                controller::getMinTotalCost,
-                controller::getMaxTotalCost
+                UICalculations::getMinTotalCost,
+                UICalculations::getMaxTotalCost
         );
 
         filterBox.add(sumFilter.getTitelLabel(), 3, 0);
@@ -126,8 +128,8 @@ class Filters {
                 "Wohnungen",
                 "Reset",
                 project -> project.get(ProjectValues.APARTMENTS_NR),
-                controller::getMinApartments,
-                controller::getMaxApartments
+                UICalculations::getMinApartments,
+                UICalculations::getMaxApartments
         );
 
         filterBox.add(apartmentNrFilter.getTitelLabel(), 6, 0);
@@ -147,8 +149,8 @@ class Filters {
                 "Reset",
                 project -> (int) project.get(ProjectValues.VOLUME_UNDERGROUND)
                         + (int) project.get(ProjectValues.VOLUME_ABOVE_GROUND),
-                controller::getMinVolume,
-                controller::getMaxVolume
+                UICalculations::getMinVolume,
+                UICalculations::getMaxVolume
         );
 
         filterBox.add(volumeFilter.getTitelLabel(), 9, 0);
@@ -229,10 +231,8 @@ class Filters {
                     || selectedProjectType.equals("Alle Gebäudenutzer")
                     || propertyType.contains(selectedProjectType);
 
-            int baseKey = projectNr * 100;
-            int currentKey = baseKey + version;
             boolean matchVersionFilter = !versionFilter.isSelected()
-                    || ProjectList.getTreeMap().subMap(currentKey + 1, baseKey + 100).isEmpty();
+                    || ProjectList.isLatestVersion(project);
 
             return matchProjectNrFilter
                     && matchVersionFilter

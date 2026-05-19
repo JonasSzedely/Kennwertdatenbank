@@ -1,4 +1,4 @@
-package view;
+package view.toppane;
 
 import javafx.scene.control.*;
 import javafx.util.Duration;
@@ -6,6 +6,7 @@ import javafx.util.converter.NumberStringConverter;
 import model.AppLogger;
 import model.Project;
 import org.controlsfx.control.RangeSlider;
+import view.FormatConfig;
 
 import java.text.NumberFormat;
 import java.util.function.Function;

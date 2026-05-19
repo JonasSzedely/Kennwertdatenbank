@@ -1,4 +1,4 @@
-package view;
+package view.form;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -9,7 +9,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.paint.Color;
 
 
-class DropdownForm implements Form {
+public class DropdownForm implements Form {
     private final String name;
     private final String validateText;
     private final Label label;

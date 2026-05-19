@@ -1,15 +1,19 @@
-package model;
+package services;
 
+import db.DBConnection;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import model.*;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 class GetProjectsService {
     private static StringBuilder STRING_BUILDER = new StringBuilder();
@@ -20,13 +24,12 @@ class GetProjectsService {
      * It returns them as a TreeMap of Projects.
      * The key is made from project number * 100 + version number.
      */
-    public static TreeMap<Integer, Project> get(Controller controller) {
-        DBService database = new DBService();
+    static TreeSet<Project> get(DBConnection database) {
+        TreeSet<Project> projects = new TreeSet<>();
         if (!database.isConnectionAvailable()) {
             System.err.println("Keine Datenbankverbindung verfügbar.");
+            return projects;
         }
-
-        TreeMap<Integer, Project> PROJECTS = new TreeMap<>();
 
         STRING_BUILDER.append("SELECT ");
         for (int i = 0; i < ProjectValues.values().length; i++) {
@@ -38,7 +41,7 @@ class GetProjectsService {
         String sql = STRING_BUILDER.toString();
         STRING_BUILDER = new StringBuilder();
 
-        try (Connection conn = controller.connectorDB();
+        try (Connection conn = database.connect();
              Statement stmt = conn.createStatement()) {
 
             ResultSet rs = stmt.executeQuery(sql);
@@ -63,10 +66,7 @@ class GetProjectsService {
                     project.set(value, getData(rs, value.getSqlColumn(), value.getType()));
                 }
 
-                int number = project.get(ProjectValues.PROJECT_NR);
-                int version = project.get(ProjectValues.VERSION);
-
-                PROJECTS.put(((number * 100) + version), project);
+                projects.add(project);
             }
         } catch (SQLException e) {
             AppLogger.error("SQL-DB Problem: " + e);
@@ -74,7 +74,7 @@ class GetProjectsService {
             AppLogger.error("JSON Problem: " + e);
             throw new RuntimeException(e);
         }
-        return PROJECTS;
+        return projects;
     }
 
     private static <T> T getData(ResultSet rs, String column, Class<?> type) throws SQLException {

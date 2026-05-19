@@ -1,6 +1,7 @@
-package view;
+package view.toppane;
 
-
+import api.DataService;
+import api.DatabaseService;
 import excel.CreateExcel;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -11,16 +12,19 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.stage.Stage;
-import model.Controller;
+import view.*;
+import view.StageFactory;
 
 import java.io.IOException;
 import java.util.Optional;
 
-class TopPane {
-    private final Controller controller;
+public class TopPane {
+    private final DataService dataService;
+    private final DatabaseService databaseService;
 
-    TopPane(Controller controller) {
-        this.controller = controller;
+    public TopPane(DataService dataService, DatabaseService databaseService) {
+        this.dataService = dataService;
+        this.databaseService = databaseService;
     }
 
     /**
@@ -28,11 +32,13 @@ class TopPane {
      *
      * @return HBox
      */
-    HBox get() {
+    public HBox get() {
         HBox topPane = new HBox();
         topPane.setAlignment(Pos.CENTER);
         topPane.setPadding(new Insets(20));
         topPane.setMinHeight(150);
+        topPane.setPrefHeight(150);
+        topPane.setMaxHeight(150);
         topPane.setStyle("-fx-background-color: #052048; -fx-border-color: lightgray; -fx-border-width: 1 1 0 1;");
         topPane.setId("top-pane");
 
@@ -40,14 +46,14 @@ class TopPane {
         topLeft.setAlignment(Pos.CENTER);
         topLeft.setPadding(new Insets(20, 20, 20, 20));
         topLeft.setMinWidth(150);
-        topPane.setMaxHeight(Double.MAX_VALUE);
+        topLeft.setMaxHeight(Double.MAX_VALUE);
         Label titel = new Label("Kennwert\n    Datenbank");
         titel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold;");
 
         titel.setAlignment(Pos.CENTER);
         topLeft.getChildren().add(titel);
 
-        HBox filters = new Filters(controller).get();
+        HBox filters = new Filters(dataService).get();
         HBox.setHgrow(filters, Priority.ALWAYS);
 
         HBox topRight = new HBox(10);
@@ -67,17 +73,21 @@ class TopPane {
         Button addProjectButton = new Button("Neues Projekt");
         addProjectButton.setMaxWidth(Double.MAX_VALUE);
 
+
         buttonBox.add(pdfButton, 0, 0);
         buttonBox.add(exportButton, 1, 0);
         buttonBox.add(addProjectButton, 0, 1);
         buttonBox.add(optionsButton, 1, 1);
 
+
+        dataService.onDbAvailableChanged(e -> {
+            Platform.runLater(() -> pdfButton.setDisable(!dataService.isDBAvailable()));
+            Platform.runLater(() -> exportButton.setDisable(!dataService.isDBAvailable()));
+            Platform.runLater(() -> addProjectButton.setDisable(!dataService.isDBAvailable()));
+        });
+
         //Event-Handler for pdfButton
         pdfButton.setOnAction(event -> {
-            if (!controller.isDatabaseAvailable()) {
-                NoDBConnection.show();
-                return;
-            }
             CreatePDF newPDF = new CreatePDF(ProjectList.getSortedProjects());
             try {
                 Stage newStage = StageFactory.createStage("PDF erstellen");
@@ -93,10 +103,6 @@ class TopPane {
 
         //Event-Handler for exportButton
         exportButton.setOnAction(event -> {
-            if (!controller.isDatabaseAvailable()) {
-                NoDBConnection.show();
-                return;
-            }
             TextInputDialog dialog = new TextInputDialog();
             dialog.setTitle("Daten exportieren");
             dialog.setHeaderText("Daten exportieren");
@@ -110,7 +116,7 @@ class TopPane {
                 System.out.println(path);
                 CreateExcel newExcel = new CreateExcel(ProjectList.getProjectList(), path);
                 try {
-                    newExcel.export();
+                    newExcel.create();
 
                     Label label = new Label("Daten erfolgreich exportiert.");
 
@@ -130,11 +136,7 @@ class TopPane {
 
         //Event-Handler for addProjectButton
         addProjectButton.setOnAction(event -> {
-            if (!controller.isDatabaseAvailable()) {
-                NoDBConnection.show();
-                return;
-            }
-            ProjectInputWindow addProject = new ProjectInputWindow(controller, ProjectInputWindow.Type.NEW);
+            ProjectInputWindow addProject = new ProjectInputWindow(dataService, ProjectInputWindow.Type.NEW);
             try {
                 Stage newStage = StageFactory.createStage("Neues Projekt");
                 addProject.start(newStage);
@@ -179,7 +181,7 @@ class TopPane {
             }
 
             if (result.get().equals("IMAG")) {
-                Settings options = new Settings(controller);
+                Settings options = new Settings(databaseService);
                 try {
                     Stage newStage = StageFactory.createStage("Einstellungen");
                     options.start(newStage);
@@ -192,7 +194,6 @@ class TopPane {
                         success.show();
                     } else {
                         ProjectList.refreshProjectList();
-                        DatabaseWarning.show();
                     }
                 } catch (Exception e) {
                     throw new RuntimeException(e);
