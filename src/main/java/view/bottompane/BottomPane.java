@@ -42,6 +42,14 @@ public class BottomPane {
 
         Label dbStatus = new Label();
 
+        if(dataService.isDBAvailable()){
+            dbStatus.textProperty().set("● Datenbank verbunden");
+            dbStatus.styleProperty().set("-fx-text-fill: #00c853;");
+        } else {
+            dbStatus.textProperty().set("● Keine Datenbankverbindung");
+            dbStatus.styleProperty().set("-fx-text-fill: #ff1744;");
+        }
+
         dataService.onDbAvailableChanged( e -> {
             if(dataService.isDBAvailable()){
                 dbStatus.textProperty().set("● Datenbank verbunden");
