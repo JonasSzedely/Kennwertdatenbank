@@ -7,12 +7,15 @@
   "main": "index.js",
   "preferGlobal": true,
   "repository": "https://github.com/JonasSzedely/Kennwertdatenbank",
-  "version": "1.1.20",
+  "version": "1.1.21",
   "jdeploy": {
     "jdk": true,
     "javaVersion": "21",
     "jar": "target/Kennwertdatenbank.jar",
     "winAppDir": "AppData\\Local\\Programs\\Kennwertdatenbank",
+    "args": [
+      "-Duser.home=C:\\ProgramData\\Kennwertdatenbank"
+    ],
     "javafx": true,
     "title": "Kennwert Datenbank",
     "singleton": true,
