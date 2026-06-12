@@ -10,10 +10,10 @@ class SoftwareVersion {
 
             Properties props = new Properties();
             props.load(is);
-            return props.getProperty("app.version", "unbekannt");
+            return props.getProperty("app.version", "0.0.0");
         } catch (Exception e) {
             System.err.println("Version konnte nicht gelesen werden: " + e.getMessage());
-            return "unbekannt";
+            return "error";
         }
     }
 }
