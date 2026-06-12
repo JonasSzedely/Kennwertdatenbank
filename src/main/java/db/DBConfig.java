@@ -3,14 +3,17 @@ package db;
 import model.AppLogger;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Properties;
-
 
 class DBConfig {
 
-    private static final String PROPERTIES_PATH = System.getProperty("user.dir") + "/db.properties";
-    private static final String DEFAULT_URL = "jdbc:postgresql://localhost:5432/kennwertdatenbank";
-    private static final String DEFAULT_USERNAME = "postgres";
+    private static final Path CONFIG_DIR = resolveConfigDir();
+    private static final Path PROPERTIES_PATH = CONFIG_DIR.resolve("db.properties");
+
+    private static final String DEFAULT_URL = "jdbc:postgresql://ip/db-name";
+    private static final String DEFAULT_USERNAME = "username";
     private static final String DEFAULT_PASSWORD = "password";
 
     private final Properties properties = new Properties();
@@ -19,8 +22,17 @@ class DBConfig {
         load();
     }
 
+    /** %APPDATA%\Kennwertdatenbank auf Windows, sonst ~/.kennwertdatenbank */
+    private static Path resolveConfigDir() {
+        String appData = System.getenv("APPDATA");
+        if (appData != null && !appData.isBlank()) {
+            return Path.of(appData, "Kennwertdatenbank");
+        }
+        return Path.of(System.getProperty("user.home"), ".kennwertdatenbank");
+    }
+
     private void load() {
-        File file = new File(PROPERTIES_PATH);
+        File file = PROPERTIES_PATH.toFile();
         if (!file.exists()) {
             setDefaults();
             saveToFile(file);
@@ -30,7 +42,6 @@ class DBConfig {
             properties.load(fis);
         } catch (IOException e) {
             AppLogger.error("Error loading db.properties: " + e.getMessage());
-            System.err.println("Fehler beim Laden von db.properties: " + e.getMessage());
             setDefaults();
         }
     }
@@ -42,24 +53,23 @@ class DBConfig {
     }
 
     private boolean saveToFile(File file) {
-        File parent = file.getParentFile();
-        if (parent != null && !parent.exists() && !parent.mkdirs()) {
-            AppLogger.error("Directory could not be created: " + parent);
-            System.err.println("Verzeichnis konnte nicht erstellt werden: " + parent);
+        try {
+            Files.createDirectories(CONFIG_DIR);
+        } catch (IOException e) {
+            AppLogger.error("Config directory could not be created: " + e.getMessage());
             return false;
         }
         try (FileOutputStream fos = new FileOutputStream(file)) {
             properties.store(fos, "Datenbank Konfiguration");
             return true;
         } catch (IOException e) {
-            AppLogger.error("Error when saving db.properties " + e.getMessage());
-            System.err.println("Fehler beim Speichern von db.properties: " + e.getMessage());
+            AppLogger.error("Error when saving db.properties: " + e.getMessage());
             return false;
         }
     }
 
     private boolean save() {
-        return saveToFile(new File(PROPERTIES_PATH));
+        return saveToFile(PROPERTIES_PATH.toFile());
     }
 
     public String getDbUrl() {
@@ -71,13 +81,14 @@ class DBConfig {
     }
 
     public String getDbPassword() {
-        return properties.getProperty("db.password");
+        String pw = PasswordStore.load();
+        return pw != null ? pw : DEFAULT_PASSWORD;
     }
 
     public boolean update(String url, String username, String password) {
         properties.setProperty("db.url", url);
         properties.setProperty("db.username", username);
-        properties.setProperty("db.password", password);
-        return save();
+
+        return save() && PasswordStore.save(password);
     }
 }
