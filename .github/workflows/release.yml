@@ -42,7 +42,7 @@ jobs:
             --app-version "${{ env.VERSION }}" \
             --input staging \
             --main-jar Kennwertdatenbank.jar \
-            --add-modules java.se,jdk.crypto.ec,jdk.unsupported \
+            --runtime-image "$JAVA_HOME"
             --win-shortcut \
             --win-menu \
             --win-dir-chooser \

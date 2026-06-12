@@ -3,6 +3,16 @@
 <ins>Description</ins>  
 This Programm can be used to import projects from "Messerli Bauadministration" and compare them with each other. 
 
+## ⚠️ Upgrading from version 1.x
+
+Version 2.0 uses a new installation system and **cannot update an existing 1.x installation**.
+
+To upgrade:
+1. Uninstall the old version.
+2. Download and run the new installer.
+
+Your data is not affected by this.
+
 <ins>Installation</ins>  
 1. Install your PostgreSQL18 Server.
 2. Create a database on your server.
