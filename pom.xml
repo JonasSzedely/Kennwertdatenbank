@@ -11,13 +11,11 @@
     <name>Kennwertdatenbank</name>
 
     <properties>
-        <revision>1.1.23</revision>
+        <revision>2.0.0</revision> <!-- für lokale builds -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit.version>5.12.1</junit.version>
-        <javafx.version>24.0.1</javafx.version>
-        <launch4j.version>2.5.3</launch4j.version>
-        <maven.compiler.source>21</maven.compiler.source>
-        <maven.compiler.target>21</maven.compiler.target>
+        <javafx.version>25.0.3</javafx.version>
+        <maven.compiler.release>25</maven.compiler.release>
         <mockito.version>5.23.0</mockito.version>
     </properties>
 
@@ -109,8 +107,6 @@
                     <excludes>
                         <exclude>**/model/RandomProjects.java</exclude>
                     </excludes>
-                    <source>21</source>
-                    <target>21</target>
                 </configuration>
             </plugin>
 
@@ -141,7 +137,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.5.0</version>
+                <version>3.6.0</version>
                 <executions>
                     <execution>
                         <phase>package</phase>

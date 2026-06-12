@@ -2,7 +2,7 @@ name: Windows Installer
 
 on:
   push:
-    tags: ['v*']
+    tags: ['v[0-9]+.[0-9]+.[0-9]+']
 
 jobs:
   build:
@@ -16,7 +16,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '21'
+          java-version: '25'
           cache: 'maven'
 
       - name: Version aus Tag extrahieren (v1.2.3 -> 1.2.3)
