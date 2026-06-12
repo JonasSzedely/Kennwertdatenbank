@@ -6,7 +6,7 @@ import javafx.stage.Stage;
 import java.util.Objects;
 
 public class StageFactory {
-    private static final String LOGO_PATH = "/software_logo.png";
+    private static final String LOGO_PATH = "/logo.png";
 
     public static Stage createStage(String title) {
         Stage stage = new Stage();

@@ -4,7 +4,6 @@ import api.DataService;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
-import javafx.beans.binding.Bindings;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -12,6 +11,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.util.Duration;
+import services.SoftwareVersion;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;

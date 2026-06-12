@@ -6,11 +6,12 @@
 
     <groupId>jonas</groupId>
     <artifactId>kennwertdatenbank</artifactId>
-    <version>1.1.22</version>
+    <version>${revision}</version>
     <packaging>jar</packaging>
     <name>Kennwertdatenbank</name>
 
     <properties>
+        <revision>1.1.23</revision>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit.version>5.12.1</junit.version>
         <javafx.version>24.0.1</javafx.version>
@@ -167,6 +168,29 @@
                             </filters>
                             <finalName>Kennwertdatenbank</finalName>
                         </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- löst ${revision} im installierten POM korrekt auf -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <version>1.6.0</version>
+                <configuration>
+                    <updatePomFile>true</updatePomFile>
+                    <flattenMode>resolveCiFriendliesOnly</flattenMode>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>flatten</id>
+                        <phase>process-resources</phase>
+                        <goals><goal>flatten</goal></goals>
+                    </execution>
+                    <execution>
+                        <id>flatten.clean</id>
+                        <phase>clean</phase>
+                        <goals><goal>clean</goal></goals>
                     </execution>
                 </executions>
             </plugin>

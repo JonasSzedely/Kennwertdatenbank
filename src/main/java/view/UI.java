@@ -10,6 +10,7 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 import model.AppLogger;
 import services.KWDControllerService;
+import services.UpdateService;
 import view.bottompane.BottomPane;
 import view.middlepane.MiddlePane;
 import view.toppane.TopPane;
@@ -77,5 +78,7 @@ public class UI extends Application {
                 ProjectList.refreshProjectList();
             }
         });
+
+        UpdateService.checkForUpdatesAsync(getHostServices());
     }
 }
