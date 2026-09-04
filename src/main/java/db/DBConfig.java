@@ -22,7 +22,6 @@ class DBConfig {
         load();
     }
 
-    /** %APPDATA%\Kennwertdatenbank auf Windows, sonst ~/.kennwertdatenbank */
     private static Path resolveConfigDir() {
         String appData = System.getenv("APPDATA");
         if (appData != null && !appData.isBlank()) {
@@ -47,9 +46,9 @@ class DBConfig {
     }
 
     private void setDefaults() {
-        properties.setProperty("db.url", DEFAULT_URL);
-        properties.setProperty("db.username", DEFAULT_USERNAME);
-        properties.setProperty("db.password", DEFAULT_PASSWORD);
+        properties.setProperty("url", DEFAULT_URL);
+        properties.setProperty("username", DEFAULT_USERNAME);
+        properties.setProperty("password", DEFAULT_PASSWORD);
     }
 
     private boolean saveToFile(File file) {
@@ -60,7 +59,7 @@ class DBConfig {
             return false;
         }
         try (FileOutputStream fos = new FileOutputStream(file)) {
-            properties.store(fos, "Datenbank Konfiguration");
+            properties.store(fos, "DB configuration");
             return true;
         } catch (IOException e) {
             AppLogger.error("Error when saving db.properties: " + e.getMessage());
@@ -73,21 +72,21 @@ class DBConfig {
     }
 
     public String getDbUrl() {
-        return properties.getProperty("db.url");
+        return properties.getProperty("url");
     }
 
     public String getDbUsername() {
-        return properties.getProperty("db.username");
+        return properties.getProperty("username");
     }
 
     public String getDbPassword() {
         String pw = PasswordStore.load();
-        return pw != null ? pw : DEFAULT_PASSWORD;
+        return pw != null ? pw : "password";
     }
 
     public boolean update(String url, String username, String password) {
-        properties.setProperty("db.url", url);
-        properties.setProperty("db.username", username);
+        properties.setProperty("url", url);
+        properties.setProperty("username", username);
 
         return save() && PasswordStore.save(password);
     }
