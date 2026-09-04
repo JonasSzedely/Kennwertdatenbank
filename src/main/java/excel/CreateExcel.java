@@ -13,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
@@ -30,8 +31,9 @@ public class CreateExcel {
     }
 
     public void create() throws IOException {
+        ZoneId zone =  ZoneId.systemDefault();
         String fileName = "Kennwertdatenbank_"
-                + LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy_HH-mm-ss"))
+                + LocalDateTime.now(zone).format(DateTimeFormatter.ofPattern("dd-MM-yyyy_HH-mm-ss"))
                 + ".xlsx";
         Path path = Paths.get(filePath).resolve(fileName);
 
