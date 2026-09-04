@@ -205,7 +205,7 @@ public class MiddlePane {
 
         for (int i = firstVisible; i <= lastVisible; i++) {
             Project project = ProjectList.getSortedProjects().get(i);
-            VBox cell = cellCache.get(project); // nach Project statt Index
+            VBox cell = cellCache.get(project);
             if (cell == null) {
                 cell = projectCells(project);
                 cellCache.put(project, cell);
@@ -238,6 +238,11 @@ public class MiddlePane {
                 int phase = project.get(field);
                 projectBox.getChildren().add(
                         labelFactory.getLabel(phase + " - 5", LabelFactory.LabelType.TEXT, true, true)
+                );
+            } else if(field == ProjectValues.PLZ){
+                String text = project.get(field).toString();
+                projectBox.getChildren().add(
+                        labelFactory.getLabel(text, LabelFactory.LabelType.TEXT, true, true)
                 );
             } else if (labelType == LabelFactory.LabelType.NUMBER) {
                 int value = project.get(field);
@@ -280,8 +285,11 @@ public class MiddlePane {
      * SPECIAL uses TALL, numeric fields use NUMBER, everything else TEXT.
      */
     private LabelFactory.LabelType getLabelType(ProjectValues field) {
-        if (field == ProjectValues.SPECIAL) return LabelFactory.LabelType.TALL;
-        if (field.getType() == Integer.class) return LabelFactory.LabelType.NUMBER;
+        if (field == ProjectValues.SPECIAL) {
+            return LabelFactory.LabelType.TALL;
+        } else if (field.getType() == Integer.class) {
+            return LabelFactory.LabelType.NUMBER;
+        }
         return LabelFactory.LabelType.TEXT;
     }
 
