@@ -13,6 +13,7 @@ import javafx.scene.layout.Region;
 import javafx.util.Duration;
 import services.SoftwareVersion;
 
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -73,7 +74,8 @@ public class BottomPane {
         );
         timeline.setCycleCount(Animation.INDEFINITE);
         timeline.play();
-        dateTimeLabel.setText(ZonedDateTime.now().format(formatter));
+        ZoneId zone =  ZoneId.systemDefault();
+        dateTimeLabel.setText(ZonedDateTime.now(zone).format(formatter));
 
         bottomPane.getChildren().addAll(version, spacer, dbStatus, spacer2, dateTimeLabel);
         return bottomPane;
