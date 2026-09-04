@@ -35,6 +35,7 @@ public class ProjectCalculations {
                 calc("Bausumme exkl. 29", chf(data.getTotalCost()-data.getBKP(29))),
                 calc("BKP 1", chf(data.getBKP(1))),
                 calc("BKP 2", chf(data.getBKP(2))),
+                calc("BKP 2 exkl. 29", chf(data.getBKP(2) - data.getBKP(29))),
                 calc("BKP 211 + 212", chf(data.getBKP(211) + data.getBKP(212))),
                 calc("BKP 23 (o. PV/E-Mob.)", chf(data.getBKP(23) - data.getBKP(2331) - data.getBKP(2332))),
                 calc("BKP 241+242", chf(data.getBKP(241) + data.getBKP(242))),
