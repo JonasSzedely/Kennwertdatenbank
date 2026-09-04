@@ -15,6 +15,9 @@ class DBConfig {
     private static final String DEFAULT_URL = "jdbc:postgresql://ip/db-name";
     private static final String DEFAULT_USERNAME = "username";
     private static final String DEFAULT_PASSWORD = "password";
+    private static final String URL = "db.url";
+    private static final String USERNAME = "db.username";
+    private static final String PASSWORD = "db.password";
 
     private final Properties properties = new Properties();
 
@@ -46,9 +49,9 @@ class DBConfig {
     }
 
     private void setDefaults() {
-        properties.setProperty("url", DEFAULT_URL);
-        properties.setProperty("username", DEFAULT_USERNAME);
-        properties.setProperty("password", DEFAULT_PASSWORD);
+        properties.setProperty(URL, DEFAULT_URL);
+        properties.setProperty(USERNAME, DEFAULT_USERNAME);
+        properties.setProperty(PASSWORD, DEFAULT_PASSWORD);
     }
 
     private boolean saveToFile(File file) {
@@ -59,7 +62,7 @@ class DBConfig {
             return false;
         }
         try (FileOutputStream fos = new FileOutputStream(file)) {
-            properties.store(fos, "DB configuration");
+            properties.store(fos, "Datenbank Konfiguration");
             return true;
         } catch (IOException e) {
             AppLogger.error("Error when saving db.properties: " + e.getMessage());
@@ -72,21 +75,21 @@ class DBConfig {
     }
 
     public String getDbUrl() {
-        return properties.getProperty("url");
+        return properties.getProperty(URL);
     }
 
     public String getDbUsername() {
-        return properties.getProperty("username");
+        return properties.getProperty(USERNAME);
     }
 
     public String getDbPassword() {
         String pw = PasswordStore.load();
-        return pw != null ? pw : "password";
+        return pw != null ? pw : DEFAULT_PASSWORD;
     }
 
     public boolean update(String url, String username, String password) {
-        properties.setProperty("url", url);
-        properties.setProperty("username", username);
+        properties.setProperty(URL, url);
+        properties.setProperty(USERNAME, username);
 
         return save() && PasswordStore.save(password);
     }

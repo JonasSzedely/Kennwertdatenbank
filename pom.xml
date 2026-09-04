@@ -11,7 +11,7 @@
     <name>Kennwertdatenbank</name>
 
     <properties>
-        <revision>2.0.0</revision> <!-- für lokale builds -->
+        <revision>2.0.2</revision> <!-- für lokale builds -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit.version>5.12.1</junit.version>
         <javafx.version>25.0.3</javafx.version>
