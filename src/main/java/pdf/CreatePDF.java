@@ -319,7 +319,6 @@ public class CreatePDF {
 
             } catch (Exception e) {
                 System.err.println("Error in onEndPage: " + e.getMessage());
-                e.printStackTrace();
             }
         }
     }
