@@ -19,7 +19,6 @@ public class UpdateService {
                                 UpdateDialog.show(update, SoftwareVersion.get(), hostServices))
                 );
             } catch (Exception e) {
-                // Kein Internet / Rate-Limit soll den App-Start nicht stören
                 AppLogger.error("Update-Check fehlgeschlagen: " + e.getMessage());
             }
         });

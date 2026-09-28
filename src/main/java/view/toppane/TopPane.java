@@ -80,143 +80,150 @@ public class TopPane {
         buttonBox.add(optionsButton, 1, 1);
 
 
-        dataService.onDbAvailableChanged(e -> {
+        dataService.onDbAvailableChanged(_ -> {
             Platform.runLater(() -> pdfButton.setDisable(!dataService.isDBAvailable()));
             Platform.runLater(() -> exportButton.setDisable(!dataService.isDBAvailable()));
             Platform.runLater(() -> addProjectButton.setDisable(!dataService.isDBAvailable()));
         });
 
         //Event-Handler for pdfButton
-        pdfButton.setOnAction(event -> {
-            CreatePDF newPDF = new CreatePDF(ProjectList.getSortedProjects());
-            try {
-                Stage newStage = StageFactory.createStage("PDF erstellen");
-                newPDF.start(newStage);
-            } catch (Exception e) {
-                Alert error = new Alert(Alert.AlertType.ERROR);
-                error.setHeaderText("Fehler beim Öffnen des PDF-Fensters");
-                error.setContentText("Fehler: " + e.getMessage());
-                error.show();
-                throw new RuntimeException(e);
-            }
-        });
+        pdfButton.setOnAction(_ -> pdfButtonEvent());
 
         //Event-Handler for exportButton
-        exportButton.setOnAction(event -> {
-            TextInputDialog dialog = new TextInputDialog();
-            dialog.setTitle("Daten exportieren");
-            dialog.setHeaderText("Daten exportieren");
-            dialog.setContentText("Zielordner für Expor eingeben:");
-            dialog.getEditor().setPromptText("C:\\Users\\Name\\Downloads");
-            Platform.runLater(() -> dialog.getDialogPane().requestFocus()); //needed because focus is set after the dialog is rendered
-            Optional<String> result = dialog.showAndWait();
-
-            if (result.isPresent()) {
-                String path = dialog.getEditor().getText().replaceAll("\"", "");
-                System.out.println(path);
-                CreateExcel newExcel = new CreateExcel(ProjectList.getProjectList(), path);
-                try {
-                    newExcel.create();
-
-                    Label label = new Label("Daten erfolgreich exportiert.");
-
-                    HBox content = new HBox(label);
-                    content.setAlignment(Pos.CENTER_LEFT);
-
-                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                    alert.setTitle("Daten exportieren");
-                    alert.setHeaderText(null);
-                    alert.getDialogPane().setContent(content);
-                    alert.showAndWait();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        });
+        exportButton.setOnAction(_ -> exportButtonEvent());
 
         //Event-Handler for addProjectButton
-        addProjectButton.setOnAction(event -> {
-            ProjectInputWindow addProject = new ProjectInputWindow(dataService, ProjectInputWindow.Type.NEW);
-            try {
-                Stage newStage = StageFactory.createStage("Neues Projekt");
-                addProject.start(newStage);
-                if (addProject.getAddButtonStatus()) {
-                    ProjectList.refreshProjectList();
-                }
-            } catch (Exception e) {
-                Alert error = new Alert(Alert.AlertType.ERROR);
-                error.setHeaderText("Fehler beim Öffnen des Projekt-Fensters");
-                error.setContentText("Fehler: " + e.getMessage());
-                error.show();
-                throw new RuntimeException(e);
-            }
-        });
+        addProjectButton.setOnAction(_ -> addProjectButtonEvent());
 
         //Event-Handler for optionsButton
-        optionsButton.setOnAction(event -> {
-            TextInputDialog settingsPW = new TextInputDialog();
-            settingsPW.setTitle("Einstellung");
-            settingsPW.setHeaderText("Bitte Passwort eingeben");
-            settingsPW.setContentText("Passwort:");
-
-            TextField oldEditor = settingsPW.getEditor();
-            GridPane content = (GridPane) settingsPW.getDialogPane().getContent();
-
-            PasswordField passwordField = new PasswordField();
-            passwordField.setPromptText("Passwort eingeben");
-
-            content.getChildren().remove(oldEditor);
-            content.add(passwordField, 1, 0);
-
-            settingsPW.setResultConverter(dialogButton -> {
-                if (dialogButton == ButtonType.OK) {
-                    return passwordField.getText();
-                }
-                return null;
-            });
-            Optional<String> result = settingsPW.showAndWait();
-
-            if (result.isEmpty()) {
-                return;
-            }
-
-            if (result.get().equals("IMAG")) {
-                Settings options = new Settings(databaseService);
-                try {
-                    Stage newStage = StageFactory.createStage("Einstellungen");
-                    options.start(newStage);
-                    if (options.isSetButtonUsed()) {
-                        ProjectList.refreshProjectList();
-                        Alert success = new Alert(Alert.AlertType.INFORMATION);
-                        success.setTitle("Datenbankverbindung");
-                        success.setHeaderText("Verbindung erfolgreich");
-                        success.setContentText("Die Datenbankverbindung wurde erfolgreich wiederhergestellt.");
-                        success.show();
-                    } else {
-                        ProjectList.refreshProjectList();
-                    }
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-                return;
-            }
-
-            Alert wrongPW = new Alert(Alert.AlertType.CONFIRMATION);
-            wrongPW.setTitle("Einstellungen");
-            wrongPW.setHeaderText("Falsches Passwort");
-            wrongPW.setContentText("Noch einmal versuchen?");
-            Optional<ButtonType> clicked = wrongPW.showAndWait();
-            if (clicked.isPresent() && clicked.get() == ButtonType.OK) {
-                optionsButton.fire();
-            } else {
-                wrongPW.close();
-            }
-
-        });
+        optionsButton.setOnAction(_ -> optionsButtonEvent(optionsButton));
 
         topRight.getChildren().add(buttonBox);
         topPane.getChildren().addAll(topLeft, filters, topRight);
 
         return topPane;
+    }
+
+    private void optionsButtonEvent(Button optionsButton) {
+        TextInputDialog settingsPW = new TextInputDialog();
+        settingsPW.setTitle("Einstellung");
+        settingsPW.setHeaderText("Bitte Passwort eingeben");
+        settingsPW.setContentText("Passwort:");
+
+        TextField oldEditor = settingsPW.getEditor();
+        GridPane content = (GridPane) settingsPW.getDialogPane().getContent();
+
+        PasswordField passwordField = new PasswordField();
+        passwordField.setPromptText("Passwort eingeben");
+
+        content.getChildren().remove(oldEditor);
+        content.add(passwordField, 1, 0);
+
+        settingsPW.setResultConverter(dialogButton -> {
+            if (dialogButton == ButtonType.OK) {
+                return passwordField.getText();
+            }
+            return null;
+        });
+        Optional<String> result = settingsPW.showAndWait();
+
+        if (result.isEmpty()) {
+            return;
+        }
+
+        if (result.get().equals("IMAG")) {
+            Settings options = new Settings(databaseService);
+            try {
+                Stage newStage = StageFactory.createStage("Einstellungen");
+                options.start(newStage);
+                if (options.isSetButtonUsed()) {
+                    ProjectList.refreshProjectList();
+                    Alert success = new Alert(Alert.AlertType.INFORMATION);
+                    success.setTitle("Datenbankverbindung");
+                    success.setHeaderText("Verbindung erfolgreich");
+                    success.setContentText("Die Datenbankverbindung wurde erfolgreich wiederhergestellt.");
+                    success.show();
+                } else {
+                    ProjectList.refreshProjectList();
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            return;
+        }
+
+        Alert wrongPW = new Alert(Alert.AlertType.CONFIRMATION);
+        wrongPW.setTitle("Einstellungen");
+        wrongPW.setHeaderText("Falsches Passwort");
+        wrongPW.setContentText("Noch einmal versuchen?");
+        Optional<ButtonType> clicked = wrongPW.showAndWait();
+        if (clicked.isPresent() && clicked.get() == ButtonType.OK) {
+            optionsButton.fire();
+        } else {
+            wrongPW.close();
+        }
+    }
+
+    private void addProjectButtonEvent() {
+        ProjectInputWindow addProject = new ProjectInputWindow(dataService, ProjectInputWindow.Type.NEW);
+        try {
+            Stage newStage = StageFactory.createStage("Neues Projekt");
+            addProject.start(newStage);
+            if (addProject.getAddButtonStatus()) {
+                ProjectList.refreshProjectList();
+            }
+        } catch (Exception e) {
+            Alert error = new Alert(Alert.AlertType.ERROR);
+            error.setHeaderText("Fehler beim Öffnen des Projekt-Fensters");
+            error.setContentText("Fehler: " + e.getMessage());
+            error.show();
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void exportButtonEvent() {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Daten exportieren");
+        dialog.setHeaderText("Daten exportieren");
+        dialog.setContentText("Zielordner für Expor eingeben:");
+        dialog.getEditor().setPromptText("C:\\Users\\Name\\Downloads");
+        Platform.runLater(() -> dialog.getDialogPane().requestFocus()); //needed because focus is set after the dialog is rendered
+        Optional<String> result = dialog.showAndWait();
+
+        if (result.isPresent()) {
+            String path = dialog.getEditor().getText().replaceAll("\"", "");
+            System.out.println(path);
+            CreateExcel newExcel = new CreateExcel(ProjectList.getProjectList(), path);
+            try {
+                newExcel.create();
+
+                Label label = new Label("Daten erfolgreich exportiert.");
+
+                HBox content = new HBox(label);
+                content.setAlignment(Pos.CENTER_LEFT);
+
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                alert.setTitle("Daten exportieren");
+                alert.setHeaderText(null);
+                alert.getDialogPane().setContent(content);
+                alert.showAndWait();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    private static void pdfButtonEvent() {
+        CreatePDF newPDF = new CreatePDF(ProjectList.getSortedProjects());
+        try {
+            Stage newStage = StageFactory.createStage("PDF erstellen");
+            newPDF.start(newStage);
+        } catch (Exception e) {
+            Alert error = new Alert(Alert.AlertType.ERROR);
+            error.setHeaderText("Fehler beim Öffnen des PDF-Fensters");
+            error.setContentText("Fehler: " + e.getMessage());
+            error.show();
+            throw new RuntimeException(e);
+        }
     }
 }
