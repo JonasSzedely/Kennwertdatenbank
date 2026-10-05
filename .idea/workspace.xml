@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="7718e9c4-0896-4b69-990f-4cd6e334e0d2" name="Changes" comment="setup of the project&#10;- split the project in two, desktop and backend&#10;- backend is configured for springboot&#10;- added a basic rest api and sql connection">
+      <change afterPath="$PROJECT_DIR$/.idea/Kennwertdatenbank.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/httpRequests/2026-10-02T175743.200.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/httpRequests/2026-10-02T175748.200.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/httpRequests/2026-10-02T175751.200.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/httpRequests/2026-10-02T175755.200.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/httpRequests/http-client.cookies" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/httpRequests/http-requests-log.http" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/.gitattributes" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/.mvn/wrapper/maven-wrapper.properties" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/mvnw" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/mvnw.cmd" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/pom.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/backend/KennwertdatenbankApplication.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/backend/controller/ProjectController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/backend/controller/ProjectCostController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/backend/exception/NotFoundException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/backend/model/Project.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/backend/model/ProjectCost.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/backend/model/ProjectCostId.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/backend/model/ProjectId.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/backend/repository/ProjectCostRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/backend/repository/ProjectRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/backend/request.http" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/backend/service/ProjectCostService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/java/backend/service/ProjectService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/main/resources/application.properties" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backend/src/test/java/backend/KennwertdatenbankApplicationTests.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.flattened-pom.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kennwertdatenbank.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mvnw" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/mvnw" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mvnw.cmd" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/mvnw.cmd" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/api/DataService.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/api/DataService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/api/DatabaseService.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/api/DatabaseService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/db/DBConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/db/DBConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/db/DBConnection.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/db/DBConnection.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/db/PasswordStore.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/db/PasswordStore.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/excel/CreateExcel.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/excel/CreateExcel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/model/AppLogger.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/model/AppLogger.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/model/BKPComparator.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/model/BKPComparator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/model/Calculation.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/model/Calculation.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/model/Project.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/model/Project.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/model/ProjectCalculations.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/model/ProjectCalculations.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/model/ProjectData.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/model/ProjectData.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/model/ProjectValues.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/model/ProjectValues.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/model/ProjectVersion.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/model/ProjectVersion.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/pdf/CreatePDF.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/pdf/CreatePDF.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/services/AddProjectService.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/services/AddProjectService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/services/CheckAndRepairDBService.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/services/CheckAndRepairDBService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/services/DBCheckerService.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/services/DBCheckerService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/services/DeleteProjectService.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/services/DeleteProjectService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/services/GetProjectsService.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/services/GetProjectsService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/services/InitializeDBService.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/services/InitializeDBService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/services/KWDControllerService.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/services/KWDControllerService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/services/ModifyProjectService.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/services/ModifyProjectService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/services/ProjectCountService.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/services/ProjectCountService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/services/SoftwareVersion.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/services/SoftwareVersion.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/services/UpdateChecker.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/services/UpdateChecker.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/services/UpdateService.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/services/UpdateService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/view/DatabaseWarning.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/view/DatabaseWarning.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/view/FormatConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/view/FormatConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/view/ProjectInputWindow.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/view/ProjectInputWindow.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/view/ProjectList.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/view/ProjectList.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/view/SplashScreen.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/view/SplashScreen.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/view/StageFactory.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/view/StageFactory.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/view/UI.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/view/UI.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/view/UICalculations.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/view/UICalculations.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/view/UpdateDialog.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/view/UpdateDialog.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/view/bottompane/BottomPane.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/view/bottompane/BottomPane.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/view/form/DropdownForm.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/view/form/DropdownForm.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/view/form/Form.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/view/form/Form.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/view/form/FormListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/view/form/FormListener.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/view/form/InputForm.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/view/form/InputForm.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/view/middlepane/LabelFactory.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/view/middlepane/LabelFactory.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/view/middlepane/MiddlePane.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/view/middlepane/MiddlePane.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/view/middlepane/Statistics.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/view/middlepane/Statistics.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/view/toppane/CreatePDF.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/view/toppane/CreatePDF.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/view/toppane/Filters.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/view/toppane/Filters.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/view/toppane/RangeFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/view/toppane/RangeFilter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/view/toppane/Settings.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/view/toppane/Settings.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/view/toppane/TopPane.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/java/view/toppane/TopPane.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/imag_logo_cropped.png" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/resources/imag_logo_cropped.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/logo.ico" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/resources/logo.ico" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/logo.png" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/resources/logo.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/resources/style.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/version.properties" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/main/resources/version.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/model/CalculationTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/test/java/model/CalculationTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/model/ProjectTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/desktop/src/test/java/model/ProjectTest.java" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Interface" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="master" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 8
+}</component>
+  <component name="ProjectId" id="3K8zyLtYUInl1PTJfH9ciPBaahr" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;HTTP Request.request | All projects.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.request | Costs of one project.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.request | Replace costs.executor&quot;: &quot;Run&quot;,
+    &quot;HTTP Request.request | Total cost.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
+    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
+    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
+    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;Spring Boot.KennwertdatenbankApplication.executor&quot;: &quot;Run&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;backend&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/Jonas/Documents/Java/Kennwertdatenbank&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RunManager" selected="Spring Boot.KennwertdatenbankApplication">
+    <configuration name="request | All projects" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/java/backend/request.http" executionIdentifier="All projects" runType="Run single request">
+      <method v="2" />
+    </configuration>
+    <configuration name="request | Costs of one project" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/java/backend/request.http" executionIdentifier="Costs of one project" index="2" runType="Run single request">
+      <method v="2" />
+    </configuration>
+    <configuration name="request | Replace costs" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/java/backend/request.http" executionIdentifier="Replace costs" index="4" runType="Run single request">
+      <method v="2" />
+    </configuration>
+    <configuration name="request | Total cost" type="HttpClient.HttpRequestRunConfigurationType" factoryName="HTTP Request" temporary="true" nameIsGenerated="true" path="$PROJECT_DIR$/backend/src/main/java/backend/request.http" executionIdentifier="Total cost" index="3" runType="Run single request">
+      <method v="2" />
+    </configuration>
+    <configuration name="ProjectTest.testSetPinnedListener" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="kennwertdatenbank" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="model.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="model" />
+      <option name="MAIN_CLASS_NAME" value="model.ProjectTest" />
+      <option name="METHOD_NAME" value="testSetPinnedListener" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="KennwertdatenbankApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" nameIsGenerated="true">
+      <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
+      <module name="kennwertdatenbank-backend" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="backend.KennwertdatenbankApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="HTTP Request.request | Total cost" />
+        <item itemvalue="HTTP Request.request | Replace costs" />
+        <item itemvalue="HTTP Request.request | Costs of one project" />
+        <item itemvalue="HTTP Request.request | All projects" />
+        <item itemvalue="JUnit.ProjectTest.testSetPinnedListener" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9823dce3aa75-fbdcb00ec9e3-intellij.indexing.shared.core-IU-251.29188.36" />
+        <option value="bundled-js-predefined-d6986cc7102b-09060db00ec0-JavaScript-IU-251.29188.36" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="7718e9c4-0896-4b69-990f-4cd6e334e0d2" name="Changes" comment="" />
+      <created>1790954237202</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1790954237202</updated>
+      <workItem from="1790954238481" duration="3561000" />
+      <workItem from="1791065224549" duration="126000" />
+      <workItem from="1791189288021" duration="3083000" />
+      <workItem from="1791208554255" duration="533000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="setup of the project&#10;- split the project in two, desktop and backend&#10;- backend is configured for springboot&#10;- added a basic rest api and sql connection" />
+    <option name="LAST_COMMIT_MESSAGE" value="setup of the project&#10;- split the project in two, desktop and backend&#10;- backend is configured for springboot&#10;- added a basic rest api and sql connection" />
+  </component>
+</project>

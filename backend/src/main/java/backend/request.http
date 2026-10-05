@@ -1,0 +1,18 @@
+### All projects
+GET http://localhost:8080/api/projects
+
+### Costs of one project
+GET http://localhost:8080/api/projects/12345/versions/1/costs
+
+### Total cost
+GET http://localhost:8080/api/projects/12345/versions/1/costs/total
+
+### Replace costs
+PUT http://localhost:8080/api/projects/12345/versions/1/costs
+Content-Type: application/json
+
+[
+  { "bkp": "2", "amount": 850000 },
+  { "bkp": "21", "amount": 420000 },
+  { "bkp": "21160", "amount": 45000 }
+]

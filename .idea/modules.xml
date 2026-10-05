@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/kennwertdatenbank.iml" filepath="$PROJECT_DIR$/kennwertdatenbank.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/Kennwertdatenbank.iml" filepath="$PROJECT_DIR$/.idea/Kennwertdatenbank.iml" />
     </modules>
   </component>
 </project>

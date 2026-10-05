@@ -1,0 +1,20 @@
+[
+  {
+    "amount": 850000,
+    "bkp": "2",
+    "projectNr": 12345,
+    "version": 1
+  },
+  {
+    "amount": 420000,
+    "bkp": "21",
+    "projectNr": 12345,
+    "version": 1
+  },
+  {
+    "amount": 45000,
+    "bkp": "21160",
+    "projectNr": 12345,
+    "version": 1
+  }
+]

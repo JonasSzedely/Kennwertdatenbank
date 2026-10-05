@@ -1,0 +1,97 @@
+GET http://localhost:8080/api/projects
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.7.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+<> 2026-10-05T103544.200.json
+
+###
+
+PUT http://localhost:8080/api/projects/12345/versions/1/costs
+Content-Type: application/json
+Content-Length: 114
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.7.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+[
+  { "bkp": "2", "amount": 850000 },
+  { "bkp": "21", "amount": 420000 },
+  { "bkp": "21160", "amount": 45000 }
+]
+
+<> 2026-10-02T182756.200.json
+
+###
+
+GET http://localhost:8080/api/projects
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.7.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+<> 2026-10-02T180614.200.json
+
+###
+
+GET http://localhost:8080/api/projects
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.7.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+<> 2026-10-02T180300.200.json
+
+###
+
+GET http://localhost:8080/api/projects
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.7.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+<> 2026-10-02T180159.200.json
+
+###
+
+GET http://localhost:8080/api/projects
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.7.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+<> 2026-10-02T175755.200.json
+
+###
+
+GET http://localhost:8080/api/projects/12345/versions/1/costs
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.7.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+<> 2026-10-02T175751.200.json
+
+###
+
+GET http://localhost:8080/api/projects/12345/versions/1/costs/total
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.7.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+<> 2026-10-02T175748.200.json
+
+###
+
+PUT http://localhost:8080/api/projects/12345/versions/1/costs
+Content-Type: application/json
+Content-Length: 114
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.1.7.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+[
+  { "bkp": "2", "amount": 850000 },
+  { "bkp": "21", "amount": 420000 },
+  { "bkp": "21160", "amount": 45000 }
+]
+
+<> 2026-10-02T175743.200.json
+
+###
+
