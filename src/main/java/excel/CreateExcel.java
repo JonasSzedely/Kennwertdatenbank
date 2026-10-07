@@ -3,7 +3,7 @@ package excel;
 import model.Calculation;
 import model.ProjectCalculations;
 import model.Project;
-import model.ProjectValues;
+import model.ProjectAttributes;
 import org.dhatim.fastexcel.Workbook;
 import org.dhatim.fastexcel.Worksheet;
 
@@ -46,7 +46,7 @@ public class CreateExcel {
 
             // Row labels in column 0 — dynamically from enum
             int row = 0;
-            for (ProjectValues field : ProjectValues.values()) {
+            for (ProjectAttributes field : ProjectAttributes.values()) {
                 ws.value(row++, 0, field.getLabel());
             }
 
@@ -61,11 +61,11 @@ public class CreateExcel {
                 Project project = projects.get(col);
                 row = 0;
 
-                for (ProjectValues field : ProjectValues.values()) {
-                    if (field == ProjectValues.CALCULATION_PHASE) {
+                for (ProjectAttributes field : ProjectAttributes.values()) {
+                    if (field == ProjectAttributes.CALCULATION_PHASE) {
                         int phase = project.get(field);
                         ws.value(row++, col + 1, phase + " - 5");
-                    } else if (field == ProjectValues.APARTMENTS_NR) {
+                    } else if (field == ProjectAttributes.APARTMENTS_NR) {
                         int apartments = project.get(field);
                         ws.value(row++, col + 1, apartments == 0 ? "" : String.format(SWISS_LOCALE, "%,d", apartments));
                     } else if (field.getType() == Integer.class) {

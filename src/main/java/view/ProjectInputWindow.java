@@ -14,7 +14,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import model.ProjectData;
 import model.Project;
-import model.ProjectValues;
+import model.ProjectAttributes;
 import view.form.DropdownForm;
 import view.form.Form;
 import view.form.FormListener;
@@ -31,14 +31,14 @@ public class ProjectInputWindow extends Application {
     private Project project;
     private Button addButton;
     private boolean addButtonUsed = false;
-    private EnumMap<ProjectValues, Form> forms;
+    private EnumMap<ProjectAttributes, Form> forms;
     private ArrayList<FormListener> formListeners;
     private Form dataPathForm;
     private FormListener dataPathListener;
     private Stage stage;
 
     // vlaues that can be skipped and will be processed in another way
-    private static final ProjectValues[] SKIPPED = {ProjectValues.VERSION};
+    private static final ProjectAttributes[] SKIPPED = {ProjectAttributes.VERSION};
 
     public ProjectInputWindow(DataService controller, Type type) {
         this.controller = controller;
@@ -65,10 +65,10 @@ public class ProjectInputWindow extends Application {
         title.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
         switch (type) {
             case NEW -> title.setText("Neues Projekt hinzufügen");
-            case MODIFY -> title.setText("Projekt Nr. " + project.get(ProjectValues.PROJECT_NR)
-                    + " Version " + project.get(ProjectValues.VERSION) + " bearbeiten");
+            case MODIFY -> title.setText("Projekt Nr. " + project.get(ProjectAttributes.PROJECT_NR)
+                    + " Version " + project.get(ProjectAttributes.VERSION) + " bearbeiten");
             case NEXT -> title.setText("Neue Version von Projekt Nr. "
-                    + project.get(ProjectValues.PROJECT_NR) + " hinzufügen");
+                    + project.get(ProjectAttributes.PROJECT_NR) + " hinzufügen");
         }
 
         GridPane gridPane = new GridPane(10, 10);
@@ -79,11 +79,11 @@ public class ProjectInputWindow extends Application {
                 new ColumnConstraints(150), new ColumnConstraints(200), new ColumnConstraints(150)
         );
 
-        forms = new EnumMap<>(ProjectValues.class);
+        forms = new EnumMap<>(ProjectAttributes.class);
         formListeners = new ArrayList<>();
 
         // Build forms dynamically from enum
-        for (ProjectValues field : ProjectValues.values()) {
+        for (ProjectAttributes field : ProjectAttributes.values()) {
             if (isSkipped(field)) continue;
 
             if (field.isDropdown()) {
@@ -103,11 +103,11 @@ public class ProjectInputWindow extends Application {
         dataPathListener = new FormListener((InputForm) dataPathForm, 260);
 
         // Place forms in grid: left half then right half
-        ProjectValues[] keys = forms.keySet().toArray(new ProjectValues[0]);
+        ProjectAttributes[] keys = forms.keySet().toArray(new ProjectAttributes[0]);
         int half = (keys.length + 1) / 2;
 
         for (int i = 0; i < keys.length; i++) {
-            ProjectValues field = keys[i];
+            ProjectAttributes field = keys[i];
             Form form = forms.get(field);
             int col = (i < half) ? 0 : 3;
             int row = (i < half) ? i : i - half;
@@ -130,7 +130,7 @@ public class ProjectInputWindow extends Application {
         switch (type) {
             case NEW -> {
                 addButton.setText("Projekt hinzufügen");
-                addButton.setOnAction(event -> {
+                addButton.setOnAction(_ -> {
                     if (validate()) {
                         confirmationWindow("Projekt hinzugefügt", addProject());
                     }
@@ -139,10 +139,10 @@ public class ProjectInputWindow extends Application {
             case MODIFY -> {
                 addButton.setText("Projekt anpassen");
                 fillFields();
-                forms.get(ProjectValues.PROJECT_NR).getInputField().setDisable(true);
+                forms.get(ProjectAttributes.PROJECT_NR).getInputField().setDisable(true);
                 dataPathForm.setInputFieldText("Projektkosten können nicht überschrieben werden. Bitte neue Version anlegen.");
                 dataPathForm.getInputField().setDisable(true);
-                addButton.setOnAction(event -> {
+                addButton.setOnAction(_ -> {
                     if (validate()) {
                         confirmationWindow("Projekt angepasst", modifyProject());
                     }
@@ -151,11 +151,11 @@ public class ProjectInputWindow extends Application {
             case NEXT -> {
                 addButton.setText("Neue Version hinzufügen");
                 fillFields();
-                forms.get(ProjectValues.PROJECT_NR).getInputField().setDisable(true);
-                addButton.setOnAction(event -> {
+                forms.get(ProjectAttributes.PROJECT_NR).getInputField().setDisable(true);
+                addButton.setOnAction(_ -> {
                     if (validate()) {
                         confirmationWindow("Neue Version von Projekt Nr. "
-                                + project.get(ProjectValues.PROJECT_NR) + " hinzugefügt", addProject());
+                                + project.get(ProjectAttributes.PROJECT_NR) + " hinzugefügt", addProject());
                     }
                 });
             }
@@ -182,7 +182,7 @@ public class ProjectInputWindow extends Application {
     }
 
     private void fillFields() {
-        for (ProjectValues field : forms.keySet()) {
+        for (ProjectAttributes field : forms.keySet()) {
             Object value = project.get(field);
             if (value != null) {
                 forms.get(field).setInputFieldText(String.valueOf(value));
@@ -192,25 +192,25 @@ public class ProjectInputWindow extends Application {
 
     private String addProject() {
         Project newProject = new Project();
-        for (ProjectValues field : forms.keySet()) {
+        for (ProjectAttributes field : forms.keySet()) {
             setFieldOnProject(newProject, field, forms.get(field).getInput());
         }
-        newProject.set(ProjectValues.VERSION, 1);
+        newProject.set(ProjectAttributes.VERSION, 1);
         ProjectData data = new ProjectData();
-        data.set(dataPathForm.getInput().replaceAll("\"", "").trim());
+        data.set(dataPathForm.getInput().replace("\"", "").trim());
         newProject.setData(data);
         return controller.addProject(newProject);
     }
 
     private String modifyProject() {
-        for (ProjectValues field : forms.keySet()) {
+        for (ProjectAttributes field : forms.keySet()) {
             if (forms.get(field).getInputField().isDisabled()) continue;
             setFieldOnProject(project, field, forms.get(field).getInput());
         }
         return controller.modifyProject(project);
     }
 
-    private void setFieldOnProject(Project target, ProjectValues field, String input) {
+    private void setFieldOnProject(Project target, ProjectAttributes field, String input) {
         if (field.getType() == Integer.class) {
             target.set(field, Integer.parseInt(input));
         } else {
@@ -236,8 +236,8 @@ public class ProjectInputWindow extends Application {
         return allValid;
     }
 
-    private boolean isSkipped(ProjectValues field) {
-        for (ProjectValues skipped : SKIPPED) {
+    private boolean isSkipped(ProjectAttributes field) {
+        for (ProjectAttributes skipped : SKIPPED) {
             if (field == skipped) return true;
         }
         return false;

@@ -16,21 +16,16 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.util.Duration;
 import model.Project;
-import model.ProjectValues;
+import model.ProjectAttributes;
 import org.controlsfx.control.ToggleSwitch;
 import view.ProjectList;
 import view.UICalculations;
 
 class Filters {
-    private final DataService controller;
     private final int TOOL_TIP_TIME = 200;
     private RangeFilter sumFilter;
     private RangeFilter apartmentNrFilter;
     private RangeFilter volumeFilter;
-
-    public Filters(DataService controller) {
-        this.controller = controller;
-    }
 
     /**
      * creates the filters
@@ -65,7 +60,7 @@ class Filters {
 
         //filter construction Type
         ComboBox<String> constructionTypeFilter = new ComboBox<>();
-        String[] constructionType = ProjectValues.CONSTRUCTION_TYPE.getOptions().split("\\|");
+        String[] constructionType = ProjectAttributes.CONSTRUCTION_TYPE.getOptions().split("\\|");
         ObservableList<String> constructionTypeList = FXCollections.observableArrayList(constructionType);
         constructionTypeList.addFirst("Alle Bauvorhaben");
         constructionTypeFilter.setItems(constructionTypeList);
@@ -76,7 +71,7 @@ class Filters {
 
         //filter project type
         ComboBox<String> projectTypeFilter = new ComboBox<>();
-        String[] projectTypes = ProjectValues.PROPERTY_TYPE.getOptions().split("\\|");
+        String[] projectTypes = ProjectAttributes.PROPERTY_TYPE.getOptions().split("\\|");
         ObservableList<String> projectTypeList = FXCollections.observableArrayList(projectTypes);
         projectTypeList.addFirst("Alle Gebäudenutzer");
         projectTypeFilter.setItems(projectTypeList);
@@ -127,7 +122,7 @@ class Filters {
         apartmentNrFilter = new RangeFilter(
                 "Wohnungen",
                 "Reset",
-                project -> project.get(ProjectValues.APARTMENTS_NR),
+                project -> project.get(ProjectAttributes.APARTMENTS_NR),
                 UICalculations::getMinApartments,
                 UICalculations::getMaxApartments
         );
@@ -147,8 +142,8 @@ class Filters {
         volumeFilter = new RangeFilter(
                 "Volumen",
                 "Reset",
-                project -> (int) project.get(ProjectValues.VOLUME_UNDERGROUND)
-                        + (int) project.get(ProjectValues.VOLUME_ABOVE_GROUND),
+                project -> (int) project.get(ProjectAttributes.VOLUME_UNDERGROUND)
+                        + (int) project.get(ProjectAttributes.VOLUME_ABOVE_GROUND),
                 UICalculations::getMinVolume,
                 UICalculations::getMaxVolume
         );
@@ -165,15 +160,15 @@ class Filters {
         apartmentNrFilter.setOnFilterChanged(() -> updateFilter(filterProjectNr, versionFilter, constructionTypeFilter, projectTypeFilter));
         volumeFilter.setOnFilterChanged(() -> updateFilter(filterProjectNr, versionFilter, constructionTypeFilter, projectTypeFilter));
 
-        filterProjectNr.setOnAction(event -> updateFilter(filterProjectNr, versionFilter, constructionTypeFilter, projectTypeFilter));
+        filterProjectNr.setOnAction(_ -> updateFilter(filterProjectNr, versionFilter, constructionTypeFilter, projectTypeFilter));
 
-        ProjectList.getProjectList().addListener((ListChangeListener<Project>) change -> {
+        ProjectList.getProjectList().addListener((ListChangeListener<Project>) _ -> {
             sumFilter.setRange();
             apartmentNrFilter.setRange();
             volumeFilter.setRange();
         });
 
-        versionFilter.selectedProperty().addListener((obs, oldValue, newValue) -> {
+        versionFilter.selectedProperty().addListener((_, _, newValue) -> {
             if (newValue) {
                 versionFilter.setText("neuste");
             } else {
@@ -182,9 +177,9 @@ class Filters {
             updateFilter(filterProjectNr, versionFilter, constructionTypeFilter, projectTypeFilter);
         });
 
-        constructionTypeFilter.setOnAction(event -> updateFilter(filterProjectNr, versionFilter, constructionTypeFilter, projectTypeFilter));
+        constructionTypeFilter.setOnAction(_ -> updateFilter(filterProjectNr, versionFilter, constructionTypeFilter, projectTypeFilter));
 
-        projectTypeFilter.setOnAction(event -> updateFilter(filterProjectNr, versionFilter, constructionTypeFilter, projectTypeFilter));
+        projectTypeFilter.setOnAction(_ -> updateFilter(filterProjectNr, versionFilter, constructionTypeFilter, projectTypeFilter));
 
         outerPane.getChildren().addAll(filterBox);
         return outerPane;
@@ -217,10 +212,9 @@ class Filters {
                 return matchSumFilter && matchApartmentFilter && matchVolumeFilter;
             }
 
-            int projectNr = project.get(ProjectValues.PROJECT_NR);
-            int version = project.get(ProjectValues.VERSION);
-            String constructionType = project.get(ProjectValues.CONSTRUCTION_TYPE);
-            String propertyType = project.get(ProjectValues.PROPERTY_TYPE);
+            int projectNr = project.get(ProjectAttributes.PROJECT_NR);
+            String constructionType = project.get(ProjectAttributes.CONSTRUCTION_TYPE);
+            String propertyType = project.get(ProjectAttributes.PROPERTY_TYPE);
 
             boolean matchProjectNrFilter = isEmpty(filterProjectNr)
                     || String.valueOf(projectNr).contains(filterProjectNr.getText().trim());

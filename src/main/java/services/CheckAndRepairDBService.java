@@ -1,63 +1,136 @@
 package services;
 
 import db.DBConnection;
-import model.AppLogger;
-import model.ProjectValues;
+import model.ProjectAttributes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.HashSet;
+import java.util.Set;
 
-
+/**
+ * Brings an existing {@code projects} table up to date with the current schema.
+ * <p>
+ * Adds columns that were introduced in newer versions of the application and
+ * ensures that all constraints exist. Existing data is not changed.
+ */
 class CheckAndRepairDBService {
 
-    static String check(DBConnection database) {
+    private static final Logger LOG = LoggerFactory.getLogger(CheckAndRepairDBService.class);
+
+    private CheckAndRepairDBService() {
+    }
+
+    /**
+     * Checks the {@code projects} table and adds missing columns and constraints.
+     * <p>
+     * Missing attribute columns are added with placeholder defaults
+     * ({@code -1} for numbers, {@code 'xyz'} for text), so existing rows stay valid.
+     * Errors are logged and do not stop the application.
+     *
+     * @param database the database connection to use
+     */
+    static void check(DBConnection database) {
         if (!database.isConnectionAvailable()) {
-            return ("Keine Datenbankverbindung verfügbar.");
+            LOG.warn("Schema check skipped, no database connection");
+            return;
         }
-        HashSet<String> existingColumns = new HashSet<>();
+
         try (Connection conn = database.connect()) {
-            DatabaseMetaData meta = conn.getMetaData();
+            Set<String> existingColumns = readColumns(conn);
 
-            try (ResultSet rs = meta.getColumns(null, null, "projects", null)) {
-                while (rs.next()) {
-                    existingColumns.add(rs.getString("COLUMN_NAME"));
+            for (ProjectAttributes attribute : ProjectAttributes.values()) {
+                String column = attribute.getSqlColumn().toLowerCase();
+                if (existingColumns.contains(column)) {
+                    continue;
                 }
-            }
+                boolean isNumber = attribute.getType() == Integer.class;
+                String type = isNumber ? "INT" : "VARCHAR(255)";
+                String defaultValue = isNumber ? "-1" : "'xyz'";
 
-            for (ProjectValues value : ProjectValues.values()) {
-                String colName = value.getSqlColumn().toLowerCase();
-
-                if (!existingColumns.contains(colName)) {
-                    String defaultVal = value.getType() == Integer.class ? "-1" : "'xyz'";
-                    String colType = value.getType() == Integer.class ? "INT" : "VARCHAR(255)";
-
-                    String sql = "ALTER TABLE projects ADD COLUMN IF NOT EXISTS "
-                            + colName + " " + colType + " NOT NULL DEFAULT " + defaultVal;
-
-                    try (Statement stmt = conn.createStatement()) {
-                        stmt.executeUpdate(sql);
-                    }
-                }
+                execute(conn, "ALTER TABLE projects ADD COLUMN IF NOT EXISTS "
+                        + column + " " + type + " NOT NULL DEFAULT " + defaultValue);
+                LOG.info("Added missing column {}", column);
             }
 
             if (!existingColumns.contains("data")) {
-                String sql = "ALTER TABLE projects ADD COLUMN IF NOT EXISTS data JSONB NOT NULL DEFAULT '{}'";
-                try (Statement stmt = conn.createStatement()) {
-                    stmt.executeUpdate(sql);
-                }
+                execute(conn, "ALTER TABLE projects ADD COLUMN IF NOT EXISTS data JSONB NOT NULL DEFAULT '{}'");
+                LOG.info("Added missing column data");
             }
 
             if (!existingColumns.contains("active")) {
-                String sql = "ALTER TABLE projects ADD COLUMN IF NOT EXISTS active BOOLEAN NOT NULL DEFAULT true";
-                try (Statement stmt = conn.createStatement()) {
-                    stmt.executeUpdate(sql);
-                }
+                execute(conn, "ALTER TABLE projects ADD COLUMN IF NOT EXISTS active BOOLEAN NOT NULL DEFAULT true");
+                LOG.info("Added missing column active");
             }
 
-            return "DB ist synchron.";
+            ensureVersionConstraint(conn);
+
+            LOG.info("Database schema is up to date");
         } catch (SQLException e) {
-            AppLogger.error("Spaltenprüfung fehlgeschlagen: " + e.getMessage());
+            LOG.error("Database schema check failed", e);
         }
-        return "DB konnte nicht geprüft werden.";
+    }
+
+    /**
+     * Reads the names of all columns of the {@code projects} table.
+     *
+     * @param conn the open connection
+     * @return the column names in lower case
+     * @throws SQLException if the metadata cannot be read
+     */
+    private static Set<String> readColumns(Connection conn) throws SQLException {
+        Set<String> columns = new HashSet<>();
+        DatabaseMetaData meta = conn.getMetaData();
+        try (ResultSet rs = meta.getColumns(null, null, "projects", null)) {
+            while (rs.next()) {
+                columns.add(rs.getString("COLUMN_NAME").toLowerCase());
+            }
+        }
+        return columns;
+    }
+
+    /**
+     * Adds the version range constraint if it does not exist yet.
+     * <p>
+     * The constraint is added as {@code NOT VALID}, so it applies to new and
+     * changed rows only. Existing rows are not checked.
+     *
+     * @param conn the open connection
+     * @throws SQLException if the statement fails
+     */
+    private static void ensureVersionConstraint(Connection conn) throws SQLException {
+        String sql = """
+            DO $$
+            BEGIN
+                IF NOT EXISTS (
+                    SELECT 1 FROM pg_constraint WHERE conname = 'projects_version_range'
+                ) THEN
+                    ALTER TABLE projects
+                    ADD CONSTRAINT projects_version_range
+                    CHECK (version BETWEEN %d AND %d) NOT VALID;
+                END IF;
+            END;
+            $$
+            """.formatted(ProjectAttributes.VERSION.getMin(), ProjectAttributes.VERSION.getMax());
+
+        execute(conn, sql);
+    }
+
+    /**
+     * Executes a single DDL statement.
+     *
+     * @param conn the open connection
+     * @param sql  the statement to execute
+     * @throws SQLException if the statement fails
+     */
+    private static void execute(Connection conn, String sql) throws SQLException {
+        try (Statement stmt = conn.createStatement()) {
+            stmt.executeUpdate(sql);
+        }
     }
 }

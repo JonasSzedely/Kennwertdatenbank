@@ -12,7 +12,7 @@ import javafx.util.Duration;
 import model.Calculation;
 import model.Project;
 import model.ProjectCalculations;
-import model.ProjectValues;
+import model.ProjectAttributes;
 import view.ProjectInputWindow;
 import view.ProjectList;
 import view.StageFactory;
@@ -23,16 +23,16 @@ public class MiddlePane {
     private static final int MAX_CACHE_SIZE = 50;
 
     // Handled by dedicated projectHead() / projectVersion() rows
-    private static final ProjectValues[] HEAD_FIELDS = {
-            ProjectValues.PROJECT_NR,
-            ProjectValues.VERSION
+    private static final ProjectAttributes[] HEAD_FIELDS = {
+            ProjectAttributes.PROJECT_NR,
+            ProjectAttributes.VERSION
     };
 
     // Not shown individually: BATHROOM_NR is hidden, volumes are merged into one row
-    private static final ProjectValues[] SKIPPED_FIELDS = {
-            ProjectValues.BATHROOM_NR,
-            ProjectValues.VOLUME_UNDERGROUND,
-            ProjectValues.VOLUME_ABOVE_GROUND
+    private static final ProjectAttributes[] SKIPPED_FIELDS = {
+            ProjectAttributes.BATHROOM_NR,
+            ProjectAttributes.VOLUME_UNDERGROUND,
+            ProjectAttributes.VOLUME_ABOVE_GROUND
     };
 
     private final DataService service;
@@ -90,8 +90,8 @@ public class MiddlePane {
         rightScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
 
         leftScroll.vvalueProperty().bindBidirectional(rightScroll.vvalueProperty());
-        rightScroll.hvalueProperty().addListener(observable -> updateVisibleCells());
-        rightScroll.widthProperty().addListener(observable -> updateVisibleCells());
+        rightScroll.hvalueProperty().addListener(_ -> updateVisibleCells());
+        rightScroll.widthProperty().addListener(_ -> updateVisibleCells());
 
 
         ProjectList.getSortedProjects().addListener((ListChangeListener<Project>) change -> {
@@ -122,9 +122,7 @@ public class MiddlePane {
     private VBox rowLabels() {
         rowLabels = new VBox();
 
-        ProjectList.getProjectList().addListener((ListChangeListener<Project>) change -> {
-            fillRowLabels();
-        });
+        ProjectList.getProjectList().addListener((ListChangeListener<Project>) _ -> fillRowLabels());
 
         // fill at start
         fillRowLabels();
@@ -139,16 +137,16 @@ public class MiddlePane {
             return;
         }
 
-        for (ProjectValues field : HEAD_FIELDS) {
+        for (ProjectAttributes field : HEAD_FIELDS) {
             rowLabels.getChildren().add(
                     labelFactory.getLabel(field.getLabel(), LabelFactory.LabelType.TEXT, true, false)
             );
         }
 
-        for (ProjectValues field : ProjectValues.values()) {
+        for (ProjectAttributes field : ProjectAttributes.values()) {
             if (isHeadField(field) || isSkippedField(field)) continue;
 
-            LabelFactory.LabelType labelType = (field == ProjectValues.SPECIAL)
+            LabelFactory.LabelType labelType = (field == ProjectAttributes.SPECIAL)
                     ? LabelFactory.LabelType.TALL
                     : LabelFactory.LabelType.TEXT;
 
@@ -156,7 +154,7 @@ public class MiddlePane {
                     labelFactory.getLabel(field.getLabel(), labelType, true, false)
             );
 
-            if (field == ProjectValues.LANDSCAPED_AREA) {
+            if (field == ProjectAttributes.LANDSCAPED_AREA) {
                 rowLabels.getChildren().add(
                         labelFactory.getLabel("SIA m³", LabelFactory.LabelType.TEXT, true, false)
                 );
@@ -227,19 +225,19 @@ public class MiddlePane {
         projectBox.getChildren().add(projectVersion(project));
 
         // All remaining fields, dynamically from enum
-        for (ProjectValues field : ProjectValues.values()) {
+        for (ProjectAttributes field : ProjectAttributes.values()) {
             if (isHeadField(field) || isSkippedField(field)) {
                 continue;
             }
 
             LabelFactory.LabelType labelType = getLabelType(field);
 
-            if (field == ProjectValues.CALCULATION_PHASE) {
+            if (field == ProjectAttributes.CALCULATION_PHASE) {
                 int phase = project.get(field);
                 projectBox.getChildren().add(
                         labelFactory.getLabel(phase + " - 5", LabelFactory.LabelType.TEXT, true, true)
                 );
-            } else if(field == ProjectValues.PLZ){
+            } else if(field == ProjectAttributes.PLZ){
                 String text = project.get(field).toString();
                 projectBox.getChildren().add(
                         labelFactory.getLabel(text, LabelFactory.LabelType.TEXT, true, true)
@@ -256,9 +254,9 @@ public class MiddlePane {
                 );
             }
 
-            if (field == ProjectValues.LANDSCAPED_AREA) {
-                int volumeUG = project.get(ProjectValues.VOLUME_UNDERGROUND);
-                int volumeAG = project.get(ProjectValues.VOLUME_ABOVE_GROUND);
+            if (field == ProjectAttributes.LANDSCAPED_AREA) {
+                int volumeUG = project.get(ProjectAttributes.VOLUME_UNDERGROUND);
+                int volumeAG = project.get(ProjectAttributes.VOLUME_ABOVE_GROUND);
                 projectBox.getChildren().add(
                         labelFactory.getLabel(volumeUG + volumeAG, LabelFactory.LabelType.NUMBER, true, true)
                 );
@@ -284,8 +282,8 @@ public class MiddlePane {
      * Returns the LabelType for a given field.
      * SPECIAL uses TALL, numeric fields use NUMBER, everything else TEXT.
      */
-    private LabelFactory.LabelType getLabelType(ProjectValues field) {
-        if (field == ProjectValues.SPECIAL) {
+    private LabelFactory.LabelType getLabelType(ProjectAttributes field) {
+        if (field == ProjectAttributes.SPECIAL) {
             return LabelFactory.LabelType.TALL;
         } else if (field.getType() == Integer.class) {
             return LabelFactory.LabelType.NUMBER;
@@ -293,15 +291,15 @@ public class MiddlePane {
         return LabelFactory.LabelType.TEXT;
     }
 
-    private boolean isHeadField(ProjectValues field) {
-        for (ProjectValues f : HEAD_FIELDS) {
+    private boolean isHeadField(ProjectAttributes field) {
+        for (ProjectAttributes f : HEAD_FIELDS) {
             if (f == field) return true;
         }
         return false;
     }
 
-    private boolean isSkippedField(ProjectValues field) {
-        for (ProjectValues f : SKIPPED_FIELDS) {
+    private boolean isSkippedField(ProjectAttributes field) {
+        for (ProjectAttributes f : SKIPPED_FIELDS) {
             if (f == field) return true;
         }
         return false;
@@ -320,8 +318,8 @@ public class MiddlePane {
     private void updateSorting() {
         ProjectList.getSortedProjects().setComparator(
                 Comparator.comparing(Project::isPinned).reversed()
-                        .thenComparing(p -> (int) p.get(ProjectValues.PROJECT_NR))
-                        .thenComparing(p -> (int) p.get(ProjectValues.VERSION))
+                        .thenComparing(p -> (int) p.get(ProjectAttributes.PROJECT_NR))
+                        .thenComparing(p -> (int) p.get(ProjectAttributes.VERSION))
         );
     }
 
@@ -336,7 +334,7 @@ public class MiddlePane {
         projectHead.setPrefHeight(CELL_HEIGHT);
         projectHead.setAlignment(Pos.CENTER_LEFT);
         projectHead.getChildren().addAll(
-                labelFactory.getLabel((int) project.get(ProjectValues.PROJECT_NR),
+                labelFactory.getLabel((int) project.get(ProjectAttributes.PROJECT_NR),
                         LabelFactory.LabelType.TEXT, false, true),
                 spacerHead,
                 modifyProjectButton(project),
@@ -358,7 +356,7 @@ public class MiddlePane {
         projectVersion.setPrefHeight(CELL_HEIGHT);
         projectVersion.setAlignment(Pos.CENTER_LEFT);
         projectVersion.getChildren().addAll(
-                labelFactory.getLabel((int) project.get(ProjectValues.VERSION),
+                labelFactory.getLabel((int) project.get(ProjectAttributes.VERSION),
                         LabelFactory.LabelType.TEXT, false, true),
                 spacerVersion,
                 nextVersionButton(project),
@@ -376,7 +374,7 @@ public class MiddlePane {
         focus.getTooltip().setShowDelay(Duration.millis(TOOL_TIP_TIME));
         focus.setPadding(new Insets(0));
 
-        focus.selectedProperty().addListener((obs, oldVal, newVal) -> {
+        focus.selectedProperty().addListener((_, _, newVal) -> {
             project.setPinned(newVal);
             updateSorting();
         });
@@ -393,11 +391,9 @@ public class MiddlePane {
     private Button nextVersionButton(Project project) {
         Button nextVersionButton = new Button("+");
         nextVersionButton.setPadding(new Insets(0));
-        service.onDbAvailableChanged(e -> {
-            Platform.runLater(() -> nextVersionButton.setDisable(!service.isDBAvailable()));
-        });
+        service.onDbAvailableChanged(_ -> Platform.runLater(() -> nextVersionButton.setDisable(!service.isDBAvailable())));
 
-        nextVersionButton.setOnAction(event -> {
+        nextVersionButton.setOnAction(_ -> {
             ProjectInputWindow nextVersion = new ProjectInputWindow(service, project, ProjectInputWindow.Type.NEXT);
             try {
                 Stage newStage = StageFactory.createStage("Neue Version");
@@ -420,22 +416,20 @@ public class MiddlePane {
 
     private Button deleteProjectButton(Project project) {
         Button deleteProjectButton = new Button("\uD83D\uDDD1");
-        service.onDbAvailableChanged(e -> {
-            Platform.runLater(() -> deleteProjectButton.setDisable(!service.isDBAvailable()));
-        });
+        service.onDbAvailableChanged(_ -> Platform.runLater(() -> deleteProjectButton.setDisable(!service.isDBAvailable())));
 
-        deleteProjectButton.setOnAction(event -> {
+        deleteProjectButton.setOnAction(_ -> {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
             alert.setTitle("Projekt löschen");
             alert.setHeaderText("Bitte bestätigen:");
             alert.setContentText("Löschen von Projekt Nr. "
-                    + project.get(ProjectValues.PROJECT_NR)
-                    + " Version " + project.get(ProjectValues.VERSION) + "?");
+                    + project.get(ProjectAttributes.PROJECT_NR)
+                    + " Version " + project.get(ProjectAttributes.VERSION) + "?");
             Optional<ButtonType> buttonType = alert.showAndWait();
             if (buttonType.isPresent() && buttonType.get().equals(ButtonType.OK)) {
                 String message = service.deleteProject(
-                        project.get(ProjectValues.PROJECT_NR),
-                        project.get(ProjectValues.VERSION)
+                        project.get(ProjectAttributes.PROJECT_NR),
+                        project.get(ProjectAttributes.VERSION)
                 );
                 ProjectList.refreshProjectList();
 
@@ -458,11 +452,9 @@ public class MiddlePane {
 
     private Button modifyProjectButton(Project project) {
         Button modifyProjectButton = new Button("⟲");
-        service.onDbAvailableChanged(e -> {
-            Platform.runLater(() -> modifyProjectButton.setDisable(!service.isDBAvailable()));
-        });
+        service.onDbAvailableChanged(_ -> Platform.runLater(() -> modifyProjectButton.setDisable(!service.isDBAvailable())));
 
-        modifyProjectButton.setOnAction(event -> {
+        modifyProjectButton.setOnAction(_ -> {
             ProjectInputWindow modify = new ProjectInputWindow(service, project, ProjectInputWindow.Type.MODIFY);
             try {
                 Stage newStage = StageFactory.createStage("Projekt bearbeiten");

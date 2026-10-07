@@ -53,7 +53,7 @@ public class TopPane {
         titel.setAlignment(Pos.CENTER);
         topLeft.getChildren().add(titel);
 
-        HBox filters = new Filters(dataService).get();
+        HBox filters = new Filters().get();
         HBox.setHgrow(filters, Priority.ALWAYS);
 
         HBox topRight = new HBox(10);

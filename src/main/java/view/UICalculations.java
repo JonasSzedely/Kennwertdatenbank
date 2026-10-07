@@ -2,7 +2,7 @@ package view;
 
 import javafx.collections.ListChangeListener;
 import model.Project;
-import model.ProjectValues;
+import model.ProjectAttributes;
 
 public final class UICalculations {
     private static int minTotalCost;
@@ -17,7 +17,7 @@ public final class UICalculations {
     public UICalculations(){
         reset();
         calculate();
-        ProjectList.getProjectList().addListener((ListChangeListener<Project>) change -> {
+        ProjectList.getProjectList().addListener((ListChangeListener<Project>) _ -> {
             reset();
             calculate();
         });
@@ -31,12 +31,12 @@ public final class UICalculations {
 
         for (Project project : ProjectList.getProjectList()) {
             int cost = project.getData().getTotalCost();
-            int apartments = project.get(ProjectValues.APARTMENTS_NR);
-            int volumeUG = project.get(ProjectValues.VOLUME_UNDERGROUND);
-            int volumeOG = project.get(ProjectValues.VOLUME_ABOVE_GROUND);
+            int apartments = project.get(ProjectAttributes.APARTMENTS_NR);
+            int volumeUG = project.get(ProjectAttributes.VOLUME_UNDERGROUND);
+            int volumeOG = project.get(ProjectAttributes.VOLUME_ABOVE_GROUND);
             int volume = volumeUG + volumeOG;
-            int windowArea = project.get(ProjectValues.WINDOW_AREA);
-            int facadeArea = project.get(ProjectValues.FACADE_AREA);
+            int windowArea = project.get(ProjectAttributes.WINDOW_AREA);
+            int facadeArea = project.get(ProjectAttributes.FACADE_AREA);
 
             averageRatioUG += (double) volumeUG / volumeOG;
             minTotalCost = Math.min(cost, minTotalCost);

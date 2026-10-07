@@ -3,7 +3,7 @@ package pdf;
 import javafx.collections.transformation.SortedList;
 import model.ProjectCalculations;
 import model.Project;
-import model.ProjectValues;
+import model.ProjectAttributes;
 import org.openpdf.text.*;
 import org.openpdf.text.Font;
 import org.openpdf.text.Image;
@@ -16,6 +16,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -127,17 +128,17 @@ public class CreatePDF {
         Font cellFont = new Font(Font.HELVETICA, 7, Font.NORMAL);
 
         // Header row: project numbers
-        addLabelCell(table, ProjectValues.PROJECT_NR.getLabel(), labelFont);
+        addLabelCell(table, ProjectAttributes.PROJECT_NR.getLabel(), labelFont);
         for (Project project : projects) {
-            int projectNr = project.get(ProjectValues.PROJECT_NR);
+            int projectNr = project.get(ProjectAttributes.PROJECT_NR);
             addHeaderCell(table, String.valueOf(projectNr), headerFont);
         }
 
         // Attribute rows — dynamically from enum, skipping PROJECT_NR (already in header)
-        for (ProjectValues field : ProjectValues.values()) {
-            if (field == ProjectValues.PROJECT_NR) continue;
+        for (ProjectAttributes field : ProjectAttributes.values()) {
+            if (field == ProjectAttributes.PROJECT_NR) continue;
 
-            if (field == ProjectValues.SPECIAL) {
+            if (field == ProjectAttributes.SPECIAL) {
                 addAttributeRowWithSpecialHeight(table, field.getLabel(), projects, labelFont, cellFont,
                         p -> {
                             Object val = p.get(field);
@@ -169,9 +170,7 @@ public class CreatePDF {
     private void setFixedColumnWidths(PdfPTable table, int projectCount) {
         int totalColumns = 1 + projectCount;
         float[] columnWidths = new float[totalColumns];
-        for (int i = 0; i < totalColumns; i++) {
-            columnWidths[i] = COLUMN_WIDTH;
-        }
+        Arrays.fill(columnWidths, COLUMN_WIDTH);
         try {
             table.setTotalWidth(columnWidths);
             table.setLockedWidth(true);

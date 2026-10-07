@@ -3,12 +3,10 @@ package view;
 import api.DataService;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.collections.ObservableMap;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
-import javafx.scene.layout.VBox;
 import model.Project;
-import model.ProjectValues;
+import model.ProjectAttributes;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -30,8 +28,8 @@ public final class ProjectList {
         Set<Project> projects = controller.getProjects();
 
         projects.forEach(p -> {
-            int nr = p.get(ProjectValues.PROJECT_NR);
-            int v  = p.get(ProjectValues.VERSION);
+            int nr = p.get(ProjectAttributes.PROJECT_NR);
+            int v  = p.get(ProjectAttributes.VERSION);
             maxVersions.merge(nr, v, Math::max);
         });
 
@@ -39,8 +37,8 @@ public final class ProjectList {
     }
 
     public static boolean isLatestVersion(Project p) {
-        return maxVersions.getOrDefault(p.<Integer>get(ProjectValues.PROJECT_NR), -1)
-                == p.<Integer>get(ProjectValues.VERSION);
+        return maxVersions.getOrDefault(p.<Integer>get(ProjectAttributes.PROJECT_NR), -1)
+                == p.<Integer>get(ProjectAttributes.VERSION);
     }
 
     public static ObservableList<Project> getProjectList() {
