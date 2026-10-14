@@ -61,7 +61,7 @@ public class ProjectCalculations {
                 calc("BKP 2", chf(data.getBKP(2))),
                 calc("BKP 2 exkl. 29", chf(data.getBKP(2) - data.getBKP(29))),
                 calc("BKP 211 + 212", chf(data.getBKP(211) + data.getBKP(212))),
-                calc("BKP 23 (o. PV/E-Mob.)", chf(data.getBKP(23) - data.getBKP(2331) - data.getBKP(2332))),
+                calc("BKP 23 (o. PV/E-Mob.)", chf(data.getBKP(23) - data.getBKP(2315) - data.getBKP(2326))),
                 calc("BKP 241+242", chf(data.getBKP(241) + data.getBKP(242))),
                 calc("BKP 244", chf(data.getBKP(244))),
                 calc("BKP 250-257", chf(data.getBKP(25) - data.getBKP(258) - data.getBKP(259))),
@@ -104,7 +104,7 @@ public class ProjectCalculations {
                 Calculation.SEPARATOR,
 
                 calc("HNF/WHG", hnfPerApartment()),
-                calc("Verhältnis UG/OG", ratio(volumeUnderground, volumeAboveGround)),
+                calc("Anteil % unterirdisch", percent(volumeUnderground, volumeAboveGround+ volumeUnderground)),
                 calc("Fenster Anteil", percent(windowArea, facadeArea)),
                 calc("BKP1 % Anteil", percent(data.getBKP(1), totalCost)),
                 calc("BKP2 % Anteil", percent(data.getBKP(2), totalCost)),
