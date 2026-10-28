@@ -57,7 +57,7 @@ Your data is not affected.
 
 ## Author
 
-Jonas Szedely · [jonas@szedely.ch](mailto:jonas@szedely.ch)
+Jonas Szedely
 
 ## License
 
