@@ -52,7 +52,7 @@ Your data is not affected.
 - [x] Excel export
 - [ ] Spring Boot REST backend, so clients no longer connect to the database directly *(in progress)*
 - [ ] Show differences to a selected reference project
-- [ ] Create and edit calculations directly in the UI
+- [ ] Additional analysis tools, e.g. cost trends and benchmarks per m²
 - [ ] Web frontend or rebuild with a modern UI framework
 
 ## Author
